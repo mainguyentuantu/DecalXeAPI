@@ -1,36 +1,34 @@
-# 1. Bước "Chuẩn bị nguyên liệu": Lấy phiên bản .NET SDK 8.0 để build ứng dụng của bạn.
-# Chúng ta dùng "8.0" vì đây là phiên bản ổn định và phổ biến.
+# --- Giai đoạn 1: Build ứng dụng ---
+
+# 1. Bước "Chuẩn bị nguyên liệu": Lấy phiên bản .NET SDK 8.0 để build.
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
-# 2. Bước "Pha trộn nguyên liệu khô": Sao chép file dự án và khôi phục các gói cần thiết.
-# Điều này giúp Docker chỉ build lại những phần cần thiết khi code thay đổi, làm mọi thứ nhanh hơn.
-COPY DecalXeAPI.csproj ./
-RUN dotnet restore
+# 2. Bước "Pha trộn nguyên liệu khô": Sao chép file solution và project trước.
+# Điều này giúp Docker tận dụng cache, chỉ khi các file này thay đổi thì mới cần restore lại.
+COPY ["DecalXeAPI.sln", "DecalXeAPI.csproj", "./"]
+RUN dotnet restore "DecalXeAPI.sln"
 
-# 3. Bước "Thêm nguyên liệu còn lại": Sao chép toàn bộ mã nguồn của bạn vào trong "nhà máy" Docker.
-COPY . ./
+# 3. Bước "Thêm nguyên liệu còn lại": Sao chép toàn bộ mã nguồn vào.
+COPY . .
 
-# 4. Bước "Vào đúng chỗ làm việc": Chuyển đến thư mục chứa mã nguồn của ứng dụng.
-WORKDIR /app/DecalXeAPI
+# 4. Bước "Nướng bánh": Xuất bản ứng dụng, chỉ định rõ file dự án cần publish.
+# Kết quả sẽ được đưa vào một thư mục riêng là /app/publish để giữ mọi thứ sạch sẽ.
+RUN dotnet publish "DecalXeAPI.csproj" -c Release -o /app/publish
 
-# 5. Bước "Nướng bánh": Xuất bản ứng dụng của bạn ra phiên bản "sẵn sàng để dùng".
-# Lệnh này sẽ tạo ra một phiên bản tối ưu và gọn nhẹ cho môi trường production.
-RUN dotnet publish -c Release -o out
+# --- Giai đoạn 2: Tạo image cuối cùng để chạy ---
 
-# 6. Bước "Đặt bánh lên đĩa": Sử dụng một image .NET ASP.NET runtime nhẹ hơn để chạy ứng dụng.
-# Image này chỉ chứa những gì cần thiết để chạy, giúp "cửa tiệm" của bạn nhỏ gọn và nhanh chóng.
+# 5. Bước "Đặt bánh lên đĩa": Sử dụng một image runtime nhẹ hơn, chỉ chứa những gì cần thiết để chạy.
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# 7. Bước "Chuyển bánh từ lò ra đĩa": Sao chép những gì đã "nướng" ở bước trên vào đây.
-COPY --from=build /app/DecalXeAPI/out .
+# 6. Bước "Chuyển bánh từ lò ra đĩa": Sao chép kết quả đã publish ở giai đoạn build vào đây.
+COPY --from=build /app/publish .
 
-# 8. Bước "Mở cửa tiệm và nói chào khách": Cấu hình cổng mà ứng dụng của bạn sẽ "lắng nghe" yêu cầu.
-# OnRender sẽ sử dụng cổng 8080 này để kết nối với ứng dụng của bạn.
+# 7. Bước "Mở cửa tiệm và nói chào khách": Cấu hình cổng mà ứng dụng sẽ lắng nghe.
+# Railway/OnRender sẽ sử dụng cổng này.
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
-# 9. Bước "Bắt đầu làm việc": Đây là lệnh "khởi động" thực sự của ứng dụng.
-# Khi "cửa tiệm" mở, nó sẽ chạy file .dll chính của ứng dụng bạn.
+# 8. Bước "Bắt đầu làm việc": Lệnh khởi động ứng dụng.
 ENTRYPOINT ["dotnet", "DecalXeAPI.dll"]
