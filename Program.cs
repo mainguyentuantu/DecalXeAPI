@@ -167,24 +167,41 @@ builder.Services.AddCors(options =>
     {
         if (allowAllOrigins)
         {
+            // Cho phép tất cả origins (không thể dùng với credentials)
             policy.AllowAnyOrigin()
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         }
-        else
+        else if (allowedOrigins.Length > 0)
         {
+            // Cho phép origins cụ thể
             policy.WithOrigins(allowedOrigins)
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
             
             if (allowCredentials)
             {
                 policy.AllowCredentials();
             }
         }
+        else
+        {
+            // Fallback: cho phép localhost cho development
+            policy.WithOrigins(
+                    "http://localhost:3000",
+                    "http://localhost:3001", 
+                    "http://localhost:5173",
+                    "http://127.0.0.1:3000",
+                    "http://127.0.0.1:3001",
+                    "http://127.0.0.1:5173"
+                  )
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials();
+        }
     });
 
-    // Policy cho development - cho phép tất cả origins (chỉ dùng khi cần thiết)
+    // Policy backup cho development
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
