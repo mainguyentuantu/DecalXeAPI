@@ -250,3 +250,4 @@ C:/Users/WIN10/Desktop/decal-xe-backend/DecalXeAPI/bin/Debug/net8.0/Swashbuckle.
 /workspace/obj/Debug/net8.0/DecalXeAPI.pdb
 /workspace/obj/Debug/net8.0/DecalXeAPI.genruntimeconfig.cache
 /workspace/obj/Debug/net8.0/ref/DecalXeAPI.dll
+/workspace/bin/Debug/net8.0/cors-test-react/package.json
