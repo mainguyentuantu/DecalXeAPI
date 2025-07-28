@@ -224,15 +224,14 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 // 3. Chuyển hướng HTTP sang HTTPS
 // app.UseHttpsRedirection();
 
-// THỨ TỰ QUAN TRỌNG BẮT ĐẦU TỪ ĐÂY
-app.UseRouting(); // <-- THÊM DÒNG NÀY. Rất quan trọng để định tuyến trước khi áp dụng CORS.
+// 4. Sử dụng CORS
+app.UseCors("AllowSpecificOrigin");
 
-app.UseCors("AllowSpecificOrigin"); // <-- Đặt ngay sau UseRouting
+// 5. Sử dụng Authentication và Authorization
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.UseAuthentication(); // <-- Sau CORS
-
-app.UseAuthorization(); // <-- Sau Authentication
-
+// 6. Map các Controller
 app.MapControllers();
 
 // Khởi chạy ứng dụng
