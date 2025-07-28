@@ -14,7 +14,6 @@ namespace DecalXeAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin,Manager")] // Quyền cho StoresController
     public class StoresController : ControllerBase
     {
         private readonly ApplicationDbContext _context; // Vẫn giữ để dùng các hàm Exists cơ bản
@@ -32,7 +31,6 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/Stores
         [HttpGet]
-        [AllowAnonymous] // Cho phép xem danh sách cửa hàng mà không cần đăng nhập
         public async Task<ActionResult<IEnumerable<StoreDto>>> GetStores()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách cửa hàng.");
@@ -42,7 +40,6 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/Stores/{id}
         [HttpGet("{id}")]
-        [AllowAnonymous] // Cho phép xem chi tiết cửa hàng mà không cần đăng nhập
         public async Task<ActionResult<StoreDto>> GetStore(string id)
         {
             _logger.LogInformation("Yêu cầu lấy cửa hàng với ID: {StoreID}", id);
@@ -59,6 +56,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/Stores (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<StoreDto>> PostStore(CreateStoreDto createDto)
         {
             _logger.LogInformation("Yêu cầu tạo cửa hàng mới: {StoreName}", createDto.StoreName);
@@ -76,6 +74,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT api/Stores/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> PutStore(string id, UpdateStoreDto updateDto)
         {
             _logger.LogInformation("Yêu cầu cập nhật cửa hàng với ID: {StoreID}", id);

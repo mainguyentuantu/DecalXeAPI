@@ -155,59 +155,39 @@ builder.Services.AddAuthentication(options =>
 // 6. Thêm Authorization Policy
 builder.Services.AddAuthorization();
 
-// 7. Cấu hình CORS (Cross-Origin Resource Sharing)
+// 7. Cấu hình CORS (Cross-Origin Resource Sharing) - PHƯƠNG ÁN MỚI
 builder.Services.AddCors(options =>
 {
-    var corsConfig = builder.Configuration.GetSection("Cors");
-    var allowedOrigins = corsConfig.GetSection("AllowedOrigins").Get<string[]>() ?? new string[0];
-    var allowCredentials = corsConfig.GetValue<bool>("AllowCredentials", true);
-    var allowAllOrigins = corsConfig.GetValue<bool>("AllowAllOrigins", false);
-
-    options.AddPolicy("AllowSpecificOrigin", policy =>
+    // Policy chính - Cho phép development origins
+    options.AddPolicy("AllowDevelopment", policy =>
     {
-        if (allowAllOrigins)
-        {
-            // Cho phép tất cả origins (không thể dùng với credentials)
-            policy.AllowAnyOrigin()
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        }
-        else if (allowedOrigins.Length > 0)
-        {
-            // Cho phép origins cụ thể
-            policy.WithOrigins(allowedOrigins)
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
-            
-            if (allowCredentials)
-            {
-                policy.AllowCredentials();
-            }
-        }
-        else
-        {
-            // Fallback: cho phép localhost cho development
-            policy.WithOrigins(
-                    "http://localhost:3000",
-                    "http://localhost:3001", 
-                    "http://localhost:5173",
-                    "http://127.0.0.1:3000",
-                    "http://127.0.0.1:3001",
-                    "http://127.0.0.1:5173"
-                  )
-                  .AllowAnyMethod()
-                  .AllowAnyHeader()
-                  .AllowCredentials();
-        }
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:3001", 
+                "http://localhost:5173",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:3001",
+                "http://127.0.0.1:5173",
+                "http://localhost:8080",
+                "http://localhost:4200",
+                "https://your-production-domain.com"
+              )
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials()
+              .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 
-    // Policy backup cho development
+    // Policy dự phòng - Cho phép tất cả (chỉ dùng khi cần thiết)
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
+
+    // Default policy
+    options.DefaultPolicyName = "AllowDevelopment";
 });
 
 
@@ -234,17 +214,19 @@ using (var scope = app.Services.CreateScope())
 
 
 // --- CẤU HÌNH CÁC MIDDLEWARE (PIPELINE XỬ LÝ REQUEST) ---
+
+// 1. Custom CORS middleware - xử lý preflight requests
+app.UseMiddleware<DecalXeAPI.Middleware.CustomCorsMiddleware>();
+
+// 2. Exception handling
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// 2. Chuyển hướng HTTP sang HTTPS
+// 3. Chuyển hướng HTTP sang HTTPS
 // app.UseHttpsRedirection();
 
-// 3. Swagger UI (Chỉ dùng trong môi trường Phát triển)
+// 4. Swagger UI (Chỉ dùng trong môi trường Phát triển)
 app.UseSwagger();
 app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "DecalXeAPI v1"); });
-
-// 4. Sử dụng CORS
-app.UseCors("AllowSpecificOrigin");
 
 // 5. Sử dụng Authentication và Authorization
 app.UseAuthentication();
