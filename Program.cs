@@ -224,15 +224,15 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 // 3. Chuyển hướng HTTP sang HTTPS
 // app.UseHttpsRedirection();
 
-// 4. Swagger UI (Chỉ dùng trong môi trường Phát triển)
-app.UseSwagger();
-app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "DecalXeAPI v1"); });
+// THỨ TỰ QUAN TRỌNG BẮT ĐẦU TỪ ĐÂY
+app.UseRouting(); // <-- THÊM DÒNG NÀY. Rất quan trọng để định tuyến trước khi áp dụng CORS.
 
-// 5. Sử dụng Authentication và Authorization
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseCors("AllowSpecificOrigin"); // <-- Đặt ngay sau UseRouting
 
-// 6. Map các Controller
+app.UseAuthentication(); // <-- Sau CORS
+
+app.UseAuthorization(); // <-- Sau Authentication
+
 app.MapControllers();
 
 // Khởi chạy ứng dụng
