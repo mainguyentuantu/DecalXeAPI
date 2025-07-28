@@ -177,7 +177,15 @@ builder.Services.AddCors(options =>
                 "http://127.0.0.1:3001",
                 "http://127.0.0.1:5173",
                 "http://localhost:8080",
-                "http://localhost:4200"
+                "http://localhost:4200",
+                "https://localhost:3000",
+                "https://localhost:3001", 
+                "https://localhost:5173",
+                "https://127.0.0.1:3000",
+                "https://127.0.0.1:3001",
+                "https://127.0.0.1:5173",
+                "https://localhost:8080",
+                "https://localhost:4200"
               )
               .AllowAnyMethod()
               .AllowAnyHeader()
@@ -211,6 +219,7 @@ using (var scope = app.Services.CreateScope())
 // --- CẤU HÌNH CÁC MIDDLEWARE (PIPELINE XỬ LÝ REQUEST) ---
 
 // 1. CORS - PHẢI ĐẶT ĐẦU TIÊN
+// Tạm thời sử dụng AllowDevelopment cho cả development và production để test CORS
 app.UseCors("AllowDevelopment");
 
 // 2. Exception handling
@@ -219,10 +228,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 // 3. Chuyển hướng HTTP sang HTTPS
 // app.UseHttpsRedirection();
 
-// 4. Sử dụng CORS
-app.UseCors("AllowSpecificOrigin");
-
-// 5. Sử dụng Authentication và Authorization
+// 4. Sử dụng Authentication và Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 

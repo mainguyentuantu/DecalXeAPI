@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test CORS - DecalXe API</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button { 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            margin: 10px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        button:hover { background: #218838; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .result { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border-radius: 5px; 
+            font-family: monospace; 
+            white-space: pre-wrap; 
+            border-left: 4px solid;
+        }
+        .success { 
+            background: #d4edda; 
+            border-color: #28a745; 
+            color: #155724; 
+        }
+        .error { 
+            background: #f8d7da; 
+            border-color: #dc3545; 
+            color: #721c24; 
+        }
+        .info { 
+            background: #d1ecf1; 
+            border-color: #17a2b8; 
+            color: #0c5460; 
+        }
+        .loading { 
+            background: #fff3cd; 
+            border-color: #ffc107; 
+            color: #856404; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Test CORS - DecalXe API</h1>
+        <p><strong>Frontend:</strong> <span id="origin"></span></p>
+        <p><strong>API Backend:</strong> https://decalxeapi-backend-production.up.railway.app</p>
+        
+        <div>
+            <button onclick="testSimpleAPI()" id="testBtn">Test API Stores</button>
+            <button onclick="testSwagger()" id="swaggerBtn">Test Swagger</button>
+            <button onclick="testMultipleAPIs()" id="multiBtn">Test Multiple APIs</button>
+            <button onclick="clearResults()">Clear Results</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://decalxeapi-backend-production.up.railway.app';
+        
+        // Hiển thị origin hiện tại
+        document.getElementById('origin').textContent = window.location.origin;
+        
+        function showResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            document.getElementById('results').appendChild(div);
+            
+            // Auto scroll to bottom
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        function disableButtons(disabled) {
+            document.querySelectorAll('button').forEach(btn => {
+                if (!btn.onclick || btn.onclick.toString().includes('clearResults')) return;
+                btn.disabled = disabled;
+            });
+        }
+        
+        async function testSimpleAPI() {
+            disableButtons(true);
+            showResult('🔄 Testing /api/stores endpoint...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/stores`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(`✅ SUCCESS! Stores API working. Found ${Array.isArray(data) ? data.length : 'N/A'} stores`, 'success');
+                    showResult(`Response Status: ${response.status} ${response.statusText}`, 'info');
+                } else {
+                    showResult(`⚠️ API Error: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ CORS Error: ${error.message}`, 'error');
+                if (error.message.includes('CORS')) {
+                    showResult('💡 This indicates CORS is not properly configured on the server', 'info');
+                }
+            } finally {
+                disableButtons(false);
+            }
+        }
+        
+        async function testSwagger() {
+            disableButtons(true);
+            showResult('🔄 Testing Swagger endpoint...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/swagger/v1/swagger.json`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(`✅ Swagger OK! API Title: ${data.info?.title || 'N/A'}`, 'success');
+                } else {
+                    showResult(`⚠️ Swagger Error: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Swagger Failed: ${error.message}`, 'error');
+            } finally {
+                disableButtons(false);
+            }
+        }
+        
+        async function testMultipleAPIs() {
+            disableButtons(true);
+            const endpoints = [
+                '/api/stores',
+                '/api/roles', 
+                '/api/accounts',
+                '/api/customers',
+                '/api/vehiclebrands'
+            ];
+            
+            showResult(`🔄 Testing ${endpoints.length} endpoints...`, 'loading');
+            
+            let success = 0;
+            let failed = 0;
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${API_BASE}${endpoint}`);
+                    if (response.ok) {
+                        success++;
+                        showResult(`✅ ${endpoint}: OK (${response.status})`, 'success');
+                    } else {
+                        failed++;
+                        showResult(`⚠️ ${endpoint}: Error ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    failed++;
+                    showResult(`❌ ${endpoint}: ${error.message}`, 'error');
+                }
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            const totalMsg = `📊 Summary: ${success} success, ${failed} failed out of ${endpoints.length} endpoints`;
+            showResult(totalMsg, success > failed ? 'success' : 'error');
+            
+            if (success === endpoints.length) {
+                showResult('🎉 All endpoints working! CORS is properly configured!', 'success');
+            } else if (success > 0) {
+                showResult('⚠️ Some endpoints working. Check server logs for details.', 'info');
+            } else {
+                showResult('❌ No endpoints working. CORS configuration issue.', 'error');
+            }
+            
+            disableButtons(false);
+        }
+        
+        // Auto test on page load
+        window.addEventListener('load', () => {
+            showResult('🌐 Page loaded. Ready to test CORS configuration.', 'info');
+            setTimeout(() => {
+                showResult('💡 Click "Test API Stores" to start testing', 'info');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
