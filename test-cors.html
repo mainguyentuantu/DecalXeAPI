@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick CORS Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 10px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 20px 0; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Quick CORS Test - DecalXe API</h1>
+    <p>Test CORS configuration nhanh chóng</p>
+    
+    <div>
+        <button onclick="testSwagger()">Test Swagger</button>
+        <button onclick="testStores()">Test Stores API</button>
+        <button onclick="testRoles()">Test Roles API</button>
+        <button onclick="testAllAPIs()">Test All APIs</button>
+        <button onclick="clearResults()">Clear</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'https://decalxeapi-backend-production.up.railway.app';
+        
+        function showResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testSwagger() {
+            showResult('🔄 Testing Swagger endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/swagger/v1/swagger.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(`✅ Swagger OK! API Title: ${data.info?.title || 'N/A'}`, 'success');
+                } else {
+                    showResult(`⚠️ Swagger Error: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Swagger Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testStores() {
+            showResult('🔄 Testing Stores API...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/stores`);
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(`✅ Stores API OK! Found ${Array.isArray(data) ? data.length : 'N/A'} stores`, 'success');
+                } else {
+                    showResult(`⚠️ Stores API Error: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Stores API Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testRoles() {
+            showResult('🔄 Testing Roles API...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/api/roles`);
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult(`✅ Roles API OK! Found ${Array.isArray(data) ? data.length : 'N/A'} roles`, 'success');
+                } else {
+                    showResult(`⚠️ Roles API Error: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Roles API Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAllAPIs() {
+            const apis = [
+                '/swagger/v1/swagger.json',
+                '/api/stores',
+                '/api/roles',
+                '/api/accounts',
+                '/api/customers',
+                '/api/decaltypes',
+                '/api/vehiclebrands'
+            ];
+            
+            showResult(`🔄 Testing ${apis.length} APIs...`, 'info');
+            
+            let success = 0;
+            let failed = 0;
+            
+            for (const endpoint of apis) {
+                try {
+                    const response = await fetch(`${API_BASE}${endpoint}`);
+                    if (response.ok) {
+                        success++;
+                        showResult(`✅ ${endpoint}: OK (${response.status})`, 'success');
+                    } else {
+                        failed++;
+                        showResult(`⚠️ ${endpoint}: Error ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    failed++;
+                    showResult(`❌ ${endpoint}: ${error.message}`, 'error');
+                }
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            showResult(`\n📊 Summary: ${success} success, ${failed} failed out of ${apis.length} APIs`, 
+                      success > failed ? 'success' : 'error');
+        }
+        
+        // Auto test on load
+        window.addEventListener('load', () => {
+            showResult('🌐 Testing from: ' + window.location.origin, 'info');
+            showResult('🎯 API Target: ' + API_BASE, 'info');
+            setTimeout(testSwagger, 1000);
+        });
+    </script>
+</body>
+</html>

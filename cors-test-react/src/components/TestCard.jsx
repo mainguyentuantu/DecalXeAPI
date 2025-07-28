@@ -29,13 +29,13 @@ const TestCard = ({ title, description, status, result, onTest, loading }) => {
   };
 
   return (
-    <div className={`border rounded-lg p-6 ${getStatusColor()} transition-all duration-200`}>
-      <div className="flex items-start justify-between mb-4">
+    <div className={`border rounded-lg p-4 ${getStatusColor()} transition-all duration-200 hover:shadow-md`}>
+      <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-          <p className="text-gray-600 text-sm">{description}</p>
+          <h3 className="text-md font-semibold text-gray-900 mb-1">{title}</h3>
+          <p className="text-gray-600 text-xs">{description}</p>
         </div>
-        <div className="ml-4">
+        <div className="ml-3">
           {getStatusIcon()}
         </div>
       </div>
@@ -43,19 +43,19 @@ const TestCard = ({ title, description, status, result, onTest, loading }) => {
       <button
         onClick={onTest}
         disabled={loading}
-        className={`w-full py-2 px-4 rounded-md font-medium transition-colors duration-200 ${
+        className={`w-full py-2 px-3 rounded-md text-sm font-medium transition-colors duration-200 ${
           loading
             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
             : 'bg-blue-600 hover:bg-blue-700 text-white'
         }`}
       >
-        {loading ? 'Đang test...' : 'Test API'}
+        {loading ? 'Testing...' : 'Test'}
       </button>
 
       {result && (
-        <div className="mt-4">
-          <div className="text-sm font-medium text-gray-700 mb-2">Kết quả:</div>
-          <div className="bg-gray-100 rounded-md p-3 overflow-auto max-h-40">
+        <div className="mt-3">
+          <div className="text-xs font-medium text-gray-700 mb-1">Kết quả:</div>
+          <div className="bg-gray-100 rounded-md p-2 overflow-auto max-h-32">
             <pre className="text-xs text-gray-800 whitespace-pre-wrap">
               {typeof result === 'object' ? JSON.stringify(result, null, 2) : result}
             </pre>

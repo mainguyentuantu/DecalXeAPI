@@ -12,32 +12,45 @@
 **Nguyên nhân**: Controller có `[Authorize(Roles = "Admin,Manager")]` ở class level, khiến preflight OPTIONS request bị reject vì không có token
 **Giải pháp**: ✅ Đã tạo Custom CORS Middleware để xử lý preflight requests trước khi đến Authorization
 
-## 🛠️ Phương án mới: Custom CORS Middleware
+## 🛠️ Phương án đơn giản: Built-in CORS
 
-### ✅ Đã tạo `CustomCorsMiddleware`:
-- **Xử lý preflight requests (OPTIONS) trước khi đến Authorization**
-- **Tự động thêm CORS headers cho tất cả responses**
-- **Cho phép origins**: `localhost:3000`, `5173`, `8080`, `4200`, v.v.
-- **Đặt ở đầu middleware pipeline**
+### ✅ Đã sử dụng ASP.NET Core CORS built-in:
+- **Policy "AllowDevelopment"**: Cho phép tất cả origins (tạm thời để test)
+- **Policy "AllowProduction"**: Giới hạn origins cụ thể với credentials
+- **Đặt `app.UseCors()` đầu tiên trong middleware pipeline**
 
-### 🔧 Cấu hình middleware pipeline:
+### 🔧 Cấu hình CORS:
 ```csharp
-// 1. Custom CORS middleware - xử lý preflight requests
-app.UseMiddleware<DecalXeAPI.Middleware.CustomCorsMiddleware>();
+// Development - Cho phép tất cả (để test CORS)
+options.AddPolicy("AllowDevelopment", policy =>
+{
+    policy.AllowAnyOrigin()
+          .AllowAnyMethod()
+          .AllowAnyHeader();
+});
+
+// Production - Giới hạn origins
+options.AddPolicy("AllowProduction", policy =>
+{
+    policy.WithOrigins("http://localhost:5173", ...)
+          .AllowAnyMethod()
+          .AllowAnyHeader()
+          .AllowCredentials();
+});
+```
+
+### 🔧 Middleware pipeline:
+```csharp
+// 1. CORS - PHẢI ĐẶT ĐẦU TIÊN
+app.UseCors("AllowDevelopment");
 
 // 2. Exception handling
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// 3. Authentication & Authorization (sau CORS)
+// 3. Authentication & Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 ```
-
-### 🎯 Lợi ích:
-- ✅ **Preflight requests được xử lý trước Authorization**
-- ✅ **Không cần `[AllowAnonymous]` trên từng endpoint**
-- ✅ **CORS headers được thêm tự động cho tất cả responses**
-- ✅ **Kiểm soát origins chặt chẽ**
 
 ## Tổng quan
 API đã được cấu hình CORS để hỗ trợ phát triển frontend với các framework phổ biến.

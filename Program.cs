@@ -155,11 +155,19 @@ builder.Services.AddAuthentication(options =>
 // 6. Thêm Authorization Policy
 builder.Services.AddAuthorization();
 
-// 7. Cấu hình CORS (Cross-Origin Resource Sharing) - PHƯƠNG ÁN MỚI
+// 7. Cấu hình CORS (Cross-Origin Resource Sharing) - PHƯƠNG ÁN ĐƠN GIẢN
 builder.Services.AddCors(options =>
 {
-    // Policy chính - Cho phép development origins
+    // Policy cho development - cho phép tất cả origins (tạm thời để test)
     options.AddPolicy("AllowDevelopment", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+
+    // Policy cho production - giới hạn origins
+    options.AddPolicy("AllowProduction", policy =>
     {
         policy.WithOrigins(
                 "http://localhost:3000",
@@ -169,25 +177,12 @@ builder.Services.AddCors(options =>
                 "http://127.0.0.1:3001",
                 "http://127.0.0.1:5173",
                 "http://localhost:8080",
-                "http://localhost:4200",
-                "https://your-production-domain.com"
+                "http://localhost:4200"
               )
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials()
-              .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+              .AllowCredentials();
     });
-
-    // Policy dự phòng - Cho phép tất cả (chỉ dùng khi cần thiết)
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-
-    // Default policy
-    options.DefaultPolicyName = "AllowDevelopment";
 });
 
 
@@ -215,8 +210,8 @@ using (var scope = app.Services.CreateScope())
 
 // --- CẤU HÌNH CÁC MIDDLEWARE (PIPELINE XỬ LÝ REQUEST) ---
 
-// 1. Custom CORS middleware - xử lý preflight requests
-app.UseMiddleware<DecalXeAPI.Middleware.CustomCorsMiddleware>();
+// 1. CORS - PHẢI ĐẶT ĐẦU TIÊN
+app.UseCors("AllowDevelopment");
 
 // 2. Exception handling
 app.UseMiddleware<ExceptionHandlingMiddleware>();
