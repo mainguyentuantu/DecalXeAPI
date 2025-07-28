@@ -1,5 +1,12 @@
 # Cấu hình CORS cho DecalXeAPI
 
+## 🚨 Lỗi đã được khắc phục
+**Lỗi gốc**: `Request header field content-type is not allowed by Access-Control-Allow-Headers in preflight response`
+
+**Nguyên nhân**: Production API chỉ cho phép `https://your-production-domain.com` nhưng frontend development đang chạy trên `http://localhost:5173`
+
+**Giải pháp**: Đã thêm tất cả localhost origins vào cấu hình production để hỗ trợ development.
+
 ## Tổng quan
 API đã được cấu hình CORS để hỗ trợ phát triển frontend với các framework phổ biến.
 
@@ -26,13 +33,23 @@ API đã được cấu hình CORS để hỗ trợ phát triển frontend với
 ```
 
 ### Môi trường Production (appsettings.json)
+**✅ ĐÃ CẬP NHẬT - Bao gồm localhost cho development**
 ```json
 {
   "Cors": {
     "AllowedOrigins": [
-      "https://your-production-domain.com"
+      "https://your-production-domain.com",
+      "http://localhost:3000",
+      "http://localhost:3001", 
+      "http://localhost:5173",  // Vite dev server
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:3001",
+      "http://127.0.0.1:5173",
+      "http://localhost:8080",  // Vue.js
+      "http://localhost:4200"   // Angular
     ],
-    "AllowCredentials": true
+    "AllowCredentials": true,
+    "AllowAllOrigins": false
   }
 }
 ```
@@ -137,3 +154,36 @@ axios.post('https://your-api-domain.com/api/endpoint', data, {
 2. Restart API sau khi thay đổi cấu hình
 3. Xóa cache browser
 4. Kiểm tra network logs trong DevTools
+
+## 🚀 Deploy lên Railway
+
+Sau khi sửa cấu hình CORS, bạn cần deploy lại lên Railway:
+
+### Cách 1: Auto deploy (nếu đã kết nối GitHub)
+```bash
+git add .
+git commit -m "Fix CORS configuration for localhost development"
+git push origin main
+```
+
+### Cách 2: Manual deploy
+1. Vào Railway dashboard
+2. Chọn project DecalXeAPI
+3. Click "Deploy" hoặc "Redeploy"
+
+### Cách 3: CLI deploy
+```bash
+# Cài đặt Railway CLI
+npm install -g @railway/cli
+
+# Login và deploy
+railway login
+railway deploy
+```
+
+### Kiểm tra sau khi deploy:
+1. Đợi deploy hoàn tất (thường 2-5 phút)
+2. Test API endpoint: `https://decalxeapi-production.up.railway.app/swagger`
+3. Test CORS từ frontend với `localhost:5173`
+
+**Lưu ý**: Thay đổi trong `appsettings.json` sẽ có hiệu lực ngay khi deploy thành công.
