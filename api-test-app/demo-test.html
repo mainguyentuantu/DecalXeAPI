@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .endpoint { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .endpoint h3 { margin-top: 0; color: #333; }
+        .endpoint button { background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        .endpoint button:hover { background: #0056b3; }
+        .endpoint input { padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-right: 10px; width: 200px; }
+        .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff; white-space: pre-wrap; font-family: monospace; max-height: 300px; overflow-y: auto; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .config { background: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Quick API Test - Customer Vehicles</h1>
+        
+        <div class="config">
+            <h3>⚙️ Cấu hình API</h3>
+            <input type="text" id="baseUrl" value="http://localhost:5000/api" placeholder="Base URL">
+            <button onclick="updateBaseUrl()">Cập nhật URL</button>
+            <p><strong>URL hiện tại:</strong> <span id="currentUrl">http://localhost:5000/api</span></p>
+        </div>
+
+        <div class="endpoint">
+            <h3>📋 1. Lấy danh sách tất cả xe</h3>
+            <p><code>GET /api/CustomerVehicles</code></p>
+            <button onclick="getAllVehicles()">Test</button>
+            <div id="result1" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>🔍 2. Lấy xe theo ID</h3>
+            <p><code>GET /api/CustomerVehicles/{id}</code></p>
+            <input type="text" id="vehicleId" placeholder="Nhập ID xe">
+            <button onclick="getVehicleById()">Test</button>
+            <div id="result2" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>🚗 3. Lấy xe theo biển số</h3>
+            <p><code>GET /api/CustomerVehicles/by-license-plate/{licensePlate}</code></p>
+            <input type="text" id="licensePlate" placeholder="VD: 51F-12345">
+            <button onclick="getVehicleByLicensePlate()">Test</button>
+            <div id="result3" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>👤 4. Lấy xe theo ID khách hàng</h3>
+            <p><code>GET /api/CustomerVehicles/by-customer/{customerId}</code></p>
+            <input type="text" id="customerId" placeholder="Nhập ID khách hàng">
+            <button onclick="getVehiclesByCustomerId()">Test</button>
+            <div id="result4" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>✅ 5. Kiểm tra xe tồn tại</h3>
+            <p><code>GET /api/CustomerVehicles/{id}/exists</code></p>
+            <input type="text" id="checkVehicleId" placeholder="Nhập ID xe">
+            <button onclick="checkVehicleExists()">Test</button>
+            <div id="result5" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>🔍 6. Kiểm tra biển số tồn tại</h3>
+            <p><code>GET /api/CustomerVehicles/license-plate/{licensePlate}/exists</code></p>
+            <input type="text" id="checkLicensePlate" placeholder="VD: 51F-12345">
+            <button onclick="checkLicensePlateExists()">Test</button>
+            <div id="result6" class="result" style="display:none;"></div>
+        </div>
+
+        <div class="endpoint">
+            <h3>🔧 7. Kiểm tra số khung tồn tại</h3>
+            <p><code>GET /api/CustomerVehicles/chassis/{chassisNumber}/exists</code></p>
+            <input type="text" id="checkChassis" placeholder="VD: ABC123456789">
+            <button onclick="checkChassisExists()">Test</button>
+            <div id="result7" class="result" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let baseUrl = 'http://localhost:5000/api';
+
+        function updateBaseUrl() {
+            baseUrl = document.getElementById('baseUrl').value.replace(/\/$/, '');
+            document.getElementById('currentUrl').textContent = baseUrl;
+        }
+
+        function showResult(resultId, data, isError = false) {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.style.display = 'block';
+            resultDiv.className = `result ${isError ? 'error' : 'success'}`;
+            resultDiv.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+
+        async function makeRequest(endpoint, resultId) {
+            try {
+                const response = await fetch(`${baseUrl}${endpoint}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                let data;
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const text = await response.text();
+                    data = text === 'true' ? true : text === 'false' ? false : text;
+                }
+                
+                showResult(resultId, data);
+            } catch (error) {
+                showResult(resultId, error.message, true);
+            }
+        }
+
+        function getAllVehicles() {
+            makeRequest('/CustomerVehicles', 'result1');
+        }
+
+        function getVehicleById() {
+            const id = document.getElementById('vehicleId').value;
+            if (!id) {
+                showResult('result2', 'Vui lòng nhập ID xe', true);
+                return;
+            }
+            makeRequest(`/CustomerVehicles/${encodeURIComponent(id)}`, 'result2');
+        }
+
+        function getVehicleByLicensePlate() {
+            const licensePlate = document.getElementById('licensePlate').value;
+            if (!licensePlate) {
+                showResult('result3', 'Vui lòng nhập biển số xe', true);
+                return;
+            }
+            makeRequest(`/CustomerVehicles/by-license-plate/${encodeURIComponent(licensePlate)}`, 'result3');
+        }
+
+        function getVehiclesByCustomerId() {
+            const customerId = document.getElementById('customerId').value;
+            if (!customerId) {
+                showResult('result4', 'Vui lòng nhập ID khách hàng', true);
+                return;
+            }
+            makeRequest(`/CustomerVehicles/by-customer/${encodeURIComponent(customerId)}`, 'result4');
+        }
+
+        function checkVehicleExists() {
+            const id = document.getElementById('checkVehicleId').value;
+            if (!id) {
+                showResult('result5', 'Vui lòng nhập ID xe', true);
+                return;
+            }
+            makeRequest(`/CustomerVehicles/${encodeURIComponent(id)}/exists`, 'result5');
+        }
+
+        function checkLicensePlateExists() {
+            const licensePlate = document.getElementById('checkLicensePlate').value;
+            if (!licensePlate) {
+                showResult('result6', 'Vui lòng nhập biển số xe', true);
+                return;
+            }
+            makeRequest(`/CustomerVehicles/license-plate/${encodeURIComponent(licensePlate)}/exists`, 'result6');
+        }
+
+        function checkChassisExists() {
+            const chassis = document.getElementById('checkChassis').value;
+            if (!chassis) {
+                showResult('result7', 'Vui lòng nhập số khung', true);
+                return;
+            }
+            makeRequest(`/CustomerVehicles/chassis/${encodeURIComponent(chassis)}/exists`, 'result7');
+        }
+    </script>
+</body>
+</html>
