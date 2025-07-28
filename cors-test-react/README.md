@@ -18,20 +18,54 @@ npm run dev
 
 ## 📋 Features
 
-### ✅ Test Cases có sẵn:
-- **Stores API** - GET /api/stores
-- **Decal Types API** - GET /api/decaltypes  
+### ✅ Test Cases đầy đủ (24 APIs):
+
+#### 🏢 Core Business (5 APIs):
+- **Accounts API** - GET /api/accounts
+- **Customers API** - GET /api/customers  
+- **Employees API** - GET /api/employees
 - **Roles API** - GET /api/roles
+- **Stores API** - GET /api/stores
+
+#### 🚗 Vehicle Management (3 APIs):
 - **Vehicle Brands API** - GET /api/vehiclebrands
 - **Vehicle Models API** - GET /api/vehiclemodels
+- **Customer Vehicles API** - GET /api/customervehicles
+
+#### 🎨 Decal & Design (7 APIs):
+- **Decal Types API** - GET /api/decaltypes
+- **Decal Templates API** - GET /api/decaltemplates
+- **Decal Services API** - GET /api/decalservices
+- **Designs API** - GET /api/designs
+- **Design Template Items API** - GET /api/designtemplateitems
+- **Design Work Orders API** - GET /api/designworkorders
+- **Design Comments API** - GET /api/designcomments
+
+#### 📦 Order Management (3 APIs):
+- **Orders API** - GET /api/orders
+- **Order Details API** - GET /api/orderdetails
+- **Order Stage Histories API** - GET /api/orderstagehistories
+
+#### 💰 Financial (3 APIs):
+- **Payments API** - GET /api/payments
+- **Deposits API** - GET /api/deposits
+- **Tech Labor Prices API** - GET /api/techlaborprices
+
+#### 🛠️ Support & Quality (2 APIs):
+- **Feedbacks API** - GET /api/feedbacks
+- **Warranties API** - GET /api/warranties
 
 ### 🔧 Tính năng:
-- ✅ Real-time API testing
-- ✅ CORS headers inspection
-- ✅ Error handling và logging
-- ✅ Connection status monitoring
-- ✅ Beautiful UI với Tailwind CSS
-- ✅ Responsive design
+- ✅ **24 API endpoints** testing đầy đủ
+- ✅ **Category filtering** (Core, Vehicle, Decal, Order, Financial, Support)
+- ✅ **Real-time API testing** với status indicators
+- ✅ **CORS headers inspection** và debugging
+- ✅ **Error handling** chi tiết với console logging
+- ✅ **Connection status monitoring**
+- ✅ **Success/Error statistics** cho từng category
+- ✅ **Compact UI design** hiển thị nhiều APIs
+- ✅ **Beautiful UI** với Tailwind CSS và icons
+- ✅ **Responsive design** mobile-friendly
 
 ## 🛠️ Cấu hình
 
