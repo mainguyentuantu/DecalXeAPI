@@ -32,6 +32,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/Roles
         [HttpGet]
+        [AllowAnonymous] // Cho phép xem danh sách vai trò cho form đăng ký
         public async Task<ActionResult<IEnumerable<RoleDto>>> GetRoles()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách vai trò.");

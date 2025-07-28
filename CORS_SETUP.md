@@ -1,11 +1,31 @@
 # Cấu hình CORS cho DecalXeAPI
 
-## 🚨 Lỗi đã được khắc phục
-**Lỗi gốc**: `Request header field content-type is not allowed by Access-Control-Allow-Headers in preflight response`
+## 🚨 Lỗi CORS đã được khắc phục
 
+### Lỗi 1: Content-Type Header
+**Lỗi**: `Request header field content-type is not allowed by Access-Control-Allow-Headers in preflight response`
 **Nguyên nhân**: Production API chỉ cho phép `https://your-production-domain.com` nhưng frontend development đang chạy trên `http://localhost:5173`
+**Giải pháp**: ✅ Đã thêm tất cả localhost origins vào cấu hình production
 
-**Giải pháp**: Đã thêm tất cả localhost origins vào cấu hình production để hỗ trợ development.
+### Lỗi 2: Preflight Request HTTP Status
+**Lỗi**: `Response to preflight request doesn't pass access control check: It does not have HTTP ok status`
+**Nguyên nhân**: Controller có `[Authorize(Roles = "Admin,Manager")]` ở class level, khiến preflight OPTIONS request bị reject vì không có token
+**Giải pháp**: ✅ Đã thêm `[AllowAnonymous]` cho các GET endpoints cần public
+
+## 📋 Endpoints đã được public (không cần authentication)
+
+### ✅ Đã thêm `[AllowAnonymous]` cho:
+- **GET /api/Stores** - Xem danh sách cửa hàng
+- **GET /api/Stores/{id}** - Xem chi tiết cửa hàng  
+- **GET /api/DecalTypes** - Xem danh sách loại decal
+- **GET /api/DecalTypes/{id}** - Xem chi tiết loại decal
+- **GET /api/Roles** - Xem danh sách vai trò (cho form đăng ký)
+- **GET /api/VehicleBrands** - Xem danh sách hãng xe (đã có sẵn)
+- **GET /api/VehicleModels** - Xem danh sách model xe (đã có sẵn)
+
+### 🔒 Vẫn yêu cầu authentication:
+- POST, PUT, DELETE operations trên tất cả controllers
+- GET endpoints của các controller khác (Employees, Customers, Orders, v.v.)
 
 ## Tổng quan
 API đã được cấu hình CORS để hỗ trợ phát triển frontend với các framework phổ biến.
