@@ -155,25 +155,42 @@ builder.Services.AddAuthentication(options =>
 // 6. Thêm Authorization Policy
 builder.Services.AddAuthorization();
 
-// 7. Cấu hình CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowSpecificOrigin",
-        policy => policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials());
-});
-
-
 // 7. Cấu hình CORS (Cross-Origin Resource Sharing)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", 
-        policy => policy.AllowAnyOrigin() 
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        );
+    var corsConfig = builder.Configuration.GetSection("Cors");
+    var allowedOrigins = corsConfig.GetSection("AllowedOrigins").Get<string[]>() ?? new string[0];
+    var allowCredentials = corsConfig.GetValue<bool>("AllowCredentials", true);
+    var allowAllOrigins = corsConfig.GetValue<bool>("AllowAllOrigins", false);
+
+    options.AddPolicy("AllowSpecificOrigin", policy =>
+    {
+        if (allowAllOrigins)
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+        else
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+            
+            if (allowCredentials)
+            {
+                policy.AllowCredentials();
+            }
+        }
+    });
+
+    // Policy cho development - cho phép tất cả origins (chỉ dùng khi cần thiết)
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
 
 
