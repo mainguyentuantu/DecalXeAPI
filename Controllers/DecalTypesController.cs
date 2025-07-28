@@ -32,6 +32,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/DecalTypes
         [HttpGet]
+        [AllowAnonymous] // Cho phép xem danh sách loại decal mà không cần đăng nhập
         public async Task<ActionResult<IEnumerable<DecalTypeDto>>> GetDecalTypes()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách loại decal.");
@@ -41,6 +42,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/DecalTypes/{id}
         [HttpGet("{id}")]
+        [AllowAnonymous] // Cho phép xem chi tiết loại decal mà không cần đăng nhập
         public async Task<ActionResult<DecalTypeDto>> GetDecalType(string id)
         {
             _logger.LogInformation("Yêu cầu lấy loại decal với ID: {DecalTypeID}", id);
