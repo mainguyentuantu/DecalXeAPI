@@ -22,6 +22,7 @@ namespace DecalXeAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Admin,Manager,Sales,Accountant")]
+    [AllowAnonymous] 
     public class PaymentsController : ControllerBase
     {
         private readonly IPaymentService _paymentService;

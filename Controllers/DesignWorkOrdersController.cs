@@ -15,6 +15,7 @@ namespace DecalXeAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Admin,Manager,Sales,Designer")]
+    [AllowAnonymous] 
     public class DesignWorkOrdersController : ControllerBase
     {
         private readonly IDesignWorkOrderService _workOrderService;
