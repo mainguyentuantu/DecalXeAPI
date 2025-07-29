@@ -32,6 +32,8 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/Stores
         [HttpGet]
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
+
         public async Task<ActionResult<IEnumerable<StoreDto>>> GetStores()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách cửa hàng.");
@@ -41,6 +43,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/Stores/{id}
         [HttpGet("{id}")]
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<ActionResult<StoreDto>> GetStore(string id)
         {
             _logger.LogInformation("Yêu cầu lấy cửa hàng với ID: {StoreID}", id);
