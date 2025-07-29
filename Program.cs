@@ -165,18 +165,6 @@ builder.Services.AddCors(options =>
                         .AllowCredentials());
 });
 
-
-// 7. Cấu hình CORS (Cross-Origin Resource Sharing)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowSpecificOrigin", 
-        policy => policy.AllowAnyOrigin() 
-                        .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        );
-});
-
-
 var app = builder.Build(); // <-- app được Build ở đây
 
 
