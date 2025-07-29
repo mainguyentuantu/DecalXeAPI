@@ -33,6 +33,8 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/Accounts
         [HttpGet]
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
+
         public async Task<ActionResult<IEnumerable<AccountDto>>> GetAccounts()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách tài khoản.");
@@ -42,6 +44,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/Accounts/{id}
         [HttpGet("{id}")]
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<ActionResult<AccountDto>> GetAccount(string id)
         {
             _logger.LogInformation("Yêu cầu lấy tài khoản với ID: {AccountID}", id);
@@ -58,6 +61,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/Accounts
         [HttpPost]
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<ActionResult<AccountDto>> PostAccount(Account account) // Vẫn nhận Account Model
         {
             _logger.LogInformation("Yêu cầu tạo tài khoản mới: {Username}", account.Username);
@@ -84,6 +88,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT api/Accounts/{id}
         [HttpPut("{id}")]
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<IActionResult> PutAccount(string id, UpdateAccountDto updateDto) // <-- Thay đổi quan trọng: Dùng UpdateAccountDto
         {
             _logger.LogInformation("Yêu cầu cập nhật tài khoản với ID: {AccountID}", id);
@@ -126,6 +131,7 @@ namespace DecalXeAPI.Controllers
         // Trong file: DecalXeAPI/Controllers/AccountsController.cs
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")] // Quyền cho RolesController
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<IActionResult> DeleteAccount(string id)
         {
             _logger.LogInformation("Yêu cầu xóa tài khoản với ID: {AccountID}", id);

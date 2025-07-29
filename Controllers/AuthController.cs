@@ -35,6 +35,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST /api/Auth/register
         [HttpPost("register")]
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<ActionResult<string>> Register([FromBody] RegisterDto registerDto)
         {
             var newAccount = _mapper.Map<Account>(registerDto);
@@ -52,6 +53,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST /api/Auth/login
         [HttpPost("login")]
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<ActionResult<string>> Login([FromBody] LoginDto loginDto)
         {
             var account = await _context.Accounts
@@ -83,6 +85,7 @@ namespace DecalXeAPI.Controllers
         // API: PUT /api/Auth/change-password
         [HttpPut("change-password")]
         [Authorize] // Yêu cầu người dùng phải đăng nhập để đổi mật khẩu của chính họ
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
         {
             var accountId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

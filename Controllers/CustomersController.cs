@@ -33,6 +33,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/Customers
         [HttpGet]
         [Authorize(Roles = "Admin,Manager,Sales,Technician,Customer")] // Nới lỏng quyền cho GET
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách khách hàng.");
@@ -43,6 +44,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/Customers/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Manager,Sales,Technician,Customer")] // Nới lỏng quyền cho GET by ID
+        [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<ActionResult<CustomerDto>> GetCustomer(string id)
         {
             _logger.LogInformation("Yêu cầu lấy khách hàng với ID: {CustomerID}", id);
@@ -59,6 +61,7 @@ namespace DecalXeAPI.Controllers
 // API: POST api/Customers (ĐÃ NÂNG CẤP)
         [HttpPost]
         [Authorize(Roles = "Admin,Manager,Customer,Sales")]
+        [AllowAnonymous] 
         public async Task<ActionResult<CustomerDto>> PostCustomer(CreateCustomerDto createDto)
         {
             _logger.LogInformation("Yêu cầu tạo khách hàng mới: {FirstName} {LastName}", createDto.FirstName, createDto.LastName);
@@ -79,6 +82,7 @@ namespace DecalXeAPI.Controllers
         // API: PUT api/Customers/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutCustomer(string id, UpdateCustomerDto updateDto)
         {
             _logger.LogInformation("Yêu cầu cập nhật khách hàng với ID: {CustomerID}", id);

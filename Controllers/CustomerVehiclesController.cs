@@ -21,6 +21,7 @@ namespace DecalXeAPI.Controllers
         /// </summary>
         /// <returns>Danh sách xe khách hàng</returns>
         [HttpGet]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<CustomerVehicleDto>>> GetAllVehicles()
         {
             try
@@ -40,6 +41,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="id">ID của xe</param>
         /// <returns>Thông tin xe</returns>
         [HttpGet("{id}")]
+        [AllowAnonymous] 
         public async Task<ActionResult<CustomerVehicleDto>> GetVehicle(string id)
         {
             try
@@ -63,6 +65,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="licensePlate">Biển số xe</param>
         /// <returns>Thông tin xe</returns>
         [HttpGet("by-license-plate/{licensePlate}")]
+        [AllowAnonymous] 
         public async Task<ActionResult<CustomerVehicleDto>> GetVehicleByLicensePlate(string licensePlate)
         {
             try
@@ -86,6 +89,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="customerId">ID khách hàng</param>
         /// <returns>Danh sách xe của khách hàng</returns>
         [HttpGet("by-customer/{customerId}")]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<CustomerVehicleDto>>> GetVehiclesByCustomer(string customerId)
         {
             try
@@ -105,6 +109,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="createDto">Thông tin xe cần tạo</param>
         /// <returns>Thông tin xe đã tạo</returns>
         [HttpPost]
+        [AllowAnonymous] 
         public async Task<ActionResult<CustomerVehicleDto>> CreateVehicle(CreateCustomerVehicleDto createDto)
         {
             try
@@ -129,6 +134,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="updateDto">Thông tin cần cập nhật</param>
         /// <returns>Thông tin xe đã cập nhật</returns>
         [HttpPut("{id}")]
+        [AllowAnonymous] 
         public async Task<ActionResult<CustomerVehicleDto>> UpdateVehicle(string id, UpdateCustomerVehicleDto updateDto)
         {
             try
@@ -156,6 +162,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="id">ID của xe</param>
         /// <returns>Kết quả xóa</returns>
         [HttpDelete("{id}")]
+        [AllowAnonymous] 
         public async Task<ActionResult> DeleteVehicle(string id)
         {
             try
@@ -179,6 +186,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="id">ID của xe</param>
         /// <returns>True nếu tồn tại, False nếu không</returns>
         [HttpGet("{id}/exists")]
+        [AllowAnonymous] 
         public async Task<ActionResult<bool>> CheckVehicleExists(string id)
         {
             try
@@ -198,6 +206,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="licensePlate">Biển số xe</param>
         /// <returns>True nếu tồn tại, False nếu không</returns>
         [HttpGet("license-plate/{licensePlate}/exists")]
+        [AllowAnonymous] 
         public async Task<ActionResult<bool>> CheckLicensePlateExists(string licensePlate)
         {
             try
@@ -217,6 +226,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="chassisNumber">Số khung xe</param>
         /// <returns>True nếu tồn tại, False nếu không</returns>
         [HttpGet("chassis/{chassisNumber}/exists")]
+        [AllowAnonymous] 
         public async Task<ActionResult<bool>> CheckChassisNumberExists(string chassisNumber)
         {
             try
