@@ -156,14 +156,15 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // 7. Cấu hình CORS
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin",
-        policy => policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5173")
+    options.AddPolicy("AllowAnyOriginPolicy", // Bạn có thể đặt tên policy tùy ý
+        policy => policy.AllowAnyOrigin()
                         .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials());
+                        .AllowAnyMethod());
 });
+
 
 var app = builder.Build(); // <-- app được Build ở đây
 
@@ -198,7 +199,8 @@ app.UseSwagger();
 app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "DecalXeAPI v1"); });
 
 // 4. Sử dụng CORS
-app.UseCors("AllowSpecificOrigin");
+app.UseCors("AllowAnyOriginPolicy"); // Sử dụng tên policy bạn đã đặt
+
 
 // 5. Sử dụng Authentication và Authorization
 app.UseAuthentication();
