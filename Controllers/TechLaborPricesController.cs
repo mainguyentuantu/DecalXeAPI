@@ -13,6 +13,7 @@ namespace DecalXeAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Admin,Manager")]
+    [AllowAnonymous] 
     public class TechLaborPricesController : ControllerBase
     {
         private readonly ITechLaborPriceService _priceService;
@@ -42,6 +43,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST /api/TechLaborPrices (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Create(CreateTechLaborPriceDto createDto)
         {
             var techLaborPrice = _mapper.Map<TechLaborPrice>(createDto);
@@ -58,6 +60,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT /api/TechLaborPrices/{...} (ĐÃ NÂNG CẤP)
         [HttpPut("{serviceId}/{vehicleModelId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> Update(string serviceId, string vehicleModelId, UpdateTechLaborPriceDto updateDto)
         {
             // Logic cập nhật giờ sẽ chỉ nhận giá mới, an toàn hơn
@@ -67,6 +70,7 @@ namespace DecalXeAPI.Controllers
         }
 
         [HttpDelete("{serviceId}/{vehicleModelId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> Delete(string serviceId, string vehicleModelId)
         {
             var success = await _priceService.DeleteAsync(serviceId, vehicleModelId);

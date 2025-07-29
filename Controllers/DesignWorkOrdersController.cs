@@ -28,6 +28,7 @@ namespace DecalXeAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> GetWorkOrder(string id)
         {
             var workOrder = await _workOrderService.GetWorkOrderByIdAsync(id);
@@ -37,6 +38,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST /api/DesignWorkOrders (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [AllowAnonymous] 
         public async Task<IActionResult> CreateWorkOrder(CreateDesignWorkOrderDto createDto)
         {
             var workOrder = _mapper.Map<DesignWorkOrder>(createDto);
@@ -53,6 +55,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT /api/DesignWorkOrders/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> UpdateWorkOrder(string id, UpdateDesignWorkOrderDto updateDto)
         {
             var workOrder = await _context.DesignWorkOrders.FindAsync(id);

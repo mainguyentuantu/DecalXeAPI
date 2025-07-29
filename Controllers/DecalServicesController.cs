@@ -26,6 +26,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/DecalServices
         // Lấy tất cả các DecalService, bao gồm thông tin DecalType liên quan, trả về DTO
         [HttpGet]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<DecalServiceDto>>> GetDecalServices() // Kiểu trả về là DecalServiceDto
         {
             var decalServices = await _context.DecalServices.Include(ds => ds.DecalType).ToListAsync();
@@ -37,6 +38,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/DecalServices/{id}
         // Lấy thông tin một DecalService theo ServiceID, bao gồm DecalType liên quan, trả về DTO
         [HttpGet("{id}")]
+        [AllowAnonymous] 
         public async Task<ActionResult<DecalServiceDto>> GetDecalService(string id) // Kiểu trả về là DecalServiceDto
         {
             var decalService = await _context.DecalServices.Include(ds => ds.DecalType).FirstOrDefaultAsync(ds => ds.ServiceID == id);
@@ -53,6 +55,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/DecalServices (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [AllowAnonymous] 
         public async Task<ActionResult<DecalServiceDto>> PostDecalService(CreateDecalServiceDto createDto)
         {
             if (!DecalTypeExists(createDto.DecalTypeID))
@@ -73,6 +76,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT api/DecalServices/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutDecalService(string id, UpdateDecalServiceDto updateDto)
         {
             var decalService = await _context.DecalServices.FindAsync(id);
@@ -108,6 +112,7 @@ namespace DecalXeAPI.Controllers
         }
         // API: DELETE api/DecalServices/{id}
         [HttpDelete("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> DeleteDecalService(string id)
         {
             var decalService = await _context.DecalServices.FindAsync(id);

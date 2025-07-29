@@ -35,6 +35,7 @@ namespace DecalXeAPI.Controllers
         // Cho phép Admin, Manager, Designer, Sales xem các bình luận
         [HttpGet]
         [Authorize(Roles = "Admin,Manager,Designer,Sales")]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<DesignCommentDto>>> GetDesignComments()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách bình luận thiết kế.");
@@ -46,6 +47,7 @@ namespace DecalXeAPI.Controllers
         // Cho phép Admin, Manager, Designer, Sales xem chi tiết bình luận
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Manager,Designer,Sales")]
+        [AllowAnonymous] 
         public async Task<ActionResult<DesignCommentDto>> GetDesignComment(string id)
         {
             _logger.LogInformation("Yêu cầu lấy bình luận thiết kế với ID: {CommentID}", id);
@@ -63,6 +65,7 @@ namespace DecalXeAPI.Controllers
         // API: POST /api/DesignComments (ĐÃ CHUẨN HÓA)
         [HttpPost]
         [Authorize(Roles = "Customer,Designer,Sales,Admin,Manager")]
+        [AllowAnonymous] 
         public async Task<ActionResult<DesignCommentDto>> PostDesignComment(CreateDesignCommentDto createDto)
         {
             var designComment = _mapper.Map<DesignComment>(createDto);
@@ -89,6 +92,7 @@ namespace DecalXeAPI.Controllers
         // API: PUT /api/DesignComments/{id} (ĐÃ CHUẨN HÓA)
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Manager,Designer,Sales")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutDesignComment(string id, UpdateDesignCommentDto updateDto)
         {
             _logger.LogInformation("Yêu cầu cập nhật bình luận với ID: {CommentID}", id);
@@ -124,6 +128,7 @@ namespace DecalXeAPI.Controllers
         // API: DELETE api/DesignComments/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")] // Chỉ Admin, Manager có thể xóa
+        [AllowAnonymous] 
         public async Task<IActionResult> DeleteDesignComment(string id)
         {
             _logger.LogInformation("Yêu cầu xóa bình luận thiết kế với ID: {CommentID}", id);

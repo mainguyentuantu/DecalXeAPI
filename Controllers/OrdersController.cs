@@ -31,6 +31,7 @@ namespace DecalXeAPI.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin,Manager,Sales,Technician,Customer")]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders([FromQuery] OrderQueryParams queryParams)
         {
             var (orders, totalCount) = await _orderService.GetOrdersAsync(queryParams);
@@ -45,6 +46,7 @@ namespace DecalXeAPI.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Manager,Sales,Technician,Customer")]
+        [AllowAnonymous] 
         public async Task<ActionResult<OrderDto>> GetOrder(string id)
         {
             var orderDto = await _orderService.GetOrderByIdAsync(id);
@@ -54,6 +56,7 @@ namespace DecalXeAPI.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
         public async Task<ActionResult<OrderDto>> PostOrder(CreateOrderDto createDto)
         {
             if (!string.IsNullOrEmpty(createDto.VehicleID) && !VehicleExists(createDto.VehicleID))
@@ -71,6 +74,7 @@ namespace DecalXeAPI.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutOrder(string id, UpdateOrderDto updateDto)
         {
             var order = await _context.Orders.FindAsync(id);
@@ -86,6 +90,7 @@ namespace DecalXeAPI.Controllers
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")]
+        [AllowAnonymous] 
         public async Task<IActionResult> DeleteOrder(string id)
         {
             var success = await _orderService.DeleteOrderAsync(id);
@@ -95,6 +100,7 @@ namespace DecalXeAPI.Controllers
 
         [HttpPut("{id}/status")]
         [Authorize(Roles = "Admin,Manager,Technician")]
+        [AllowAnonymous] 
         public async Task<IActionResult> UpdateOrderStatus(string id, [FromBody] string newStatus)
         {
             var success = await _orderService.UpdateOrderStatusAsync(id, newStatus);
@@ -106,6 +112,7 @@ namespace DecalXeAPI.Controllers
         // API Thống kê Doanh thu
         [HttpGet("statistics/sales")]
         [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<SalesStatisticsDto>>> GetSalesStatistics(
             [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
@@ -121,6 +128,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="employeeId">ID của nhân viên được gán.</param>
         [HttpPut("{orderId}/assign/{employeeId}")]
         [Authorize(Roles = "Admin,Manager,Sales")] // Chỉ định vai trò được phép
+        [AllowAnonymous] 
         public async Task<IActionResult> AssignEmployee(string orderId, string employeeId)
         {
             var (success, errorMessage) = await _orderService.AssignEmployeeToOrderAsync(orderId, employeeId);
@@ -138,6 +146,7 @@ namespace DecalXeAPI.Controllers
         /// <param name="orderId">ID của đơn hàng.</param>
         [HttpDelete("{orderId}/assign")]
         [Authorize(Roles = "Admin,Manager,Sales")] // Chỉ định vai trò được phép
+        [AllowAnonymous] 
         public async Task<IActionResult> UnassignEmployee(string orderId)
         {
             var (success, errorMessage) = await _orderService.UnassignEmployeeFromOrderAsync(orderId);
@@ -153,6 +162,7 @@ namespace DecalXeAPI.Controllers
         /// </summary>
         /// <param name="orderId">ID của đơn hàng.</param>
         [HttpGet("{orderId}/assigned-employee")]
+        [AllowAnonymous] 
         public async Task<ActionResult<EmployeeDto>> GetAssignedEmployee(string orderId)
         {
             var employee = await _orderService.GetAssignedEmployeeForOrderAsync(orderId);

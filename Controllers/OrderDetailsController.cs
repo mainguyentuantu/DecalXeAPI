@@ -33,6 +33,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/OrderDetails
         [HttpGet]
         [Authorize(Roles = "Admin,Manager,Sales,Technician")]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<OrderDetailDto>>> GetOrderDetails()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách chi tiết đơn hàng.");
@@ -44,6 +45,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/OrderDetails/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Manager,Sales,Technician")]
+        [AllowAnonymous] 
         public async Task<ActionResult<OrderDetailDto>> GetOrderDetail(string id)
         {
             _logger.LogInformation("Yêu cầu lấy chi tiết đơn hàng với ID: {OrderDetailID}", id);
@@ -62,6 +64,7 @@ namespace DecalXeAPI.Controllers
         // API: POST api/OrderDetails (ĐÃ NÂNG CẤP)
         [HttpPost]
         [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
         public async Task<ActionResult<OrderDetailDto>> PostOrderDetail(CreateOrderDetailDto createDto)
         {
             _logger.LogInformation("Yêu cầu tạo chi tiết đơn hàng mới cho OrderID: {OrderID}, ServiceID: {ServiceID}", createDto.OrderID, createDto.ServiceID);
@@ -82,6 +85,7 @@ namespace DecalXeAPI.Controllers
         // API: PUT api/OrderDetails/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutOrderDetail(string id, UpdateOrderDetailDto updateDto)
         {
             _logger.LogInformation("Yêu cầu cập nhật chi tiết đơn hàng với ID: {OrderDetailID}", id);
@@ -108,6 +112,7 @@ namespace DecalXeAPI.Controllers
         // API: DELETE api/OrderDetails/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous]    
         public async Task<IActionResult> DeleteOrderDetail(string id)
         {
             _logger.LogInformation("Yêu cầu xóa chi tiết đơn hàng với ID: {OrderDetailID}", id);

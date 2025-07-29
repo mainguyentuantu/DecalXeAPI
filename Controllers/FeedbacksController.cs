@@ -33,6 +33,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/Feedbacks
         [HttpGet]
         [Authorize(Roles = "Admin,Manager,Sales,Customer")] // Admin, Manager, Sales xem tất cả. Customer xem feedback của mình.
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<FeedbackDto>>> GetFeedbacks()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách phản hồi.");
@@ -43,6 +44,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/Feedbacks/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Manager,Sales,Customer")] // Admin, Manager, Sales xem tất cả. Customer xem feedback của mình.
+        [AllowAnonymous] 
         public async Task<ActionResult<FeedbackDto>> GetFeedback(string id)
         {
             _logger.LogInformation("Yêu cầu lấy phản hồi với ID: {FeedbackID}", id);
@@ -67,6 +69,7 @@ namespace DecalXeAPI.Controllers
         // API: POST api/Feedbacks (ĐÃ NÂNG CẤP)
         [HttpPost]
         [Authorize(Roles = "Customer")]
+        [AllowAnonymous] 
         public async Task<ActionResult<FeedbackDto>> PostFeedback(CreateFeedbackDto createDto)
         {
             _logger.LogInformation("Yêu cầu tạo phản hồi mới cho OrderID: {OrderID}, CustomerID: {CustomerID}", createDto.OrderID, createDto.CustomerID);
@@ -95,6 +98,7 @@ namespace DecalXeAPI.Controllers
         // API: PUT api/Feedbacks/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Manager")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutFeedback(string id, UpdateFeedbackDto updateDto)
         {
             _logger.LogInformation("Yêu cầu cập nhật phản hồi với ID: {FeedbackID}", id);
@@ -124,6 +128,7 @@ namespace DecalXeAPI.Controllers
         // API: DELETE api/Feedbacks/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")] // Chỉ Admin, Manager có thể xóa
+        [AllowAnonymous] 
         public async Task<IActionResult> DeleteFeedback(string id)
         {
             _logger.LogInformation("Yêu cầu xóa phản hồi với ID: {FeedbackID}", id);

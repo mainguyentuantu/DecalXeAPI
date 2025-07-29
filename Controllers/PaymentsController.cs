@@ -36,6 +36,7 @@ namespace DecalXeAPI.Controllers
        
 
         [HttpGet]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<PaymentDto>>> GetPayments()
         {
             var payments = await _paymentService.GetPaymentsAsync();
@@ -43,6 +44,7 @@ namespace DecalXeAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous] 
         public async Task<ActionResult<PaymentDto>> GetPayment(string id)
         {
             var paymentDto = await _paymentService.GetPaymentByIdAsync(id);
@@ -52,6 +54,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/Payments (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [AllowAnonymous] 
         public async Task<ActionResult<PaymentDto>> PostPayment(CreatePaymentDto createDto)
         {
             var payment = _mapper.Map<Payment>(createDto);
@@ -70,6 +73,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT api/Payments/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutPayment(string id, UpdatePaymentDto updateDto)
         {
             // Cần inject ApplicationDbContext vào controller này để dùng FindAsync
@@ -94,6 +98,7 @@ namespace DecalXeAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> DeletePayment(string id)
         {
             var success = await _paymentService.DeletePaymentAsync(id);

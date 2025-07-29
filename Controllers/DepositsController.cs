@@ -31,6 +31,7 @@ namespace DecalXeAPI.Controllers
         
 
         [HttpGet("order/{orderId}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> GetDepositsByOrder(string orderId)
         {
             var deposits = await _depositService.GetDepositsByOrderIdAsync(orderId);
@@ -38,6 +39,7 @@ namespace DecalXeAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> GetDeposit(string id)
         {
             var deposit = await _depositService.GetDepositByIdAsync(id);
@@ -47,6 +49,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/Deposits (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [AllowAnonymous] 
         public async Task<IActionResult> CreateDeposit(CreateDepositDto createDto)
         {
             // Dùng AutoMapper để "dịch" từ DTO sang Model

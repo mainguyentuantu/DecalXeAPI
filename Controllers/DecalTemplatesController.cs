@@ -32,6 +32,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/DecalTemplates
         [HttpGet]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<DecalTemplateDto>>> GetDecalTemplates()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách mẫu decal.");
@@ -41,6 +42,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/DecalTemplates/{id}
         [HttpGet("{id}")]
+        [AllowAnonymous] 
         public async Task<ActionResult<DecalTemplateDto>> GetDecalTemplate(string id)
         {
             _logger.LogInformation("Yêu cầu lấy mẫu decal với ID: {TemplateID}", id);
@@ -57,6 +59,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/DecalTemplates (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [AllowAnonymous] 
         public async Task<ActionResult<DecalTemplateDto>> PostDecalTemplate(CreateDecalTemplateDto createDto)
         {
             _logger.LogInformation("Yêu cầu tạo mẫu decal mới: {TemplateName}", createDto.TemplateName);
@@ -78,6 +81,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT api/DecalTemplates/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutDecalTemplate(string id, UpdateDecalTemplateDto updateDto)
         {
             _logger.LogInformation("Yêu cầu cập nhật mẫu decal với ID: {TemplateID}", id);
@@ -106,6 +110,7 @@ namespace DecalXeAPI.Controllers
         // --- API MỚI ĐỂ GÁN TEMPLATE VÀO XE ---
         [HttpPost("{templateId}/vehicles/{modelId}")]
         [Authorize(Roles = "Admin,Manager")]
+        [AllowAnonymous] 
         public async Task<IActionResult> AssignTemplateToVehicle(string templateId, string modelId)
         {
             var (success, errorMessage) = await _decalTemplateService.AssignTemplateToVehicleAsync(templateId, modelId);
@@ -119,6 +124,7 @@ namespace DecalXeAPI.Controllers
         // --- API MỚI ĐỂ GỠ TEMPLATE KHỎI XE ---
         [HttpDelete("{templateId}/vehicles/{modelId}")]
         [Authorize(Roles = "Admin,Manager")]
+        [AllowAnonymous] 
         public async Task<IActionResult> UnassignTemplateFromVehicle(string templateId, string modelId)
         {
             var (success, errorMessage) = await _decalTemplateService.UnassignTemplateFromVehicleAsync(templateId, modelId);
@@ -131,6 +137,7 @@ namespace DecalXeAPI.Controllers
 
         // API: DELETE api/DecalTemplates/{id}
         [HttpDelete("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> DeleteDecalTemplate(string id)
         {
             _logger.LogInformation("Yêu cầu xóa mẫu decal với ID: {TemplateID}", id);

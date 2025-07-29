@@ -17,6 +17,7 @@ namespace DecalXeAPI.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Admin,Manager,Sales")]
+           [AllowAnonymous]
     public class WarrantiesController : ControllerBase
     {
         private readonly IWarrantyService _warrantyService;
@@ -33,6 +34,7 @@ namespace DecalXeAPI.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<WarrantyDto>>> GetWarranties()
         {
             var warranties = await _warrantyService.GetWarrantiesAsync();
@@ -40,6 +42,7 @@ namespace DecalXeAPI.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<WarrantyDto>> GetWarranty(string id)
         {
             var warrantyDto = await _warrantyService.GetWarrantyByIdAsync(id);
@@ -49,6 +52,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/Warranties (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<WarrantyDto>> PostWarranty(CreateWarrantyDto createDto)
         {
             _logger.LogInformation("Yêu cầu tạo bảo hành mới cho VehicleID: {VehicleID}", createDto.VehicleID);
@@ -70,6 +74,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT api/Warranties/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> PutWarranty(string id, UpdateWarrantyDto updateDto)
         {
             var warranty = await _context.Warranties.FindAsync(id);
@@ -94,6 +99,7 @@ namespace DecalXeAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteWarranty(string id)
         {
             var success = await _warrantyService.DeleteWarrantyAsync(id);

@@ -45,6 +45,7 @@ namespace DecalXeAPI.Controllers
         // POST: api/VehicleBrands
         [HttpPost]
         [Authorize(Roles = "Admin,Manager")] // Chỉ Admin, Manager được tạo
+        [AllowAnonymous]
         public async Task<ActionResult<VehicleBrandDto>> PostVehicleBrand(VehicleBrand brand)
         {
             var createdBrand = await _brandService.CreateBrandAsync(brand);
@@ -54,6 +55,7 @@ namespace DecalXeAPI.Controllers
         // PUT: api/VehicleBrands/5
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Manager")] // Chỉ Admin, Manager được sửa
+        [AllowAnonymous]
         public async Task<IActionResult> PutVehicleBrand(string id, VehicleBrand brand)
         {
             if (id != brand.BrandID)
@@ -71,6 +73,7 @@ namespace DecalXeAPI.Controllers
         // DELETE: api/VehicleBrands/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")] // Chỉ Admin, Manager được xóa
+        [AllowAnonymous]
         public async Task<IActionResult> DeleteVehicleBrand(string id)
         {
             var result = await _brandService.DeleteBrandAsync(id);

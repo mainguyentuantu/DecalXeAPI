@@ -33,6 +33,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/Employees
         [HttpGet]
         [Authorize(Roles = "Admin,Manager,Sales,Technician,Customer")] // Nới lỏng quyền cho GET
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách nhân viên.");
@@ -43,6 +44,7 @@ namespace DecalXeAPI.Controllers
         // API: GET api/Employees/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Manager,Sales,Technician,Customer")] // Nới lỏng quyền cho GET by ID
+        [AllowAnonymous] 
         public async Task<ActionResult<EmployeeDto>> GetEmployee(string id)
         {
             _logger.LogInformation("Yêu cầu lấy nhân viên với ID: {EmployeeID}", id);
@@ -60,6 +62,7 @@ namespace DecalXeAPI.Controllers
         // API: POST api/Employees (ĐÃ NÂNG CẤP)
         [HttpPost]
         [Authorize(Roles = "Admin,Manager")]
+        [AllowAnonymous] 
         public async Task<ActionResult<EmployeeDto>> PostEmployee(CreateEmployeeDto createDto)
         {
             _logger.LogInformation("Yêu cầu tạo nhân viên mới: {FirstName} {LastName}", createDto.FirstName, createDto.LastName);
@@ -89,6 +92,7 @@ namespace DecalXeAPI.Controllers
         // API: PUT api/Employees/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Manager")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutEmployee(string id, UpdateEmployeeDto updateDto)
         {
             _logger.LogInformation("Yêu cầu cập nhật nhân viên với ID: {EmployeeID}", id);
@@ -122,6 +126,7 @@ namespace DecalXeAPI.Controllers
         // API: DELETE api/Employees/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")]
+        [AllowAnonymous] 
         public async Task<IActionResult> DeleteEmployee(string id)
         {
             _logger.LogInformation("Yêu cầu xóa nhân viên với ID: {EmployeeID}", id);

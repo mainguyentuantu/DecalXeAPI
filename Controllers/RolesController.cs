@@ -32,6 +32,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/Roles
         [HttpGet]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<RoleDto>>> GetRoles()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách vai trò.");
@@ -41,6 +42,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/Roles/{id}
         [HttpGet("{id}")]
+        [AllowAnonymous] 
         public async Task<ActionResult<RoleDto>> GetRole(string id)
         {
             _logger.LogInformation("Yêu cầu lấy vai trò với ID: {RoleID}", id);
@@ -57,6 +59,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/Roles
         [HttpPost]
+        [AllowAnonymous] 
         public async Task<ActionResult<RoleDto>> PostRole(Role role) // Vẫn nhận Role Model
         {
             _logger.LogInformation("Yêu cầu tạo vai trò mới: {RoleName}", role.RoleName);
@@ -75,6 +78,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT api/Roles/{id}
         [HttpPut("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutRole(string id, Role role)
         {
             _logger.LogInformation("Yêu cầu cập nhật vai trò với ID: {RoleID}", id);
@@ -116,6 +120,7 @@ namespace DecalXeAPI.Controllers
 
         // API: DELETE api/Roles/{id}
         [HttpDelete("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> DeleteRole(string id)
         {
             _logger.LogInformation("Yêu cầu xóa vai trò với ID: {RoleID}", id);

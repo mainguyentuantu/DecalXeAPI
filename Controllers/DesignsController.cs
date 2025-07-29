@@ -31,6 +31,7 @@ namespace DecalXeAPI.Controllers
         // GET: api/Designs
         [HttpGet]
         [Authorize(Roles = "Admin,Manager,Designer,Sales")]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<DesignDto>>> GetDesigns()
         {
             return Ok(await _designService.GetDesignsAsync());
@@ -39,6 +40,7 @@ namespace DecalXeAPI.Controllers
         // GET: api/Designs/5
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Manager,Designer,Sales")]
+        [AllowAnonymous] 
         public async Task<ActionResult<DesignDto>> GetDesign(string id)
         {
             var design = await _designService.GetDesignByIdAsync(id);
@@ -48,6 +50,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/Designs (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [AllowAnonymous] 
         public async Task<ActionResult<DesignDto>> PostDesign(CreateDesignDto createDto)
         {
             var design = _mapper.Map<Design>(createDto);
@@ -64,6 +67,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT api/Designs/5 (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutDesign(string id, UpdateDesignDto updateDto)
         {
             // Cần inject ApplicationDbContext vào controller này để dùng FindAsync
@@ -93,6 +97,7 @@ namespace DecalXeAPI.Controllers
 
         // DELETE: api/Designs/5
         [HttpDelete("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> DeleteDesign(string id)
         {
             var result = await _designService.DeleteDesignAsync(id);

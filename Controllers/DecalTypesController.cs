@@ -32,6 +32,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/DecalTypes
         [HttpGet]
+        [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<DecalTypeDto>>> GetDecalTypes()
         {
             _logger.LogInformation("Yêu cầu lấy danh sách loại decal.");
@@ -41,6 +42,7 @@ namespace DecalXeAPI.Controllers
 
         // API: GET api/DecalTypes/{id}
         [HttpGet("{id}")]
+        [AllowAnonymous] 
         public async Task<ActionResult<DecalTypeDto>> GetDecalType(string id)
         {
             _logger.LogInformation("Yêu cầu lấy loại decal với ID: {DecalTypeID}", id);
@@ -57,6 +59,7 @@ namespace DecalXeAPI.Controllers
 
         // API: POST api/DecalTypes (ĐÃ NÂNG CẤP)
         [HttpPost]
+        [AllowAnonymous] 
         public async Task<ActionResult<DecalTypeDto>> PostDecalType(CreateDecalTypeDto createDto)
         {
             _logger.LogInformation("Yêu cầu tạo loại decal mới: {DecalTypeName}", createDto.DecalTypeName);
@@ -77,6 +80,7 @@ namespace DecalXeAPI.Controllers
 
         // API: PUT api/DecalTypes/{id} (ĐÃ NÂNG CẤP)
         [HttpPut("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> PutDecalType(string id, UpdateDecalTypeDto updateDto)
         {
             _logger.LogInformation("Yêu cầu cập nhật loại decal với ID: {DecalTypeID}", id);
@@ -116,6 +120,7 @@ namespace DecalXeAPI.Controllers
 
         // API: DELETE api/DecalTypes/{id}
         [HttpDelete("{id}")]
+        [AllowAnonymous] 
         public async Task<IActionResult> DeleteDecalType(string id)
         {
             _logger.LogInformation("Yêu cầu xóa loại decal với ID: {DecalTypeID}", id);
