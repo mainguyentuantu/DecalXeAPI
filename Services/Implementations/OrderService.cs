@@ -35,6 +35,8 @@ namespace DecalXeAPI.Services.Implementations
             var query = _context.Orders
                                 .Include(o => o.AssignedEmployee)
                                 .Include(o => o.CustomerVehicle) // <-- BƯỚC 1: NẠP DỮ LIỆU XE
+                                    .ThenInclude(cv => cv.VehicleModel) // Include VehicleModel
+                                        .ThenInclude(vm => vm.VehicleBrand) // Include VehicleBrand
                                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(queryParams.Status))

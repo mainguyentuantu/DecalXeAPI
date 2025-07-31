@@ -55,7 +55,11 @@ namespace DecalXeAPI.Services.Implementations
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var order = await _context.Orders.Include(o => o.CustomerVehicle).FirstOrDefaultAsync(o => o.OrderID == orderDetail.OrderID);
+                var order = await _context.Orders
+                .Include(o => o.CustomerVehicle)
+                    .ThenInclude(cv => cv.VehicleModel)
+                        .ThenInclude(vm => vm.VehicleBrand)
+                .FirstOrDefaultAsync(o => o.OrderID == orderDetail.OrderID);
                 if (order == null) return (null, "OrderID không tồn tại.");
 
                 var service = await _context.DecalServices.Include(s => s.DecalType).FirstOrDefaultAsync(s => s.ServiceID == orderDetail.ServiceID);

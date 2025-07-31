@@ -32,7 +32,10 @@ namespace DecalXeAPI.Services.Implementations
             // Thay Include(w => w.Order) bằng Include cho xe và khách hàng
             var warranties = await _context.Warranties
                                            .Include(w => w.CustomerVehicle)
-                                                .ThenInclude(cv => cv.Customer) 
+                                                .ThenInclude(cv => cv.Customer)
+                                           .Include(w => w.CustomerVehicle)
+                                                .ThenInclude(cv => cv.VehicleModel)
+                                                    .ThenInclude(vm => vm.VehicleBrand)
                                            .ToListAsync();
             return _mapper.Map<List<WarrantyDto>>(warranties);
         }
@@ -44,6 +47,9 @@ namespace DecalXeAPI.Services.Implementations
             var warranty = await _context.Warranties
                                            .Include(w => w.CustomerVehicle)
                                                 .ThenInclude(cv => cv.Customer)
+                                           .Include(w => w.CustomerVehicle)
+                                                .ThenInclude(cv => cv.VehicleModel)
+                                                    .ThenInclude(vm => vm.VehicleBrand)
                                            .FirstOrDefaultAsync(w => w.WarrantyID == id);
 
             if (warranty == null) return null;
