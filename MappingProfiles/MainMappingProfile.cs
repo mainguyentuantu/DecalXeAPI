@@ -29,7 +29,8 @@ namespace DecalXeAPI.MappingProfiles
             CreateMap<CreateDesignWorkOrderDto, DesignWorkOrder>();
             CreateMap<UpdateDesignWorkOrderDto, DesignWorkOrder>();
             CreateMap<CreateEmployeeDto, Employee>();
-            CreateMap<UpdateEmployeeDto, Employee>();
+            CreateMap<UpdateEmployeeDto, Employee>()
+                .ForMember(dest => dest.Account, opt => opt.Ignore()); // Bỏ qua Account vì sẽ xử lý riêng IsActive
             CreateMap<CreateFeedbackDto, Feedback>();
             CreateMap<UpdateFeedbackDto, Feedback>();
             CreateMap<CreateOrderDetailDto, OrderDetail>();
@@ -66,7 +67,8 @@ namespace DecalXeAPI.MappingProfiles
             CreateMap<Employee, EmployeeDto>()
                 .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.Store != null ? src.Store.StoreName : string.Empty))
                 .ForMember(dest => dest.AccountUsername, opt => opt.MapFrom(src => src.Account != null ? src.Account.Username : null))
-                .ForMember(dest => dest.AccountRoleName, opt => opt.MapFrom(src => src.Account != null && src.Account.Role != null ? src.Account.Role.RoleName : null));
+                .ForMember(dest => dest.AccountRoleName, opt => opt.MapFrom(src => src.Account != null && src.Account.Role != null ? src.Account.Role.RoleName : null))
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Account != null ? src.Account.IsActive : false));
             CreateMap<Customer, CustomerDto>()
                 .ForMember(dest => dest.CustomerFullName, opt => opt.MapFrom(src => src.FirstName + " " + src.LastName))
                 .ForMember(dest => dest.AccountUsername, opt => opt.MapFrom(src => src.Account != null ? src.Account.Username : null))

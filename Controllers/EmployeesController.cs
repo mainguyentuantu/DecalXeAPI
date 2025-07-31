@@ -102,13 +102,24 @@ namespace DecalXeAPI.Controllers
                 return BadRequest("StoreID không tồn tại.");
             }
 
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _context.Employees
+                .Include(e => e.Account)
+                .FirstOrDefaultAsync(e => e.EmployeeID == id);
             if (employee == null)
             {
                 return NotFound();
             }
 
+            // Map các trường từ DTO vào Employee
             _mapper.Map(updateDto, employee);
+
+            // Xử lý trường IsActive cho Account liên kết
+            if (employee.Account != null)
+            {
+                employee.Account.IsActive = updateDto.IsActive;
+                _logger.LogInformation("Thiết lập IsActive = {IsActive} cho Account của Employee ID: {EmployeeID}", 
+                    updateDto.IsActive, id);
+            }
 
             try
             {
