@@ -35,6 +35,9 @@ namespace DecalXeAPI.Services.Implementations
             var query = _context.Orders
                                 .Include(o => o.AssignedEmployee)
                                 .Include(o => o.CustomerVehicle) // <-- BƯỚC 1: NẠP DỮ LIỆU XE
+                                .ThenInclude(cv => cv.VehicleModel) 
+                                .ThenInclude(vm => vm.VehicleBrand) 
+                
                                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(queryParams.Status))
@@ -92,11 +95,11 @@ namespace DecalXeAPI.Services.Implementations
         {
             _logger.LogInformation("Yêu cầu lấy thông tin đơn hàng với ID: {OrderID}", id);
             var order = await _context.Orders
-                                    .Include(o => o.AssignedEmployee)
-                                    .Include(o => o.CustomerVehicle) // <-- Thêm Include ở đây nữa cho chắc ăn
-                                        .ThenInclude(cv => cv.VehicleModel)
-                                            .ThenInclude(vm => vm.VehicleBrand)
-                                    .FirstOrDefaultAsync(o => o.OrderID == id);
+                .Include(o => o.AssignedEmployee)
+                .Include(o => o.CustomerVehicle)
+                    .ThenInclude(cv => cv.VehicleModel)
+                        .ThenInclude(vm => vm.VehicleBrand)
+                .FirstOrDefaultAsync(o => o.OrderID == id);
 
             if (order == null)
             {
