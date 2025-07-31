@@ -110,7 +110,12 @@ namespace DecalXeAPI.Services.Implementations
                 return false;
             }
 
-            if (!await EmployeeExistsAsync(id))
+            // Lấy nhân viên hiện tại từ database kèm theo Account
+            var existingEmployee = await _context.Employees
+                .Include(e => e.Account)
+                .FirstOrDefaultAsync(e => e.EmployeeID == id);
+
+            if (existingEmployee == null)
             {
                 _logger.LogWarning("Không tìm thấy nhân viên để cập nhật với ID: {EmployeeID}", id);
                 return false;
@@ -128,7 +133,20 @@ namespace DecalXeAPI.Services.Implementations
                 throw new ArgumentException("AccountID không tồn tại.");
             }
 
-            _context.Entry(employee).State = EntityState.Modified;
+            // Cập nhật các trường của Employee
+            existingEmployee.FirstName = employee.FirstName;
+            existingEmployee.LastName = employee.LastName;
+            existingEmployee.PhoneNumber = employee.PhoneNumber;
+            existingEmployee.Email = employee.Email;
+            existingEmployee.StoreID = employee.StoreID;
+
+            // Cập nhật IsActive cho Account liên kết nếu có
+            if (existingEmployee.Account != null && employee.Account != null)
+            {
+                existingEmployee.Account.IsActive = employee.Account.IsActive;
+                _logger.LogInformation("Cập nhật trạng thái IsActive của Account thành: {IsActive} cho Employee ID: {EmployeeID}", 
+                    employee.Account.IsActive, id);
+            }
 
             try
             {
