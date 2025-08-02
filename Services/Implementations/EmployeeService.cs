@@ -161,6 +161,43 @@ namespace DecalXeAPI.Services.Implementations
             }
         }
 
+        public async Task<bool> UpdateEmployeeStatusAsync(string id, bool isActive)
+        {
+            _logger.LogInformation("Yêu cầu cập nhật trạng thái nhân viên với ID: {EmployeeID} thành {IsActive}", id, isActive);
+            
+            var employee = await _context.Employees
+                .Include(e => e.Account)
+                .FirstOrDefaultAsync(e => e.EmployeeID == id);
+                
+            if (employee == null)
+            {
+                _logger.LogWarning("Không tìm thấy nhân viên để cập nhật trạng thái với ID: {EmployeeID}", id);
+                return false;
+            }
+
+            // Cập nhật trạng thái Employee
+            employee.IsActive = isActive;
+
+            // Nếu có Account liên kết, cập nhật cả Account
+            if (employee.Account != null)
+            {
+                employee.Account.IsActive = isActive;
+                _logger.LogInformation("Cập nhật trạng thái Account liên kết với Employee ID: {EmployeeID}", id);
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Đã cập nhật trạng thái nhân viên với ID: {EmployeeID} thành {IsActive}", id, isActive);
+                return true;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, "Lỗi xung đột khi cập nhật trạng thái nhân viên với ID: {EmployeeID}", id);
+                throw;
+            }
+        }
+
         public async Task<bool> DeleteEmployeeAsync(string id)
         {
             _logger.LogInformation("Yêu cầu xóa nhân viên với ID: {EmployeeID}", id);

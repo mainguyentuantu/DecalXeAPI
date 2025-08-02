@@ -11,6 +11,7 @@ namespace DecalXeAPI.Services.Interfaces
         Task<EmployeeDto?> GetEmployeeByIdAsync(string id);
         Task<EmployeeDto> CreateEmployeeAsync(Employee employee);
         Task<bool> UpdateEmployeeAsync(string id, Employee employee);
+        Task<bool> UpdateEmployeeStatusAsync(string id, bool isActive);
         Task<bool> DeleteEmployeeAsync(string id);
 
         // Các hàm kiểm tra tồn tại (Exists) cần thiết cho Service này

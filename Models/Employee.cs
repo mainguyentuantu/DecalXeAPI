@@ -24,6 +24,9 @@ namespace DecalXeAPI.Models
         [MaxLength(100)]
         public string? Email { get; set; }
 
+        // Trạng thái hoạt động của nhân viên
+        public bool IsActive { get; set; } = true; // Mặc định là hoạt động
+
         // Khóa ngoại (Foreign Key): Một Employee thuộc về một Store
         [ForeignKey("Store")]
         public string StoreID { get; set; } = string.Empty; // FK_StoreID
