@@ -159,7 +159,7 @@ namespace DecalXeAPI.Controllers
                         ServiceName = g.First().DecalService.ServiceName,
                         UsageCount = g.Sum(od => od.Quantity),
                         Price = g.First().DecalService.Price,
-                        DecalTypeName = g.First().DecalService.DecalType?.TypeName
+                        DecalTypeName = g.First().DecalService.DecalType?.DecalTypeName ?? "Unknown",
                     })
                     .OrderByDescending(s => s.UsageCount)
                     .ToList();
@@ -169,11 +169,11 @@ namespace DecalXeAPI.Controllers
 
                 // Thống kê theo category (DecalType)
                 var categoryStats = services
-                    .GroupBy(s => new { s.DecalTypeID, s.DecalType?.TypeName })
+                    .GroupBy(s => new { s.DecalTypeID, s.DecalType?.DecalTypeName })
                     .Select(g => new ServiceCategoryStatsDto
                     {
                         DecalTypeID = g.Key.DecalTypeID,
-                        DecalTypeName = g.Key.TypeName ?? "Unknown",
+                        DecalTypeName = g.Key.DecalTypeName ?? "Unknown",
                         ServiceCount = g.Count(),
                         AveragePrice = g.Average(s => s.Price),
                         TotalRevenue = orderDetails
@@ -306,12 +306,12 @@ namespace DecalXeAPI.Controllers
                     query = query.Where(ds => 
                         ds.ServiceName.Contains(search) || 
                         ds.Description.Contains(search) ||
-                        ds.DecalType.TypeName.Contains(search));
+                        ds.DecalType.DecalTypeName.Contains(search));
                 }
 
                 if (!string.IsNullOrEmpty(category))
                 {
-                    query = query.Where(ds => ds.DecalType.TypeName == category);
+                    query = query.Where(ds => ds.DecalType.DecalTypeName == category);
                 }
 
                 var services = await query.ToListAsync();
@@ -325,7 +325,7 @@ namespace DecalXeAPI.Controllers
                                 $"\"{service.Description ?? ""}\"," +
                                 $"{service.Price}," +
                                 $"{service.StandardWorkUnits}," +
-                                $"\"{service.DecalType?.TypeName ?? ""}\"\n";
+                                $"\"{service.DecalType?.DecalTypeName ?? ""}\"\n";
                 }
 
                 var bytes = System.Text.Encoding.UTF8.GetBytes(csvContent);

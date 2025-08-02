@@ -13,37 +13,37 @@ export const serviceService = {
     if (params.page) queryParams.append('page', params.page);
     if (params.limit) queryParams.append('limit', params.limit);
 
-    const response = await apiClient.get(`/decal-services?${queryParams}`);
+    const response = await apiClient.get(`/DecalServices?${queryParams}`);
     return response.data;
   },
 
   // Get service by ID
   getServiceById: async (id) => {
-    const response = await apiClient.get(`/decal-services/${id}`);
+    const response = await apiClient.get(`/DecalServices/${id}`);
     return response.data;
   },
 
   // Create new service
   createService: async (serviceData) => {
-    const response = await apiClient.post('/decal-services', serviceData);
+    const response = await apiClient.post('/DecalServices', serviceData);
     return response.data;
   },
 
   // Update service
   updateService: async (id, serviceData) => {
-    const response = await apiClient.put(`/decal-services/${id}`, serviceData);
+    const response = await apiClient.put(`/DecalServices/${id}`, serviceData);
     return response.data;
   },
 
   // Delete service
   deleteService: async (id) => {
-    const response = await apiClient.delete(`/decal-services/${id}`);
+    const response = await apiClient.delete(`/DecalServices/${id}`);
     return response.data;
   },
 
   // Duplicate service
   duplicateService: async (id) => {
-    const response = await apiClient.post(`/decal-services/${id}/duplicate`);
+    const response = await apiClient.post(`/DecalServices/${id}/duplicate`);
     return response.data;
   },
 
@@ -56,7 +56,7 @@ export const serviceService = {
       if (params.startDate) queryParams.append('startDate', params.startDate);
       if (params.endDate) queryParams.append('endDate', params.endDate);
 
-      const response = await apiClient.get(`/decal-services/statistics?${queryParams}`);
+      const response = await apiClient.get(`/DecalServices/statistics?${queryParams}`);
       return response.data;
     } catch (error) {
       // Return default stats if API not available
@@ -83,7 +83,7 @@ export const serviceService = {
     
     queryParams.append('format', format);
 
-    const response = await apiClient.get(`/decal-services/export?${queryParams}`, {
+    const response = await apiClient.get(`/DecalServices/export?${queryParams}`, {
       responseType: 'blob',
     });
     
@@ -101,31 +101,31 @@ export const serviceService = {
 
   // Get all decal types
   getDecalTypes: async () => {
-    const response = await apiClient.get('/decal-types');
+    const response = await apiClient.get('/DecalTypes');
     return response.data;
   },
 
   // Get decal type by ID
   getDecalTypeById: async (id) => {
-    const response = await apiClient.get(`/decal-types/${id}`);
+    const response = await apiClient.get(`/DecalTypes/${id}`);
     return response.data;
   },
 
   // Create new decal type
   createDecalType: async (typeData) => {
-    const response = await apiClient.post('/decal-types', typeData);
+    const response = await apiClient.post('/DecalTypes', typeData);
     return response.data;
   },
 
   // Update decal type
   updateDecalType: async (id, typeData) => {
-    const response = await apiClient.put(`/decal-types/${id}`, typeData);
+    const response = await apiClient.put(`/DecalTypes/${id}`, typeData);
     return response.data;
   },
 
   // Delete decal type
   deleteDecalType: async (id) => {
-    const response = await apiClient.delete(`/decal-types/${id}`);
+    const response = await apiClient.delete(`/DecalTypes/${id}`);
     return response.data;
   },
 
@@ -299,7 +299,7 @@ export const serviceService = {
     if (params.serviceId) queryParams.append('serviceId', params.serviceId);
     if (params.groupBy) queryParams.append('groupBy', params.groupBy);
 
-    const response = await apiClient.get(`/decal-services/analytics?${queryParams}`);
+    const response = await apiClient.get(`/DecalServices/analytics?${queryParams}`);
     return response.data;
   },
 
@@ -310,13 +310,13 @@ export const serviceService = {
     if (params.period) queryParams.append('period', params.period);
     if (params.serviceIds) queryParams.append('serviceIds', params.serviceIds.join(','));
 
-    const response = await apiClient.get(`/decal-services/trends?${queryParams}`);
+    const response = await apiClient.get(`/DecalServices/trends?${queryParams}`);
     return response.data;
   },
 
   // Bulk update services
   bulkUpdateServices: async (serviceIds, updateData) => {
-    const response = await apiClient.patch('/decal-services/bulk-update', {
+    const response = await apiClient.patch('/DecalServices/bulk-update', {
       serviceIds,
       updateData
     });
@@ -328,7 +328,7 @@ export const serviceService = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await apiClient.post('/decal-services/import', formData, {
+    const response = await apiClient.post('/DecalServices/import', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
