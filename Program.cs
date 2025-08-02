@@ -11,6 +11,7 @@ using System.Text;
 using Npgsql;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection; // Cần cho CreateScope(), GetRequiredService<T>()
 using Microsoft.Extensions.Logging; // Cần cho ILogger trong khối Migration
 using Swashbuckle.AspNetCore.Filters;
