@@ -299,6 +299,99 @@ namespace DecalXeAPI.Services.Implementations
 
             return _mapper.Map<EmployeeDto>(order.AssignedEmployee);
         }
+
+        public async Task<OrderCreateFormDataDto> GetOrderCreateFormDataAsync()
+        {
+            _logger.LogInformation("Yêu cầu lấy dữ liệu form tạo đơn hàng");
+
+            var formData = new OrderCreateFormDataDto
+            {
+                DecalServices = _mapper.Map<List<DecalServiceDto>>(await _context.DecalServices.ToListAsync()),
+                DecalTypes = _mapper.Map<List<DecalTypeDto>>(await _context.DecalTypes.ToListAsync()),
+                VehicleBrands = _mapper.Map<List<VehicleBrandDto>>(await _context.VehicleBrands.ToListAsync()),
+                VehicleModels = _mapper.Map<List<VehicleModelDto>>(await _context.VehicleModels.ToListAsync()),
+                Stores = _mapper.Map<List<StoreDto>>(await _context.Stores.ToListAsync()),
+                SalesEmployees = _mapper.Map<List<EmployeeDto>>(
+                    await _context.Employees
+                        .Include(e => e.Account)
+                        .ThenInclude(a => a.Role)
+                        .Where(e => e.Account.Role.RoleName == "Sales")
+                        .ToListAsync()
+                ),
+                Technicians = _mapper.Map<List<EmployeeDto>>(
+                    await _context.Employees
+                        .Include(e => e.Account)
+                        .ThenInclude(a => a.Role)
+                        .Where(e => e.Account.Role.RoleName == "Technician")
+                        .ToListAsync()
+                ),
+                OrderStatuses = new List<string> { "New", "In Progress", "Completed", "Cancelled", "On Hold" },
+                OrderStages = new List<string> { "New Profile", "Design", "Production", "Quality Check", "Installation", "Completed" }
+            };
+
+            _logger.LogInformation("Đã trả về dữ liệu form tạo đơn hàng với {DecalServicesCount} dịch vụ, {DecalTypesCount} loại decal", 
+                formData.DecalServices.Count, formData.DecalTypes.Count);
+            return formData;
+        }
+
+        public async Task<IEnumerable<OrderTrackingDto>> GetOrderTrackingAsync(string? orderId, string? customerPhone, string? licensePlate)
+        {
+            _logger.LogInformation("Yêu cầu theo dõi đơn hàng với OrderID: {OrderId}, Phone: {Phone}, LicensePlate: {LicensePlate}", 
+                orderId, customerPhone, licensePlate);
+
+            var query = _context.Orders
+                .Include(o => o.AssignedEmployee)
+                .Include(o => o.CustomerVehicle)
+                    .ThenInclude(cv => cv.VehicleModel)
+                        .ThenInclude(vm => vm.VehicleBrand)
+                .Include(o => o.Store)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.DecalService)
+                .Include(o => o.OrderStageHistories)
+                    .ThenInclude(osh => osh.Stage)
+                .AsQueryable();
+
+            // Filter by search criteria
+            if (!string.IsNullOrEmpty(orderId))
+            {
+                query = query.Where(o => o.OrderID == orderId);
+            }
+            else if (!string.IsNullOrEmpty(customerPhone))
+            {
+                query = query.Where(o => o.CustomerPhone == customerPhone);
+            }
+            else if (!string.IsNullOrEmpty(licensePlate))
+            {
+                query = query.Where(o => o.CustomerVehicle.LicensePlate == licensePlate);
+            }
+
+            var orders = await query.ToListAsync();
+
+            var trackingDtos = orders.Select(order => new OrderTrackingDto
+            {
+                OrderID = order.OrderID,
+                CustomerName = order.CustomerName,
+                CustomerPhone = order.CustomerPhone,
+                LicensePlate = order.CustomerVehicle?.LicensePlate,
+                VehicleBrand = order.CustomerVehicle?.VehicleModel?.VehicleBrand?.BrandName,
+                VehicleModel = order.CustomerVehicle?.VehicleModel?.ModelName,
+                OrderStatus = order.OrderStatus,
+                CurrentStage = order.CurrentStage,
+                OrderDate = order.OrderDate,
+                EstimatedCompletionDate = order.EstimatedCompletionDate,
+                AssignedEmployeeName = order.AssignedEmployee != null 
+                    ? $"{order.AssignedEmployee.FirstName} {order.AssignedEmployee.LastName}" 
+                    : null,
+                StoreName = order.Store?.StoreName,
+                TotalAmount = order.TotalAmount,
+                PaidAmount = order.PaidAmount,
+                StageHistory = _mapper.Map<List<OrderStageHistoryDto>>(order.OrderStageHistories),
+                OrderDetails = _mapper.Map<List<OrderDetailDto>>(order.OrderDetails)
+            }).ToList();
+
+            _logger.LogInformation("Đã trả về {Count} đơn hàng cho việc theo dõi", trackingDtos.Count);
+            return trackingDtos;
+        }
     }
     
 

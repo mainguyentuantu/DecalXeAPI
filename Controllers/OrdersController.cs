@@ -173,6 +173,45 @@ namespace DecalXeAPI.Controllers
             return Ok(employee);
         }
 
+        /// <summary>
+        /// API để lấy dữ liệu cần thiết cho form tạo đơn hàng mới.
+        /// </summary>
+        [HttpGet("create")]
+        [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
+        public async Task<ActionResult<OrderCreateFormDataDto>> GetOrderCreateFormData()
+        {
+            try
+            {
+                var formData = await _orderService.GetOrderCreateFormDataAsync();
+                return Ok(formData);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy dữ liệu form tạo đơn hàng", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// API để theo dõi trạng thái đơn hàng.
+        /// </summary>
+        [HttpGet("tracking")]
+        [AllowAnonymous] 
+        public async Task<ActionResult<IEnumerable<OrderTrackingDto>>> GetOrderTracking(
+            [FromQuery] string? orderId, 
+            [FromQuery] string? customerPhone,
+            [FromQuery] string? licensePlate)
+        {
+            try
+            {
+                var trackingData = await _orderService.GetOrderTrackingAsync(orderId, customerPhone, licensePlate);
+                return Ok(trackingData);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Lỗi khi lấy thông tin theo dõi đơn hàng", error = ex.Message });
+            }
+        }
 
         // --- HÀM HỖ TRỢ (PRIVATE): KIỂM TRA SỰ TỒN TẠI CỦA CÁC ĐỐI TƯỢNG ---
         // Các hàm này vẫn được giữ ở Controller để kiểm tra FKs trước khi gọi Service

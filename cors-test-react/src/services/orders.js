@@ -67,5 +67,22 @@ export const orderService = {
     return response.data;
   },
 
+  // Get order creation form data
+  getOrderCreateFormData: async () => {
+    const response = await apiClient.get(API_ENDPOINTS.ORDERS.CREATE_FORM_DATA);
+    return response.data;
+  },
+
+  // Get order tracking
+  getOrderTracking: async (orderId, customerPhone, licensePlate) => {
+    const params = {};
+    if (orderId) params.orderId = orderId;
+    if (customerPhone) params.customerPhone = customerPhone;
+    if (licensePlate) params.licensePlate = licensePlate;
+    
+    const response = await apiClient.get(API_ENDPOINTS.ORDERS.TRACKING, { params });
+    return response.data;
+  },
+
   // TODO: Remove mock data when API is fully implemented
 };

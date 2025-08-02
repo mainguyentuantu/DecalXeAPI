@@ -121,3 +121,20 @@ export const useSalesStatistics = (startDate, endDate) => {
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 };
+
+export const useOrderCreateFormData = () => {
+  return useQuery({
+    queryKey: ['orders', 'create-form-data'],
+    queryFn: () => orderService.getOrderCreateFormData(),
+    staleTime: 1000 * 60 * 30, // 30 minutes
+  });
+};
+
+export const useOrderTracking = (orderId, customerPhone, licensePlate) => {
+  return useQuery({
+    queryKey: ['orders', 'tracking', orderId, customerPhone, licensePlate],
+    queryFn: () => orderService.getOrderTracking(orderId, customerPhone, licensePlate),
+    enabled: !!(orderId || customerPhone || licensePlate),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+};
