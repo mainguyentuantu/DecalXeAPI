@@ -9,6 +9,9 @@ import Layout from './components/layout/Layout';
 // Pages
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import OrderListPage from './pages/orders/OrderListPage';
+import OrderDetailPage from './pages/orders/OrderDetailPage';
+import CustomerListPage from './pages/CustomerListPage';
 
 // Auth hook
 import { useAuth } from './hooks/useAuth';
@@ -74,9 +77,14 @@ function App() {
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
               
+              {/* Order Management Routes */}
+              <Route path="orders" element={<OrderListPage />} />
+              <Route path="orders/:id" element={<OrderDetailPage />} />
+              
+              {/* Customer Management Routes */}
+              <Route path="customers" element={<CustomerListPage />} />
+              
               {/* Placeholder routes - will be implemented in next phases */}
-              <Route path="orders" element={<div className="p-8"><h1 className="text-2xl font-bold">Đơn hàng</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
-              <Route path="customers" element={<div className="p-8"><h1 className="text-2xl font-bold">Khách hàng</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
               <Route path="vehicles" element={<div className="p-8"><h1 className="text-2xl font-bold">Phương tiện</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
               <Route path="employees" element={<div className="p-8"><h1 className="text-2xl font-bold">Nhân viên</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
               <Route path="designs" element={<div className="p-8"><h1 className="text-2xl font-bold">Thiết kế</h1><p>Trang này sẽ được triển khai trong Phase 3</p></div>} />
