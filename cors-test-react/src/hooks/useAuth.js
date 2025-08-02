@@ -5,22 +5,30 @@ import { toast } from 'react-hot-toast';
 export const useAuth = () => {
   const queryClient = useQueryClient();
 
-  // Get current user
+  // Get current user từ localStorage thay vì API
   const {
     data: user,
     isLoading: isLoadingUser,
     error: userError,
   } = useQuery({
     queryKey: ['auth', 'currentUser'],
-    queryFn: () => authService.getCurrentUser(),
+    queryFn: () => {
+      // Return user from localStorage directly
+      return authService.getCurrentUser();
+    },
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
-  // Login mutation
+  // Mock mutations for development
   const loginMutation = useMutation({
-    mutationFn: authService.login,
+    mutationFn: async (credentials) => {
+      // This is handled in LoginPage component now
+      return { success: true };
+    },
     onSuccess: (data) => {
-      queryClient.setQueryData(['auth', 'currentUser'], data.user);
+      queryClient.invalidateQueries(['auth', 'currentUser']);
       toast.success('Đăng nhập thành công!');
     },
     onError: (error) => {
@@ -28,7 +36,7 @@ export const useAuth = () => {
     },
   });
 
-  // Register mutation
+  // Register mutation (placeholder)
   const registerMutation = useMutation({
     mutationFn: authService.register,
     onSuccess: () => {
@@ -41,7 +49,13 @@ export const useAuth = () => {
 
   // Logout mutation
   const logoutMutation = useMutation({
-    mutationFn: authService.logout,
+    mutationFn: async () => {
+      // Clear localStorage
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('userData');
+      return { success: true };
+    },
     onSuccess: () => {
       queryClient.setQueryData(['auth', 'currentUser'], null);
       queryClient.clear(); // Clear all queries
@@ -55,7 +69,7 @@ export const useAuth = () => {
     },
   });
 
-  // Reset password mutation
+  // Reset password mutation (placeholder)
   const resetPasswordMutation = useMutation({
     mutationFn: authService.resetPassword,
     onSuccess: () => {

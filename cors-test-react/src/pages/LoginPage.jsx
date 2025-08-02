@@ -2,9 +2,11 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Button, Input, Card } from '../components/common';
 import { useAuth } from '../hooks/useAuth';
+import { authService } from '../services/auth';
+import { toast } from 'react-hot-toast';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Tên đăng nhập không được để trống'),
@@ -12,7 +14,8 @@ const loginSchema = z.object({
 });
 
 const LoginPage = () => {
-  const { login, isLoggingIn, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   
   const {
     register,
@@ -28,7 +31,32 @@ const LoginPage = () => {
   }
 
   const onSubmit = (data) => {
-    login(data);
+    // Mock login for demo purposes
+    const mockCredentials = {
+      'admin': { role: 'Admin', password: 'admin123' },
+      'manager': { role: 'Manager', password: 'manager123' },
+      'sales': { role: 'Sales', password: 'sales123' },
+      'tech': { role: 'Technician', password: 'tech123' },
+    };
+
+    const mockUser = mockCredentials[data.username.toLowerCase()];
+    
+    if (mockUser && mockUser.password === data.password) {
+      // Set mock user
+      authService.setMockUser(mockUser.role);
+      toast.success(`Đăng nhập thành công với vai trò ${mockUser.role}!`);
+      
+      // Force page reload to update auth state
+      window.location.href = '/dashboard';
+    } else {
+      toast.error('Tên đăng nhập hoặc mật khẩu không đúng!');
+    }
+  };
+
+  const handleQuickLogin = (role) => {
+    authService.setMockUser(role);
+    toast.success(`Đăng nhập thành công với vai trò ${role}!`);
+    window.location.href = '/dashboard';
   };
 
   return (
@@ -100,10 +128,11 @@ const LoginPage = () => {
             <Button
               type="submit"
               className="w-full"
-              loading={isLoggingIn}
-              disabled={isLoggingIn}
+              loading={false} // isLoggingIn removed
+              disabled={false} // isLoggingIn removed
             >
-              {isLoggingIn ? 'Đang đăng nhập...' : 'Đăng nhập'}
+              {/* isLoggingIn ? 'Đang đăng nhập...' : 'Đăng nhập' */}
+              Đăng nhập
             </Button>
           </form>
         </Card>
@@ -111,21 +140,49 @@ const LoginPage = () => {
         {/* Demo accounts */}
         <Card className="p-6 bg-blue-50 border-blue-200">
           <h3 className="text-sm font-medium text-blue-900 mb-3">
-            Tài khoản demo:
+            Đăng nhập nhanh với tài khoản demo:
           </h3>
-          <div className="space-y-2 text-sm text-blue-800">
-            <div>
-              <strong>Admin:</strong> admin / admin123
-            </div>
-            <div>
-              <strong>Manager:</strong> manager / manager123
-            </div>
-            <div>
-              <strong>Sales:</strong> sales / sales123
-            </div>
-            <div>
-              <strong>Technician:</strong> tech / tech123
-            </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleQuickLogin('Admin')}
+              className="text-blue-700 border-blue-300 hover:bg-blue-100"
+            >
+              Admin
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleQuickLogin('Manager')}
+              className="text-blue-700 border-blue-300 hover:bg-blue-100"
+            >
+              Manager
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleQuickLogin('Sales')}
+              className="text-blue-700 border-blue-300 hover:bg-blue-100"
+            >
+              Sales
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleQuickLogin('Technician')}
+              className="text-blue-700 border-blue-300 hover:bg-blue-100"
+            >
+              Technician
+            </Button>
+          </div>
+          
+          <div className="mt-4 space-y-1 text-xs text-blue-800">
+            <div><strong>Hoặc nhập:</strong></div>
+            <div>Admin: admin / admin123</div>
+            <div>Manager: manager / manager123</div>
+            <div>Sales: sales / sales123</div>
+            <div>Technician: tech / tech123</div>
           </div>
         </Card>
       </div>

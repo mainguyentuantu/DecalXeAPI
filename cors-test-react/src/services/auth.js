@@ -47,19 +47,28 @@ export const authService = {
   // Get current user from storage
   getCurrentUser: () => {
     const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-    return userData ? JSON.parse(userData) : null;
+    if (!userData || userData === 'undefined') {
+      return null;
+    }
+    try {
+      return JSON.parse(userData);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+      return null;
+    }
   },
 
   // Check if user is authenticated
   isAuthenticated: () => {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-    return !!token;
+    const user = authService.getCurrentUser();
+    return !!(token && user);
   },
 
   // Get user role
   getUserRole: () => {
     const user = authService.getCurrentUser();
-    return user?.role || null;
+    return user?.role || user?.accountRoleName || null;
   },
 
   // Check if user has permission
@@ -80,5 +89,23 @@ export const authService = {
     const requiredRoleLevel = roleHierarchy[requiredRole] || 0;
 
     return userRoleLevel >= requiredRoleLevel;
+  },
+
+  // Helper function to set mock user for testing
+  setMockUser: (role = 'Admin') => {
+    const mockUser = {
+      id: 'mock-user-id',
+      firstName: 'Demo',
+      lastName: 'User',
+      email: 'demo@decalxe.com',
+      role: role,
+      accountRoleName: role,
+    };
+    
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, 'mock-access-token');
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, 'mock-refresh-token');
+    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(mockUser));
+    
+    return mockUser;
   },
 };
