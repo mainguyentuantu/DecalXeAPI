@@ -23,6 +23,17 @@ import EmployeeListPage from './pages/employees/EmployeeListPage';
 // Services & Inventory Module Pages
 import ServiceListPage from './pages/services/ServiceListPage';
 
+// Payment & Financial Module Pages
+import PaymentProcessingPage from './pages/payments/PaymentProcessingPage';
+import InvoiceManagementPage from './pages/payments/InvoiceManagementPage';
+import FinancialReportsPage from './pages/payments/FinancialReportsPage';
+import DepositTrackingPage from './pages/payments/DepositTrackingPage';
+
+// Warranty & Support Module Pages
+import WarrantyManagementPage from './pages/warranty/WarrantyManagementPage';
+import FeedbackSystemPage from './pages/warranty/FeedbackSystemPage';
+import SupportTicketPage from './pages/warranty/SupportTicketPage';
+
 // Auth hook
 import { useAuth } from './hooks/useAuth';
 
@@ -116,9 +127,22 @@ function App() {
               <Route path="pricing" element={<div className="p-8"><h1 className="text-2xl font-bold">Quản lý Giá</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
               <Route path="inventory" element={<div className="p-8"><h1 className="text-2xl font-bold">Theo dõi Kho</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
               
+              {/* Payment & Financial Module Routes */}
+              <Route path="payments" element={<PaymentProcessingPage />} />
+              <Route path="payments/processing" element={<PaymentProcessingPage />} />
+              <Route path="payments/invoices" element={<InvoiceManagementPage />} />
+              <Route path="payments/reports" element={<FinancialReportsPage />} />
+              <Route path="payments/deposits" element={<DepositTrackingPage />} />
+              
+              {/* Warranty & Support Module Routes */}
+              <Route path="warranty" element={<WarrantyManagementPage />} />
+              <Route path="warranty/management" element={<WarrantyManagementPage />} />
+              <Route path="feedback" element={<FeedbackSystemPage />} />
+              <Route path="support" element={<SupportTicketPage />} />
+              <Route path="support/tickets" element={<SupportTicketPage />} />
+              
               {/* Placeholder routes - will be implemented in next phases */}
               <Route path="vehicles" element={<div className="p-8"><h1 className="text-2xl font-bold">Phương tiện</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
-              <Route path="payments" element={<div className="p-8"><h1 className="text-2xl font-bold">Thanh toán</h1><p>Trang này sẽ được triển khai trong Phase 4</p></div>} />
               <Route path="reports" element={<div className="p-8"><h1 className="text-2xl font-bold">Báo cáo</h1><p>Trang này sẽ được triển khai trong Phase 5</p></div>} />
               <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Cài đặt</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
             </Route>
