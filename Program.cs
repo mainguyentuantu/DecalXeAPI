@@ -102,6 +102,9 @@ builder.Services.AddScoped<IDepositService, DepositService>();
 builder.Services.AddScoped<IDesignWorkOrderService, DesignWorkOrderService>();
 builder.Services.AddScoped<ITechLaborPriceService, TechLaborPriceService>();
 
+// Token Service
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 // 4. Cấu hình Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
