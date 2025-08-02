@@ -34,7 +34,8 @@ export const orderService = {
 
   // Update order status
   updateOrderStatus: async (id, status) => {
-    const response = await apiClient.put(API_ENDPOINTS.ORDERS.UPDATE_STATUS(id), { status });
+    console.log('Updating order status:', { id, status, url: API_ENDPOINTS.ORDERS.UPDATE_STATUS(id) });
+    const response = await apiClient.put(API_ENDPOINTS.ORDERS.UPDATE_STATUS(id), status);
     return response.data;
   },
 
