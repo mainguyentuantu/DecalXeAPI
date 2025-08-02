@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using System;
-using AutoMapper; // <--- THÊM DÒNG NÀY VÀO
-using DecalXeAPI.Data; // <--- THÊM DÒNG NÀY ĐỂ BIẾT ApplicationDbContext
+using AutoMapper;
+using DecalXeAPI.Data;
 
 namespace DecalXeAPI.Controllers
 {

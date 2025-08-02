@@ -18,7 +18,7 @@ namespace DecalXeAPI.Services.Interfaces
         Task<(bool Success, string? ErrorMessage)> ChangePasswordAsync(string accountId, ChangePasswordRequestDto request);
 
         // --- MỚI: PHƯƠNG THỨC CHO TÍNH NĂNG QUÊN MẬT KHẨU (ĐƠN GIẢN: RESET BẰNG USERNAME) ---
-        Task<(bool Success, string? ErrorMessage)> ResetPasswordByUsernameAsync(ResetPasswordByUsernameDto request); // <-- THÊM DÒNG NÀY
+        Task<(bool Success, string? ErrorMessage)> ResetPasswordByUsernameAsync(ResetPasswordByUsernameDto request);
 
         // Các hàm kiểm tra tồn tại (Exists) cần thiết cho Service này
         Task<bool> AccountExistsAsync(string id);

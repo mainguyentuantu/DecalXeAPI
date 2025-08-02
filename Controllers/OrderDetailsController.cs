@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore; // Vẫn cần để dùng các hàm Exists
 using DecalXeAPI.Data; // Vẫn cần ApplicationDbContext cho các hàm Exists
 using DecalXeAPI.Models;
 using DecalXeAPI.DTOs;
-using DecalXeAPI.Services.Interfaces; // <-- THÊM DÒNG NÀY (Để sử dụng IOrderDetailService)
+using DecalXeAPI.Services.Interfaces;
 using AutoMapper;
 using System.Collections.Generic;
 using System.Linq; // Để dùng Any() trong hàm Exists

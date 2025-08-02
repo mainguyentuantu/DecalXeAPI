@@ -5,7 +5,7 @@ namespace DecalXeAPI.DTOs
         public string CustomerID { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-        public string CustomerFullName { get; set; } = string.Empty; // <-- THÊM DÒNG NÀY
+        public string CustomerFullName { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public string? Email { get; set; }
         public string? Address { get; set; }

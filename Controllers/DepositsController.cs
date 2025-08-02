@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using AutoMapper; // <--- THÊM DÒNG NÀY VÀO
+using AutoMapper;
 
 
 namespace DecalXeAPI.Controllers

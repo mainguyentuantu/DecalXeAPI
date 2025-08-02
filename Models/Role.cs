@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations; // Để dùng thuộc tính [Key] và [Required]
 using System.ComponentModel.DataAnnotations.Schema; // Để dùng [Column] nếu cần kiểu dữ liệu cụ thể cho DB
-using System.Text.Json.Serialization; // <-- THÊM DÒNG NÀY
+using System.Text.Json.Serialization;
 
 namespace DecalXeAPI.Models
 {

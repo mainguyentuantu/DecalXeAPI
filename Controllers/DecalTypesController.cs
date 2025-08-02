@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using DecalXeAPI.Data;
 using DecalXeAPI.Models;
 using DecalXeAPI.DTOs;
-using DecalXeAPI.Services.Interfaces; // <-- THÊM DÒNG NÀY (Để sử dụng IDecalTypeService)
+using DecalXeAPI.Services.Interfaces;
 using AutoMapper;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;

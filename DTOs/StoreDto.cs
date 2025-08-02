@@ -21,6 +21,6 @@ namespace DecalXeAPI.DTOs
         /// Địa chỉ của cửa hàng.
         /// </summary>
         /// <example>123 Nguyễn Huệ, Quận 1, TP.HCM</example>
-        public string? Address { get; set; } // <-- THÊM DÒNG NÀY
+        public string? Address { get; set; }
     }
 }
