@@ -13,6 +13,16 @@ import OrderListPage from './pages/orders/OrderListPage';
 import OrderDetailPage from './pages/orders/OrderDetailPage';
 import CustomerListPage from './pages/CustomerListPage';
 
+// Design & Template Module Pages
+import DesignGalleryPage from './pages/designs/DesignGalleryPage';
+import DesignApprovalPage from './pages/designs/DesignApprovalPage';
+
+// Employee Management Module Pages
+import EmployeeListPage from './pages/employees/EmployeeListPage';
+
+// Services & Inventory Module Pages
+import ServiceListPage from './pages/services/ServiceListPage';
+
 // Auth hook
 import { useAuth } from './hooks/useAuth';
 
@@ -84,10 +94,30 @@ function App() {
               {/* Customer Management Routes */}
               <Route path="customers" element={<CustomerListPage />} />
               
+              {/* Design & Template Module Routes */}
+              <Route path="designs" element={<DesignGalleryPage />} />
+              <Route path="designs/approval" element={<DesignApprovalPage />} />
+              <Route path="designs/editor" element={<div className="p-8"><h1 className="text-2xl font-bold">Soạn thảo Thiết kế</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="templates" element={<div className="p-8"><h1 className="text-2xl font-bold">Thư viện Mẫu</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              
+              {/* Employee Management Module Routes */}
+              <Route path="employees" element={<EmployeeListPage />} />
+              <Route path="employees/:id" element={<div className="p-8"><h1 className="text-2xl font-bold">Chi tiết Nhân viên</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="employees/:id/edit" element={<div className="p-8"><h1 className="text-2xl font-bold">Chỉnh sửa Nhân viên</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="employees/create" element={<div className="p-8"><h1 className="text-2xl font-bold">Thêm Nhân viên</h1><p>Sử dụng modal từ trang danh sách</p></div>} />
+              <Route path="roles" element={<div className="p-8"><h1 className="text-2xl font-bold">Phân quyền</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="performance" element={<div className="p-8"><h1 className="text-2xl font-bold">Theo dõi Hiệu suất</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              
+              {/* Services & Inventory Module Routes */}
+              <Route path="services" element={<ServiceListPage />} />
+              <Route path="services/:id" element={<div className="p-8"><h1 className="text-2xl font-bold">Chi tiết Dịch vụ</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="services/:id/edit" element={<div className="p-8"><h1 className="text-2xl font-bold">Chỉnh sửa Dịch vụ</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="decal-types" element={<div className="p-8"><h1 className="text-2xl font-bold">Quản lý Loại Decal</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="pricing" element={<div className="p-8"><h1 className="text-2xl font-bold">Quản lý Giá</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="inventory" element={<div className="p-8"><h1 className="text-2xl font-bold">Theo dõi Kho</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              
               {/* Placeholder routes - will be implemented in next phases */}
               <Route path="vehicles" element={<div className="p-8"><h1 className="text-2xl font-bold">Phương tiện</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
-              <Route path="employees" element={<div className="p-8"><h1 className="text-2xl font-bold">Nhân viên</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
-              <Route path="designs" element={<div className="p-8"><h1 className="text-2xl font-bold">Thiết kế</h1><p>Trang này sẽ được triển khai trong Phase 3</p></div>} />
               <Route path="payments" element={<div className="p-8"><h1 className="text-2xl font-bold">Thanh toán</h1><p>Trang này sẽ được triển khai trong Phase 4</p></div>} />
               <Route path="reports" element={<div className="p-8"><h1 className="text-2xl font-bold">Báo cáo</h1><p>Trang này sẽ được triển khai trong Phase 5</p></div>} />
               <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Cài đặt</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
