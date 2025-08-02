@@ -13,7 +13,10 @@ import {
   ChevronRight,
   Menu,
   X,
-  Package
+  Package,
+  Shield,
+  MessageSquare,
+  HelpCircle
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../hooks/useAuth';
@@ -90,11 +93,22 @@ const navigation = [
   {
     name: 'Tài chính',
     icon: DollarSign,
-    roles: ['Admin', 'Manager'],
+    roles: ['Admin', 'Manager', 'Accountant'],
     children: [
-      { name: 'Thanh toán', href: '/payments' },
-      { name: 'Báo cáo doanh thu', href: '/reports/revenue' },
-      { name: 'Bảo hành', href: '/warranties' },
+      { name: 'Xử lý thanh toán', href: '/payments/processing' },
+      { name: 'Quản lý hóa đơn', href: '/payments/invoices' },
+      { name: 'Báo cáo tài chính', href: '/payments/reports' },
+      { name: 'Theo dõi đặt cọc', href: '/payments/deposits' },
+    ],
+  },
+  {
+    name: 'Bảo hành & Hỗ trợ',
+    icon: Shield,
+    roles: ['Admin', 'Manager', 'Sales', 'Technician'],
+    children: [
+      { name: 'Quản lý bảo hành', href: '/warranty/management' },
+      { name: 'Hệ thống phản hồi', href: '/feedback' },
+      { name: 'Ticket hỗ trợ', href: '/support/tickets' },
     ],
   },
   {
