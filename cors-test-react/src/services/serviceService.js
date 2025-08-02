@@ -49,14 +49,28 @@ export const serviceService = {
 
   // Get service statistics
   getServiceStats: async (params = {}) => {
-    const queryParams = new URLSearchParams();
-    
-    if (params.period) queryParams.append('period', params.period);
-    if (params.startDate) queryParams.append('startDate', params.startDate);
-    if (params.endDate) queryParams.append('endDate', params.endDate);
+    try {
+      const queryParams = new URLSearchParams();
+      
+      if (params.period) queryParams.append('period', params.period);
+      if (params.startDate) queryParams.append('startDate', params.startDate);
+      if (params.endDate) queryParams.append('endDate', params.endDate);
 
-    const response = await apiClient.get(`/decal-services/statistics?${queryParams}`);
-    return response.data;
+      const response = await apiClient.get(`/decal-services/statistics?${queryParams}`);
+      return response.data;
+    } catch (error) {
+      // Return default stats if API not available
+      console.warn('Statistics API not available, returning default stats');
+      return {
+        totalServices: 0,
+        averagePrice: 0,
+        totalDecalTypes: 0,
+        mostPopular: null,
+        totalRevenue: 0,
+        categoryStats: [],
+        priceRanges: []
+      };
+    }
   },
 
   // Export services
