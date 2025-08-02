@@ -12,7 +12,8 @@ import {
   ChevronDown,
   ChevronRight,
   Menu,
-  X
+  X,
+  Package
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../hooks/useAuth';
@@ -56,10 +57,11 @@ const navigation = [
   {
     name: 'Thiết kế',
     icon: Palette,
-    roles: ['Admin', 'Manager', 'Technician'],
+    roles: ['Admin', 'Manager', 'Designer', 'Technician'],
     children: [
       { name: 'Thư viện thiết kế', href: '/designs' },
-      { name: 'Mẫu decal', href: '/templates' },
+      { name: 'Soạn thảo thiết kế', href: '/designs/editor' },
+      { name: 'Thư viện mẫu', href: '/templates' },
       { name: 'Duyệt thiết kế', href: '/designs/approval' },
     ],
   },
@@ -71,6 +73,18 @@ const navigation = [
       { name: 'Danh sách nhân viên', href: '/employees' },
       { name: 'Thêm nhân viên', href: '/employees/create' },
       { name: 'Phân quyền', href: '/roles' },
+      { name: 'Theo dõi hiệu suất', href: '/performance' },
+    ],
+  },
+  {
+    name: 'Dịch vụ & Kho',
+    icon: Package,
+    roles: ['Admin', 'Manager', 'Sales'],
+    children: [
+      { name: 'Danh sách dịch vụ', href: '/services' },
+      { name: 'Quản lý loại decal', href: '/decal-types' },
+      { name: 'Quản lý giá', href: '/pricing' },
+      { name: 'Theo dõi kho', href: '/inventory' },
     ],
   },
   {
