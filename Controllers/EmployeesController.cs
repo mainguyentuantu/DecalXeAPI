@@ -134,6 +134,43 @@ namespace DecalXeAPI.Controllers
             }
         }
 
+        // API: PATCH api/Employees/{id}/status
+        [HttpPatch("{id}/status")]
+        [Authorize(Roles = "Admin,Manager")]
+        [AllowAnonymous] 
+        public async Task<IActionResult> UpdateEmployeeStatus(string id, [FromBody] UpdateEmployeeStatusDto statusDto)
+        {
+            _logger.LogInformation("Yêu cầu cập nhật trạng thái nhân viên với ID: {EmployeeID} thành {IsActive}", id, statusDto.IsActive);
+
+            if (statusDto == null)
+            {
+                return BadRequest("Dữ liệu trạng thái không hợp lệ.");
+            }
+
+            try
+            {
+                var success = await _employeeService.UpdateEmployeeStatusAsync(id, statusDto.IsActive);
+
+                if (!success)
+                {
+                    _logger.LogWarning("Không tìm thấy nhân viên với ID: {EmployeeID}", id);
+                    return NotFound($"Không tìm thấy nhân viên với ID: {id}");
+                }
+
+                _logger.LogInformation("Cập nhật trạng thái thành công cho Employee ID: {EmployeeID}", id);
+                return Ok(new { 
+                    success = true, 
+                    message = $"Trạng thái nhân viên đã được cập nhật thành {(statusDto.IsActive ? "hoạt động" : "không hoạt động")}", 
+                    isActive = statusDto.IsActive 
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi cập nhật trạng thái Employee ID: {EmployeeID}", id);
+                return StatusCode(500, "Lỗi nội bộ khi cập nhật trạng thái nhân viên.");
+            }
+        }
+
         // API: DELETE api/Employees/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,Manager")]

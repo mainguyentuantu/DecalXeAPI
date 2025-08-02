@@ -68,7 +68,11 @@ namespace DecalXeAPI.MappingProfiles
                 .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.Store != null ? src.Store.StoreName : string.Empty))
                 .ForMember(dest => dest.AccountUsername, opt => opt.MapFrom(src => src.Account != null ? src.Account.Username : null))
                 .ForMember(dest => dest.AccountRoleName, opt => opt.MapFrom(src => src.Account != null && src.Account.Role != null ? src.Account.Role.RoleName : null))
-                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Account != null ? src.Account.IsActive : false));
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive)) // Sử dụng Employee.IsActive thay vì Account.IsActive
+                .ForMember(dest => dest.Roles, opt => opt.MapFrom(src => 
+                    src.Account != null && src.Account.Role != null 
+                        ? new List<Role> { src.Account.Role } 
+                        : new List<Role>()));
             CreateMap<Customer, CustomerDto>()
                 .ForMember(dest => dest.CustomerFullName, opt => opt.MapFrom(src => src.FirstName + " " + src.LastName))
                 .ForMember(dest => dest.AccountUsername, opt => opt.MapFrom(src => src.Account != null ? src.Account.Username : null))
