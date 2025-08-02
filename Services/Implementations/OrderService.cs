@@ -299,7 +299,224 @@ namespace DecalXeAPI.Services.Implementations
 
             return _mapper.Map<EmployeeDto>(order.AssignedEmployee);
         }
-    }
-    
 
+        public async Task<OrderCreateDataDto> GetOrderCreateDataAsync()
+        {
+            _logger.LogInformation("Yêu cầu lấy dữ liệu tạo đơn hàng mới");
+            
+            try
+            {
+                var createData = new OrderCreateDataDto
+                {
+                    // Lấy danh sách khách hàng
+                    Customers = _mapper.Map<List<CustomerDto>>(await _context.Customers.ToListAsync()),
+                    
+                    // Lấy danh sách xe
+                    Vehicles = _mapper.Map<List<CustomerVehicleDto>>(
+                        await _context.CustomerVehicles
+                            .Include(cv => cv.VehicleModel)
+                                .ThenInclude(vm => vm.VehicleBrand)
+                            .ToListAsync()
+                    ),
+                    
+                    // Lấy danh sách dịch vụ
+                    Services = _mapper.Map<List<DecalServiceDto>>(await _context.DecalServices.ToListAsync()),
+                    
+                    // Lấy danh sách loại decal
+                    DecalTypes = _mapper.Map<List<DecalTypeDto>>(await _context.DecalTypes.ToListAsync()),
+                    
+                    // Lấy danh sách model xe
+                    VehicleModels = _mapper.Map<List<VehicleModelDto>>(
+                        await _context.VehicleModels
+                            .Include(vm => vm.VehicleBrand)
+                            .ToListAsync()
+                    ),
+                    
+                    // Lấy danh sách nhân viên sales
+                    SalesEmployees = _mapper.Map<List<EmployeeDto>>(
+                        await _context.Employees
+                            .Include(e => e.Account)
+                                .ThenInclude(a => a.Role)
+                            .Include(e => e.Store)
+                            .Where(e => e.Account.Role.RoleName == "Sales")
+                            .ToListAsync()
+                    ),
+                    
+                    // Danh sách trạng thái đơn hàng
+                    OrderStatuses = new List<string> { "New", "In Progress", "Completed", "Cancelled", "On Hold" },
+                    
+                    // Danh sách giai đoạn đơn hàng
+                    OrderStages = new List<string> { 
+                        "New Profile", 
+                        "Design Phase", 
+                        "Customer Approval", 
+                        "Production", 
+                        "Quality Check", 
+                        "Installation", 
+                        "Completed" 
+                    }
+                };
+
+                _logger.LogInformation("Đã trả về dữ liệu tạo đơn hàng với {CustomerCount} khách hàng, {VehicleCount} xe, {ServiceCount} dịch vụ", 
+                    createData.Customers.Count, createData.Vehicles.Count, createData.Services.Count);
+                
+                return createData;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy dữ liệu tạo đơn hàng");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<OrderTrackingDto>> GetOrderTrackingAsync(OrderTrackingQueryParams queryParams)
+        {
+            _logger.LogInformation("Yêu cầu lấy danh sách tracking đơn hàng với các tham số: {CustomerID}, {OrderStatus}, {CurrentStage}", 
+                queryParams.CustomerID, queryParams.OrderStatus, queryParams.CurrentStage);
+
+            try
+            {
+                var query = _context.Orders
+                    .Include(o => o.AssignedEmployee)
+                    .Include(o => o.CustomerVehicle)
+                        .ThenInclude(cv => cv.VehicleModel)
+                            .ThenInclude(vm => vm.VehicleBrand)
+                    .AsQueryable();
+
+                // Lọc theo CustomerID
+                if (!string.IsNullOrEmpty(queryParams.CustomerID))
+                {
+                    query = query.Where(o => o.CustomerVehicle.CustomerID == queryParams.CustomerID);
+                }
+
+                // Lọc theo trạng thái đơn hàng
+                if (!string.IsNullOrEmpty(queryParams.OrderStatus))
+                {
+                    query = query.Where(o => o.OrderStatus == queryParams.OrderStatus);
+                }
+
+                // Lọc theo giai đoạn hiện tại
+                if (!string.IsNullOrEmpty(queryParams.CurrentStage))
+                {
+                    query = query.Where(o => o.CurrentStage == queryParams.CurrentStage);
+                }
+
+                // Lọc theo nhân viên được gán
+                if (!string.IsNullOrEmpty(queryParams.AssignedEmployeeID))
+                {
+                    query = query.Where(o => o.AssignedEmployeeID == queryParams.AssignedEmployeeID);
+                }
+
+                // Lọc theo ngày
+                if (queryParams.StartDate.HasValue)
+                {
+                    query = query.Where(o => o.OrderDate >= queryParams.StartDate.Value);
+                }
+                if (queryParams.EndDate.HasValue)
+                {
+                    query = query.Where(o => o.OrderDate <= queryParams.EndDate.Value);
+                }
+
+                // Lọc theo urgent/overdue
+                if (queryParams.IsUrgent.HasValue)
+                {
+                    query = query.Where(o => o.IsUrgent == queryParams.IsUrgent.Value);
+                }
+                if (queryParams.IsOverdue.HasValue)
+                {
+                    var today = DateTime.Today;
+                    query = query.Where(o => o.ExpectedCompletionDate.HasValue && o.ExpectedCompletionDate.Value < today);
+                }
+
+                // Tìm kiếm theo từ khóa
+                if (!string.IsNullOrEmpty(queryParams.SearchTerm))
+                {
+                    var searchTerm = queryParams.SearchTerm.ToLower();
+                    query = query.Where(o =>
+                        o.OrderID.ToLower().Contains(searchTerm) ||
+                        (o.CustomerVehicle != null && o.CustomerVehicle.ChassisNumber.ToLower().Contains(searchTerm)) ||
+                        (o.AssignedEmployee != null && (o.AssignedEmployee.FirstName + " " + o.AssignedEmployee.LastName).ToLower().Contains(searchTerm))
+                    );
+                }
+
+                // Sắp xếp
+                switch (queryParams.SortBy.ToLower())
+                {
+                    case "orderdate":
+                        query = queryParams.SortOrder.ToLower() == "desc" ? 
+                            query.OrderByDescending(o => o.OrderDate) : 
+                            query.OrderBy(o => o.OrderDate);
+                        break;
+                    case "totalamount":
+                        query = queryParams.SortOrder.ToLower() == "desc" ? 
+                            query.OrderByDescending(o => o.TotalAmount) : 
+                            query.OrderBy(o => o.TotalAmount);
+                        break;
+                    case "orderstatus":
+                        query = queryParams.SortOrder.ToLower() == "desc" ? 
+                            query.OrderByDescending(o => o.OrderStatus) : 
+                            query.OrderBy(o => o.OrderStatus);
+                        break;
+                    default:
+                        query = query.OrderByDescending(o => o.OrderDate);
+                        break;
+                }
+
+                // Phân trang
+                var orders = await query
+                    .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+                    .Take(queryParams.PageSize)
+                    .ToListAsync();
+
+                // Map sang DTO
+                var trackingDtos = orders.Select(o => new OrderTrackingDto
+                {
+                    OrderID = o.OrderID,
+                    CustomerName = o.CustomerVehicle?.Customer?.FullName ?? "N/A",
+                    VehicleInfo = o.CustomerVehicle != null ? 
+                        $"{o.CustomerVehicle.VehicleModel?.VehicleBrand?.BrandName} {o.CustomerVehicle.VehicleModel?.ModelName} - {o.CustomerVehicle.ChassisNumber}" : 
+                        "N/A",
+                    OrderStatus = o.OrderStatus,
+                    CurrentStage = o.CurrentStage,
+                    OrderDate = o.OrderDate,
+                    ExpectedCompletionDate = o.ExpectedCompletionDate,
+                    TotalAmount = o.TotalAmount,
+                    AssignedEmployeeName = o.AssignedEmployee != null ? 
+                        $"{o.AssignedEmployee.FirstName} {o.AssignedEmployee.LastName}" : 
+                        "Chưa gán",
+                    AssignedEmployeeID = o.AssignedEmployeeID,
+                    ProgressPercentage = CalculateProgressPercentage(o.CurrentStage),
+                    LastUpdatedBy = o.LastUpdatedBy,
+                    LastUpdatedAt = o.LastUpdatedAt,
+                    Notes = o.Notes,
+                    IsUrgent = o.IsUrgent,
+                    IsOverdue = o.ExpectedCompletionDate.HasValue && o.ExpectedCompletionDate.Value < DateTime.Today
+                }).ToList();
+
+                _logger.LogInformation("Đã trả về {Count} đơn hàng cho tracking", trackingDtos.Count);
+                return trackingDtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy danh sách tracking đơn hàng");
+                throw;
+            }
+        }
+
+        private int CalculateProgressPercentage(string currentStage)
+        {
+            var stages = new Dictionary<string, int>
+            {
+                { "New Profile", 10 },
+                { "Design Phase", 25 },
+                { "Customer Approval", 40 },
+                { "Production", 60 },
+                { "Quality Check", 80 },
+                { "Installation", 90 },
+                { "Completed", 100 }
+            };
+
+            return stages.ContainsKey(currentStage) ? stages[currentStage] : 0;
+        }
+    }
 }

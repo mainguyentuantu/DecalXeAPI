@@ -121,3 +121,19 @@ export const useSalesStatistics = (startDate, endDate) => {
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 };
+
+export const useOrderCreateData = () => {
+  return useQuery({
+    queryKey: ['orders', 'create-data'],
+    queryFn: () => orderService.getOrderCreateData(),
+    staleTime: 1000 * 60 * 30, // 30 minutes - data doesn't change often
+  });
+};
+
+export const useOrderTracking = (params = {}) => {
+  return useQuery({
+    queryKey: ['orders', 'tracking', params],
+    queryFn: () => orderService.getOrderTracking(params),
+    staleTime: 1000 * 60 * 2, // 2 minutes - tracking data changes frequently
+  });
+};

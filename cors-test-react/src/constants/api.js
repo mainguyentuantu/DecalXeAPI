@@ -31,6 +31,8 @@ export const API_ENDPOINTS = {
     ASSIGNED_EMPLOYEE: (orderId) => `/Orders/${orderId}/assigned-employee`,
     UPDATE_STATUS: (id) => `/Orders/${id}/status`,
     SALES_STATISTICS: '/Orders/sales-statistics',
+    CREATE_DATA: '/Orders/create',
+    TRACKING: '/Orders/tracking',
   },
   
   // Customer Vehicles

@@ -67,5 +67,17 @@ export const orderService = {
     return response.data;
   },
 
+  // Get order create data (for creating new orders)
+  getOrderCreateData: async () => {
+    const response = await apiClient.get(API_ENDPOINTS.ORDERS.CREATE_DATA);
+    return response.data;
+  },
+
+  // Get order tracking data
+  getOrderTracking: async (params = {}) => {
+    const response = await apiClient.get(API_ENDPOINTS.ORDERS.TRACKING, { params });
+    return response.data;
+  },
+
   // TODO: Remove mock data when API is fully implemented
 };
