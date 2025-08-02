@@ -23,13 +23,15 @@ namespace DecalXeAPI.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IAccountService _accountService;
+        private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
 
-        public AuthController(ApplicationDbContext context, IConfiguration configuration, IAccountService accountService, IMapper mapper)
+        public AuthController(ApplicationDbContext context, IConfiguration configuration, IAccountService accountService, ITokenService tokenService, IMapper mapper)
         {
             _context = context;
             _configuration = configuration;
             _accountService = accountService;
+            _tokenService = tokenService;
             _mapper = mapper;
         }
 
@@ -54,7 +56,7 @@ namespace DecalXeAPI.Controllers
         // API: POST /api/Auth/login
         [HttpPost("login")]
         [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
-        public async Task<ActionResult<string>> Login([FromBody] LoginDto loginDto)
+        public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto loginDto)
         {
             var account = await _context.Accounts
                                         .Include(a => a.Role)
@@ -75,9 +77,9 @@ namespace DecalXeAPI.Controllers
                 return Unauthorized("Tài khoản của bạn đã bị khóa.");
             }
 
-            var token = GenerateJwtToken(account);
+            var loginResponse = _tokenService.CreateLoginResponse(account);
 
-            return Ok(token);
+            return Ok(loginResponse);
         }
 
         // --- API CHO TÍNH NĂNG ĐỔI MẬT KHẨU (CÓ XÁC MINH MẬT KHẨU CŨ) ---
@@ -139,30 +141,52 @@ namespace DecalXeAPI.Controllers
         }
 
 
-        // Hàm hỗ trợ: Tạo JWT Token (Không thay đổi)
-        private string GenerateJwtToken(Account account)
+        // API: POST /api/Auth/refresh-token
+        [HttpPost("refresh-token")]
+        [AllowAnonymous]
+        public async Task<ActionResult<LoginResponseDto>> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key không được cấu hình."));
-
-            var claims = new List<Claim>
+            if (string.IsNullOrEmpty(refreshTokenDto.RefreshToken))
             {
-                new Claim(ClaimTypes.NameIdentifier, account.AccountID),
-                new Claim(ClaimTypes.Name, account.Username),
-                new Claim(ClaimTypes.Role, account.Role?.RoleName ?? "Unknown")
-            };
+                return BadRequest("Refresh token là bắt buộc.");
+            }
 
-            var tokenDescriptor = new SecurityTokenDescriptor
+            if (!_tokenService.ValidateRefreshToken(refreshTokenDto.RefreshToken))
             {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(1),
-                Issuer = _configuration["Jwt:Issuer"],
-                Audience = _configuration["Jwt:Audience"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
+                return Unauthorized("Refresh token không hợp lệ.");
+            }
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            // Get user ID from the old access token
+            var userId = _tokenService.GetUserIdFromToken(refreshTokenDto.AccessToken);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Access token không hợp lệ.");
+            }
+
+            // Get user from database
+            var account = await _context.Accounts
+                                        .Include(a => a.Role)
+                                        .FirstOrDefaultAsync(a => a.AccountID == userId);
+
+            if (account == null || !account.IsActive)
+            {
+                return Unauthorized("Tài khoản không tồn tại hoặc đã bị khóa.");
+            }
+
+            var loginResponse = _tokenService.CreateLoginResponse(account);
+
+            return Ok(loginResponse);
+        }
+
+        // API: POST /api/Auth/logout
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
+        {
+            // In a real implementation, you might want to invalidate the refresh token
+            // by storing it in a blacklist or removing it from the database
+            
+            return Ok("Đăng xuất thành công.");
         }
 
         // Hàm hỗ trợ: Kiểm tra Role có tồn tại không
