@@ -32,6 +32,9 @@ import DesignTestPage from './pages/designs/DesignTestPage';
 
 // Employee Management Module Pages
 import EmployeeListPage from './pages/employees/EmployeeListPage';
+import AddEmployeePage from './pages/employees/AddEmployeePage';
+import RolePermissionPage from './pages/employees/RolePermissionPage';
+import PerformanceTrackingPage from './pages/employees/PerformanceTrackingPage';
 
 // Services & Inventory Module Pages
 import ServiceListPage from './pages/services/ServiceListPage';
@@ -147,9 +150,9 @@ function App() {
               <Route path="employees" element={<EmployeeListPage />} />
               <Route path="employees/:id" element={<div className="p-8"><h1 className="text-2xl font-bold">Chi tiết Nhân viên</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
               <Route path="employees/:id/edit" element={<div className="p-8"><h1 className="text-2xl font-bold">Chỉnh sửa Nhân viên</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
-              <Route path="employees/create" element={<div className="p-8"><h1 className="text-2xl font-bold">Thêm Nhân viên</h1><p>Sử dụng modal từ trang danh sách</p></div>} />
-              <Route path="roles" element={<div className="p-8"><h1 className="text-2xl font-bold">Phân quyền</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
-              <Route path="performance" element={<div className="p-8"><h1 className="text-2xl font-bold">Theo dõi Hiệu suất</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="employees/create" element={<AddEmployeePage />} />
+              <Route path="roles" element={<RolePermissionPage />} />
+              <Route path="performance" element={<PerformanceTrackingPage />} />
               
               {/* Services & Inventory Module Routes */}
               <Route path="services" element={<ServiceListPage />} />
