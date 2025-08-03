@@ -1,11 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { 
   ArrowLeft, 
   Save, 
-  Upload, 
+  Link,
   Image as ImageIcon,
   FileText,
   Tag,
@@ -19,7 +19,6 @@ import { designService } from '../../services/designService';
 const DesignEditorPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const fileInputRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [designURL, setDesignURL] = useState('');
   const [preview, setPreview] = useState(null);
@@ -381,15 +380,15 @@ const DesignEditorPage = () => {
                   </div>
                   <div className="text-center">
                     <p className="text-sm text-gray-500">
-                      Kích thước: {selectedFile?.name}
+                      URL: {designURL}
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
                   <ImageIcon className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-                  <p className="text-gray-500">Chưa có file để xem trước</p>
-                  <p className="text-sm text-gray-400">Tải lên file để xem preview</p>
+                  <p className="text-gray-500">Chưa có URL để xem trước</p>
+                  <p className="text-sm text-gray-400">Nhập URL hình ảnh để xem preview</p>
                 </div>
               )}
             </Card>
