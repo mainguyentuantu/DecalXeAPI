@@ -42,6 +42,9 @@ import InventoryTrackingPage from './pages/services/InventoryTrackingPage';
 import PricingManagementPage from './pages/services/PricingManagementPage';
 import DecalTypesPage from './pages/services/DecalTypesPage';
 
+// Settings Page
+import SettingsPage from './pages/SettingsPage';
+
 // Payment & Financial Module Pages
 import PaymentProcessingPage from './pages/payments/PaymentProcessingPage';
 import InvoiceManagementPage from './pages/payments/InvoiceManagementPage';
@@ -192,9 +195,11 @@ function App() {
               <Route path="reports/customers" element={<CustomerInsights />} />
               <Route path="reports/operations" element={<OperationalReports />} />
               
+              {/* Settings Page */}
+              <Route path="settings" element={<SettingsPage />} />
+              
               {/* Placeholder routes - will be implemented in next phases */}
               <Route path="vehicles" element={<div className="p-8"><h1 className="text-2xl font-bold">Phương tiện</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
-              <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Cài đặt</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
             </Route>
             
             {/* Catch all route */}
