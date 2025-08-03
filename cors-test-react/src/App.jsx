@@ -36,6 +36,13 @@ import WarrantyManagementPage from './pages/warranty/WarrantyManagementPage';
 import FeedbackSystemPage from './pages/warranty/FeedbackSystemPage';
 import SupportTicketPage from './pages/warranty/SupportTicketPage';
 
+// Analytics & Reporting Module Pages
+import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
+import SalesAnalytics from './components/analytics/SalesAnalytics';
+import PerformanceMetrics from './components/analytics/PerformanceMetrics';
+import CustomerInsights from './components/analytics/CustomerInsights';
+import OperationalReports from './components/analytics/OperationalReports';
+
 // Auth hook
 import { useAuth } from './hooks/useAuth';
 
@@ -145,9 +152,21 @@ function App() {
               <Route path="support" element={<SupportTicketPage />} />
               <Route path="support/tickets" element={<SupportTicketPage />} />
               
+              {/* Analytics & Reporting Module Routes */}
+              <Route path="analytics" element={<AnalyticsDashboardPage />} />
+              <Route path="analytics/dashboard" element={<AnalyticsDashboardPage />} />
+              <Route path="analytics/sales" element={<SalesAnalytics />} />
+              <Route path="analytics/performance" element={<PerformanceMetrics />} />
+              <Route path="analytics/customers" element={<CustomerInsights />} />
+              <Route path="analytics/operations" element={<OperationalReports />} />
+              <Route path="reports" element={<AnalyticsDashboardPage />} />
+              <Route path="reports/sales" element={<SalesAnalytics />} />
+              <Route path="reports/performance" element={<PerformanceMetrics />} />
+              <Route path="reports/customers" element={<CustomerInsights />} />
+              <Route path="reports/operations" element={<OperationalReports />} />
+              
               {/* Placeholder routes - will be implemented in next phases */}
               <Route path="vehicles" element={<div className="p-8"><h1 className="text-2xl font-bold">Phương tiện</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
-              <Route path="reports" element={<div className="p-8"><h1 className="text-2xl font-bold">Báo cáo</h1><p>Trang này sẽ được triển khai trong Phase 5</p></div>} />
               <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Cài đặt</h1><p>Trang này sẽ được triển khai trong Phase 2</p></div>} />
             </Route>
             
