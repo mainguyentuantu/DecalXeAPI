@@ -26,8 +26,42 @@ const DesignTestPage = () => {
     }
   });
 
+  // Test minimal mutation
+  const testMinimalMutation = useMutation({
+    mutationFn: designService.testCreateDesign,
+    onSuccess: (data) => {
+      toast.success('Test minimal thành công!');
+      console.log('Minimal success response:', data);
+    },
+    onError: (error) => {
+      console.error('Minimal test error:', error);
+      toast.error(`Test minimal thất bại: ${error.response?.status} - ${error.response?.data?.message || error.message}`);
+    }
+  });
+
+  // Test simple mutation
+  const testSimpleMutation = useMutation({
+    mutationFn: designService.testCreateDesignSimple,
+    onSuccess: (data) => {
+      toast.success('Test simple thành công!');
+      console.log('Simple success response:', data);
+    },
+    onError: (error) => {
+      console.error('Simple test error:', error);
+      toast.error(`Test simple thất bại: ${error.response?.status} - ${error.response?.data?.message || error.message}`);
+    }
+  });
+
   const handleTest = () => {
     testMutation.mutate(testData);
+  };
+
+  const handleTestMinimal = () => {
+    testMinimalMutation.mutate();
+  };
+
+  const handleTestSimple = () => {
+    testSimpleMutation.mutate();
   };
 
   return (
@@ -77,13 +111,33 @@ const DesignTestPage = () => {
             />
           </div>
           
-          <Button
-            onClick={handleTest}
-            disabled={testMutation.isPending}
-            className="w-full"
-          >
-            {testMutation.isPending ? 'Đang test...' : 'Test API (Không có file)'}
-          </Button>
+          <div className="space-y-2">
+            <Button
+              onClick={handleTest}
+              disabled={testMutation.isPending}
+              className="w-full"
+            >
+              {testMutation.isPending ? 'Đang test...' : 'Test API (Full payload)'}
+            </Button>
+            
+            <Button
+              onClick={handleTestMinimal}
+              disabled={testMinimalMutation.isPending}
+              variant="outline"
+              className="w-full"
+            >
+              {testMinimalMutation.isPending ? 'Đang test...' : 'Test API (Minimal payload)'}
+            </Button>
+
+            <Button
+              onClick={handleTestSimple}
+              disabled={testSimpleMutation.isPending}
+              variant="outline"
+              className="w-full"
+            >
+              {testSimpleMutation.isPending ? 'Đang test...' : 'Test API (Simple payload)'}
+            </Button>
+          </div>
         </div>
         
         {testMutation.isSuccess && (
@@ -97,9 +151,45 @@ const DesignTestPage = () => {
         
         {testMutation.isError && (
           <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded">
-            <h3 className="font-medium text-red-800">Test thất bại!</h3>
+            <h3 className="font-medium text-red-800">Test Full thất bại!</h3>
             <pre className="text-sm text-red-700 mt-2">
               {JSON.stringify(testMutation.error.response?.data, null, 2)}
+            </pre>
+          </div>
+        )}
+
+        {testMinimalMutation.isSuccess && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded">
+            <h3 className="font-medium text-green-800">Test Minimal thành công!</h3>
+            <pre className="text-sm text-green-700 mt-2">
+              {JSON.stringify(testMinimalMutation.data, null, 2)}
+            </pre>
+          </div>
+        )}
+        
+        {testMinimalMutation.isError && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded">
+            <h3 className="font-medium text-red-800">Test Minimal thất bại!</h3>
+            <pre className="text-sm text-red-700 mt-2">
+              {JSON.stringify(testMinimalMutation.error.response?.data, null, 2)}
+            </pre>
+          </div>
+        )}
+
+        {testSimpleMutation.isSuccess && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded">
+            <h3 className="font-medium text-green-800">Test Simple thành công!</h3>
+            <pre className="text-sm text-green-700 mt-2">
+              {JSON.stringify(testSimpleMutation.data, null, 2)}
+            </pre>
+          </div>
+        )}
+        
+        {testSimpleMutation.isError && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded">
+            <h3 className="font-medium text-red-800">Test Simple thất bại!</h3>
+            <pre className="text-sm text-red-700 mt-2">
+              {JSON.stringify(testSimpleMutation.error.response?.data, null, 2)}
             </pre>
           </div>
         )}
