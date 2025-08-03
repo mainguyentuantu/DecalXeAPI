@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { paymentService } from '../../services/paymentService';
-import { customers } from '../../services/customers';
+import { customerService } from '../../services/customers';
 
 const DepositTrackingPage = () => {
   const [deposits, setDeposits] = useState([]);
