@@ -27,6 +27,7 @@ import ModelCreatePage from './pages/vehicles/ModelCreatePage';
 // Design & Template Module Pages
 import DesignGalleryPage from './pages/designs/DesignGalleryPage';
 import DesignApprovalPage from './pages/designs/DesignApprovalPage';
+import DesignEditorPage from './pages/designs/DesignEditorPage';
 
 // Employee Management Module Pages
 import EmployeeListPage from './pages/employees/EmployeeListPage';
@@ -137,7 +138,7 @@ function App() {
               {/* Design & Template Module Routes */}
               <Route path="designs" element={<DesignGalleryPage />} />
               <Route path="designs/approval" element={<DesignApprovalPage />} />
-              <Route path="designs/editor" element={<div className="p-8"><h1 className="text-2xl font-bold">Soạn thảo Thiết kế</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="designs/editor" element={<DesignEditorPage />} />
               <Route path="templates" element={<div className="p-8"><h1 className="text-2xl font-bold">Thư viện Mẫu</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
               
               {/* Employee Management Module Routes */}
