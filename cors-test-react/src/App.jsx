@@ -38,6 +38,9 @@ import PerformanceTrackingPage from './pages/employees/PerformanceTrackingPage';
 
 // Services & Inventory Module Pages
 import ServiceListPage from './pages/services/ServiceListPage';
+import InventoryTrackingPage from './pages/services/InventoryTrackingPage';
+import PricingManagementPage from './pages/services/PricingManagementPage';
+import DecalTypesPage from './pages/services/DecalTypesPage';
 
 // Payment & Financial Module Pages
 import PaymentProcessingPage from './pages/payments/PaymentProcessingPage';
@@ -158,9 +161,9 @@ function App() {
               <Route path="services" element={<ServiceListPage />} />
               <Route path="services/:id" element={<div className="p-8"><h1 className="text-2xl font-bold">Chi tiết Dịch vụ</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
               <Route path="services/:id/edit" element={<div className="p-8"><h1 className="text-2xl font-bold">Chỉnh sửa Dịch vụ</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
-              <Route path="decal-types" element={<div className="p-8"><h1 className="text-2xl font-bold">Quản lý Loại Decal</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
-              <Route path="pricing" element={<div className="p-8"><h1 className="text-2xl font-bold">Quản lý Giá</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
-              <Route path="inventory" element={<div className="p-8"><h1 className="text-2xl font-bold">Theo dõi Kho</h1><p>Trang này sẽ được hoàn thiện sau</p></div>} />
+              <Route path="decal-types" element={<DecalTypesPage />} />
+              <Route path="pricing" element={<PricingManagementPage />} />
+              <Route path="inventory" element={<InventoryTrackingPage />} />
               
               {/* Payment & Financial Module Routes */}
               <Route path="payments" element={<PaymentProcessingPage />} />
