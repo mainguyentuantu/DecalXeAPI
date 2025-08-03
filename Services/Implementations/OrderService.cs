@@ -387,7 +387,7 @@ namespace DecalXeAPI.Services.Implementations
                         .ThenInclude(vm => vm.VehicleBrand)
                     .Include(o => o.OrderDetails)
                         .ThenInclude(od => od.DecalService)
-                    .Include(o => o.OrderStageHistories.OrderBy(osh => osh.StageDate))
+                    .Include(o => o.OrderStageHistories.OrderBy(osh => osh.ChangeDate))
                     .Include(o => o.Payments)
                     .AsQueryable();
 
