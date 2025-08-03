@@ -16,7 +16,11 @@ import {
   Package,
   Shield,
   MessageSquare,
-  HelpCircle
+  HelpCircle,
+  BarChart3,
+  TrendingUp,
+  PieChart,
+  Activity
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../hooks/useAuth';
@@ -112,13 +116,25 @@ const navigation = [
     ],
   },
   {
+    name: 'Phân tích & Báo cáo',
+    icon: BarChart3,
+    roles: ['Admin', 'Manager'],
+    children: [
+      { name: 'Phân tích bán hàng', href: '/analytics/sales', icon: TrendingUp },
+      { name: 'Hiệu suất nhân viên', href: '/analytics/performance', icon: Activity },
+      { name: 'Thông tin khách hàng', href: '/analytics/customers', icon: Users },
+      { name: 'Báo cáo vận hành', href: '/analytics/operations', icon: PieChart },
+    ],
+  },
+  {
     name: 'Báo cáo',
     icon: FileText,
     roles: ['Admin', 'Manager'],
     children: [
-      { name: 'Thống kê tổng quan', href: '/reports/overview' },
-      { name: 'Hiệu suất nhân viên', href: '/reports/performance' },
-      { name: 'Phân tích khách hàng', href: '/reports/customers' },
+      { name: 'Báo cáo bán hàng', href: '/reports/sales' },
+      { name: 'Báo cáo hiệu suất', href: '/reports/performance' },
+      { name: 'Báo cáo khách hàng', href: '/reports/customers' },
+      { name: 'Báo cáo vận hành', href: '/reports/operations' },
     ],
   },
   {
@@ -266,6 +282,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                           if (window.innerWidth < 1024) onClose();
                         }}
                       >
+                        {child.icon && <child.icon className="mr-2 h-4 w-4 flex-shrink-0" />}
                         {child.name}
                       </Link>
                     ))}
