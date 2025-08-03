@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   BarChart,
   Bar,
@@ -17,12 +17,12 @@ import {
   Legend,
   ResponsiveContainer,
   RadialBarChart,
-  RadialBar
-} from 'recharts';
-import { 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
+  RadialBar,
+} from "recharts";
+import {
+  Clock,
+  CheckCircle,
+  AlertCircle,
   XCircle,
   TrendingUp,
   TrendingDown,
@@ -39,25 +39,25 @@ import {
   Filter,
   Settings,
   Zap,
-  Gauge
-} from 'lucide-react';
-import analyticsService from '../../services/analytics/analyticsService';
-import { exportUtils } from '../../utils/export/exportUtils';
-import toast from 'react-hot-toast';
+  Gauge,
+} from "lucide-react";
+import analyticsService from "../../services/analytics/analyticsService";
+import { exportUtils } from "../../utils/export/exportUtils";
+import toast from "react-hot-toast";
 
 const OperationalReports = () => {
-  const [selectedTimeRange, setSelectedTimeRange] = useState('30days');
-  const [selectedMetric, setSelectedMetric] = useState('efficiency');
+  const [selectedTimeRange, setSelectedTimeRange] = useState("30days");
+  const [selectedMetric, setSelectedMetric] = useState("efficiency");
   const [showDetails, setShowDetails] = useState(false);
 
   // Fetch operational metrics data
-  const { 
-    data: operationalData, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: operationalData,
+    isLoading,
+    error,
+    refetch,
   } = useQuery({
-    queryKey: ['operationalMetrics'],
+    queryKey: ["operationalMetrics"],
     queryFn: () => analyticsService.getOperationalMetrics(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -65,55 +65,69 @@ const OperationalReports = () => {
   // Calculate efficiency score
   const calculateEfficiencyScore = (data) => {
     if (!data) return 0;
-    
+
     const completionWeight = 0.4;
     const timeWeight = 0.3;
     const utilizationWeight = 0.3;
-    
+
     const completionScore = data.completionRate || 0;
-    const timeScore = data.averageProcessingTime > 0 ? 
-      Math.max(0, 100 - (data.averageProcessingTime - 5) * 5) : 100; // Ideal: 5 days
-    const utilizationScore = data.totalEmployees > 0 ? 
-      (data.activeEmployees / data.totalEmployees) * 100 : 0;
-    
+    const timeScore =
+      data.averageProcessingTime > 0
+        ? Math.max(0, 100 - (data.averageProcessingTime - 5) * 5)
+        : 100; // Ideal: 5 days
+    const utilizationScore =
+      data.totalEmployees > 0
+        ? (data.activeEmployees / data.totalEmployees) * 100
+        : 0;
+
     return Math.round(
-      completionScore * completionWeight + 
-      timeScore * timeWeight + 
-      utilizationScore * utilizationWeight
+      completionScore * completionWeight +
+        timeScore * timeWeight +
+        utilizationScore * utilizationWeight
     );
   };
 
   // Get efficiency color
   const getEfficiencyColor = (score) => {
-    if (score >= 80) return 'text-green-600 bg-green-100';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
+    if (score >= 80) return "text-green-600 bg-green-100";
+    if (score >= 60) return "text-yellow-600 bg-yellow-100";
+    return "text-red-600 bg-red-100";
   };
 
   // Get stage color
   const getStageColor = (stage) => {
     const stageColors = {
-      'Pending': 'bg-yellow-100 text-yellow-800',
-      'InProgress': 'bg-blue-100 text-blue-800',
-      'Design': 'bg-purple-100 text-purple-800',
-      'Production': 'bg-orange-100 text-orange-800',
-      'QualityCheck': 'bg-indigo-100 text-indigo-800',
-      'Completed': 'bg-green-100 text-green-800',
-      'Cancelled': 'bg-red-100 text-red-800'
+      Pending: "bg-yellow-100 text-yellow-800",
+      InProgress: "bg-blue-100 text-blue-800",
+      Design: "bg-purple-100 text-purple-800",
+      Production: "bg-orange-100 text-orange-800",
+      QualityCheck: "bg-indigo-100 text-indigo-800",
+      Completed: "bg-green-100 text-green-800",
+      Cancelled: "bg-red-100 text-red-800",
     };
-    return stageColors[stage] || 'bg-gray-100 text-gray-800';
+    return stageColors[stage] || "bg-gray-100 text-gray-800";
   };
 
   // Colors for charts
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+  const COLORS = [
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884D8",
+    "#82CA9D",
+  ];
 
   // Export handlers
   const handleExportPDF = async () => {
     try {
-      await exportUtils.exportToPDF('operational-reports-container', 'operational-reports.pdf');
-      toast.success('Xuất PDF thành công!');
+      await exportUtils.exportToPDF(
+        "operational-reports-container",
+        "operational-reports.pdf"
+      );
+      toast.success("Xuất PDF thành công!");
     } catch (error) {
-      toast.error('Lỗi khi xuất PDF: ' + error.message);
+      toast.error("Lỗi khi xuất PDF: " + error.message);
     }
   };
 
@@ -121,48 +135,52 @@ const OperationalReports = () => {
     try {
       const exportData = [
         {
-          'Chỉ số': 'Tổng đơn hàng',
-          'Giá trị': operationalData?.totalOrders || 0,
-          'Đơn vị': 'đơn'
+          "Chỉ số": "Tổng đơn hàng",
+          "Giá trị": operationalData?.totalOrders || 0,
+          "Đơn vị": "đơn",
         },
         {
-          'Chỉ số': 'Đơn hoàn thành',
-          'Giá trị': operationalData?.completedOrders || 0,
-          'Đơn vị': 'đơn'
+          "Chỉ số": "Đơn hoàn thành",
+          "Giá trị": operationalData?.completedOrders || 0,
+          "Đơn vị": "đơn",
         },
         {
-          'Chỉ số': 'Tỷ lệ hoàn thành',
-          'Giá trị': operationalData?.completionRate || 0,
-          'Đơn vị': '%'
+          "Chỉ số": "Tỷ lệ hoàn thành",
+          "Giá trị": operationalData?.completionRate || 0,
+          "Đơn vị": "%",
         },
         {
-          'Chỉ số': 'Thời gian xử lý trung bình',
-          'Giá trị': operationalData?.averageProcessingTime || 0,
-          'Đơn vị': 'ngày'
+          "Chỉ số": "Thời gian xử lý trung bình",
+          "Giá trị": operationalData?.averageProcessingTime || 0,
+          "Đơn vị": "ngày",
         },
         {
-          'Chỉ số': 'Nhân viên hoạt động',
-          'Giá trị': operationalData?.activeEmployees || 0,
-          'Đơn vị': 'người'
+          "Chỉ số": "Nhân viên hoạt động",
+          "Giá trị": operationalData?.activeEmployees || 0,
+          "Đơn vị": "người",
         },
         {
-          'Chỉ số': 'Điểm hiệu suất',
-          'Giá trị': calculateEfficiencyScore(operationalData),
-          'Đơn vị': 'điểm'
-        }
+          "Chỉ số": "Điểm hiệu suất",
+          "Giá trị": calculateEfficiencyScore(operationalData),
+          "Đơn vị": "điểm",
+        },
       ];
-      
-      exportUtils.exportToExcel(exportData, 'operational-reports.xlsx', 'Báo cáo vận hành');
-      toast.success('Xuất Excel thành công!');
+
+      exportUtils.exportToExcel(
+        exportData,
+        "operational-reports.xlsx",
+        "Báo cáo vận hành"
+      );
+      toast.success("Xuất Excel thành công!");
     } catch (error) {
-      toast.error('Lỗi khi xuất Excel: ' + error.message);
+      toast.error("Lỗi khi xuất Excel: " + error.message);
     }
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    const content = document.getElementById('operational-reports-container');
-    
+    const printWindow = window.open("", "_blank");
+    const content = document.getElementById("operational-reports-container");
+
     printWindow.document.write(`
       <html>
         <head>
@@ -176,13 +194,13 @@ const OperationalReports = () => {
         <body>
           <div class="print-header">
             <h1>Báo cáo Vận hành</h1>
-            <p>Ngày tạo: ${new Date().toLocaleDateString('vi-VN')}</p>
+            <p>Ngày tạo: ${new Date().toLocaleDateString("vi-VN")}</p>
           </div>
           ${content.innerHTML}
         </body>
       </html>
     `);
-    
+
     printWindow.document.close();
     printWindow.print();
   };
@@ -201,10 +219,9 @@ const OperationalReports = () => {
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
         <h3 className="text-red-800 font-medium">Lỗi tải dữ liệu</h3>
         <p className="text-red-600 text-sm mt-1">{error.message}</p>
-        <button 
+        <button
           onClick={() => refetch()}
-          className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-        >
+          className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
           Thử lại
         </button>
       </div>
@@ -219,29 +236,28 @@ const OperationalReports = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Báo cáo Vận hành</h1>
-          <p className="text-gray-600 mt-1">Theo dõi hiệu suất và chỉ số vận hành</p>
+          <p className="text-gray-600 mt-1">
+            Theo dõi hiệu suất và chỉ số vận hành
+          </p>
         </div>
-        
+
         {/* Export buttons */}
         <div className="flex flex-wrap gap-2">
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
-          >
+            className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
             <Download className="w-4 h-4" />
             PDF
           </button>
           <button
             onClick={handleExportExcel}
-            className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-          >
+            className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
             <Download className="w-4 h-4" />
             Excel
           </button>
           <button
             onClick={handlePrint}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm"
-          >
+            className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm">
             <Printer className="w-4 h-4" />
             In
           </button>
@@ -258,15 +274,14 @@ const OperationalReports = () => {
             <select
               value={selectedTimeRange}
               onChange={(e) => setSelectedTimeRange(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               <option value="7days">7 ngày qua</option>
               <option value="30days">30 ngày qua</option>
               <option value="90days">90 ngày qua</option>
               <option value="1year">1 năm qua</option>
             </select>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Chỉ số chính
@@ -274,27 +289,24 @@ const OperationalReports = () => {
             <select
               value={selectedMetric}
               onChange={(e) => setSelectedMetric(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               <option value="efficiency">Hiệu suất tổng thể</option>
               <option value="completion">Tỷ lệ hoàn thành</option>
               <option value="processing_time">Thời gian xử lý</option>
               <option value="utilization">Tỷ lệ sử dụng nhân lực</option>
             </select>
           </div>
-          
+
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-          >
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
             <Settings className="w-4 h-4" />
-            {showDetails ? 'Ẩn chi tiết' : 'Hiện chi tiết'}
+            {showDetails ? "Ẩn chi tiết" : "Hiện chi tiết"}
           </button>
-          
+
           <button
             onClick={() => refetch()}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             <RefreshCw className="w-4 h-4" />
             Cập nhật
           </button>
@@ -312,7 +324,10 @@ const OperationalReports = () => {
             {/* Overall Efficiency Score */}
             <div className="col-span-1 lg:col-span-1">
               <div className="text-center">
-                <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${getEfficiencyColor(efficiencyScore)} mb-4`}>
+                <div
+                  className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${getEfficiencyColor(
+                    efficiencyScore
+                  )} mb-4`}>
                   <Gauge className="w-8 h-8" />
                 </div>
                 <h4 className="text-lg font-semibold text-gray-900 mb-2">
@@ -322,68 +337,94 @@ const OperationalReports = () => {
                   {efficiencyScore}
                 </p>
                 <p className="text-sm text-gray-600">
-                  {efficiencyScore >= 80 ? 'Xuất sắc' : 
-                   efficiencyScore >= 60 ? 'Tốt' : 'Cần cải thiện'}
+                  {efficiencyScore >= 80
+                    ? "Xuất sắc"
+                    : efficiencyScore >= 60
+                    ? "Tốt"
+                    : "Cần cải thiện"}
                 </p>
               </div>
             </div>
 
             {/* Efficiency Breakdown */}
             <div className="col-span-1 lg:col-span-2">
-              <h5 className="font-medium text-gray-900 mb-4">Phân tích chi tiết</h5>
+              <h5 className="font-medium text-gray-900 mb-4">
+                Phân tích chi tiết
+              </h5>
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-600">Tỷ lệ hoàn thành</span>
-                    <span className="font-medium">{exportUtils.formatPercentage(operationalData?.completionRate || 0)}</span>
+                    <span className="font-medium">
+                      {exportUtils.formatPercentage(
+                        operationalData?.completionRate || 0
+                      )}
+                    </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-green-600 h-2 rounded-full" 
-                      style={{ width: `${operationalData?.completionRate || 0}%` }}
-                    ></div>
+                    <div
+                      className="bg-green-600 h-2 rounded-full"
+                      style={{
+                        width: `${operationalData?.completionRate || 0}%`,
+                      }}></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-600">Hiệu suất thời gian</span>
                     <span className="font-medium">
-                      {operationalData?.averageProcessingTime ? 
-                        `${operationalData.averageProcessingTime.toFixed(1)} ngày` : 
-                        'N/A'
-                      }
+                      {operationalData?.averageProcessingTime
+                        ? `${operationalData.averageProcessingTime.toFixed(
+                            1
+                          )} ngày`
+                        : "N/A"}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full" 
-                      style={{ 
-                        width: `${Math.max(0, Math.min(100, (10 - (operationalData?.averageProcessingTime || 0)) * 10))}%` 
-                      }}
-                    ></div>
+                    <div
+                      className="bg-blue-600 h-2 rounded-full"
+                      style={{
+                        width: `${Math.max(
+                          0,
+                          Math.min(
+                            100,
+                            (10 -
+                              (operationalData?.averageProcessingTime || 0)) *
+                              10
+                          )
+                        )}%`,
+                      }}></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-600">Tỷ lệ sử dụng nhân lực</span>
+                    <span className="text-gray-600">
+                      Tỷ lệ sử dụng nhân lực
+                    </span>
                     <span className="font-medium">
-                      {operationalData?.totalEmployees > 0 ? 
-                        exportUtils.formatPercentage((operationalData.activeEmployees / operationalData.totalEmployees) * 100) : 
-                        '0%'
-                      }
+                      {operationalData?.totalEmployees > 0
+                        ? exportUtils.formatPercentage(
+                            (operationalData.activeEmployees /
+                              operationalData.totalEmployees) *
+                              100
+                          )
+                        : "0%"}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-purple-600 h-2 rounded-full" 
-                      style={{ 
-                        width: `${operationalData?.totalEmployees > 0 ? 
-                          (operationalData.activeEmployees / operationalData.totalEmployees) * 100 : 
-                          0}%` 
-                      }}
-                    ></div>
+                    <div
+                      className="bg-purple-600 h-2 rounded-full"
+                      style={{
+                        width: `${
+                          operationalData?.totalEmployees > 0
+                            ? (operationalData.activeEmployees /
+                                operationalData.totalEmployees) *
+                              100
+                            : 0
+                        }%`,
+                      }}></div>
                   </div>
                 </div>
               </div>
@@ -396,7 +437,9 @@ const OperationalReports = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Tổng đơn hàng</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Tổng đơn hàng
+                </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {operationalData?.totalOrders || 0}
                 </p>
@@ -407,14 +450,18 @@ const OperationalReports = () => {
             </div>
             <div className="mt-4 flex items-center">
               <TrendingUp className="w-4 h-4 text-green-500" />
-              <span className="text-sm text-green-600 ml-1">+12% tháng này</span>
+              <span className="text-sm text-green-600 ml-1">
+                +12% tháng này
+              </span>
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Đơn hoàn thành</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Đơn hoàn thành
+                </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {operationalData?.completedOrders || 0}
                 </p>
@@ -426,7 +473,10 @@ const OperationalReports = () => {
             <div className="mt-4 flex items-center">
               <TrendingUp className="w-4 h-4 text-green-500" />
               <span className="text-sm text-green-600 ml-1">
-                {exportUtils.formatPercentage(operationalData?.completionRate || 0)} tỷ lệ
+                {exportUtils.formatPercentage(
+                  operationalData?.completionRate || 0
+                )}{" "}
+                tỷ lệ
               </span>
             </div>
           </div>
@@ -452,12 +502,13 @@ const OperationalReports = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Thời gian TB</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Thời gian TB
+                </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {operationalData?.averageProcessingTime ? 
-                    `${operationalData.averageProcessingTime.toFixed(1)}` : 
-                    '0'
-                  }
+                  {operationalData?.averageProcessingTime
+                    ? `${operationalData.averageProcessingTime.toFixed(1)}`
+                    : "0"}
                 </p>
                 <p className="text-xs text-gray-500">ngày</p>
               </div>
@@ -467,7 +518,9 @@ const OperationalReports = () => {
             </div>
             <div className="mt-4 flex items-center">
               <TrendingDown className="w-4 h-4 text-green-500" />
-              <span className="text-sm text-green-600 ml-1">-8% so với tháng trước</span>
+              <span className="text-sm text-green-600 ml-1">
+                -8% so với tháng trước
+              </span>
             </div>
           </div>
         </div>
@@ -482,9 +535,21 @@ const OperationalReports = () => {
               <PieChart>
                 <Pie
                   data={[
-                    { name: 'Hoàn thành', value: operationalData?.completedOrders || 0, color: '#10B981' },
-                    { name: 'Đang xử lý', value: operationalData?.inProgressOrders || 0, color: '#F59E0B' },
-                    { name: 'Chờ xử lý', value: operationalData?.pendingOrders || 0, color: '#EF4444' }
+                    {
+                      name: "Hoàn thành",
+                      value: operationalData?.completedOrders || 0,
+                      color: "#10B981",
+                    },
+                    {
+                      name: "Đang xử lý",
+                      value: operationalData?.inProgressOrders || 0,
+                      color: "#F59E0B",
+                    },
+                    {
+                      name: "Chờ xử lý",
+                      value: operationalData?.pendingOrders || 0,
+                      color: "#EF4444",
+                    },
                   ]}
                   cx="50%"
                   cy="50%"
@@ -492,12 +557,23 @@ const OperationalReports = () => {
                   label={({ name, value }) => `${name}: ${value}`}
                   outerRadius={80}
                   fill="#8884d8"
-                  dataKey="value"
-                >
+                  dataKey="value">
                   {[
-                    { name: 'Hoàn thành', value: operationalData?.completedOrders || 0, color: '#10B981' },
-                    { name: 'Đang xử lý', value: operationalData?.inProgressOrders || 0, color: '#F59E0B' },
-                    { name: 'Chờ xử lý', value: operationalData?.pendingOrders || 0, color: '#EF4444' }
+                    {
+                      name: "Hoàn thành",
+                      value: operationalData?.completedOrders || 0,
+                      color: "#10B981",
+                    },
+                    {
+                      name: "Đang xử lý",
+                      value: operationalData?.inProgressOrders || 0,
+                      color: "#F59E0B",
+                    },
+                    {
+                      name: "Chờ xử lý",
+                      value: operationalData?.pendingOrders || 0,
+                      color: "#EF4444",
+                    },
                   ].map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
@@ -536,37 +612,42 @@ const OperationalReports = () => {
               </div>
               <h4 className="font-medium text-gray-900 mb-2">Xử lý nhanh</h4>
               <p className="text-2xl font-bold text-green-600 mb-1">
-                {operationalData?.processingTimes?.filter(pt => 
-                  pt.processingDays && pt.processingDays <= 3
+                {operationalData?.processingTimes?.filter(
+                  (pt) => pt.processingDays && pt.processingDays <= 3
                 ).length || 0}
               </p>
               <p className="text-sm text-gray-600">≤ 3 ngày</p>
             </div>
-            
+
             <div className="text-center">
               <div className="p-4 bg-yellow-50 rounded-lg mb-3">
                 <Clock className="w-8 h-8 text-yellow-600 mx-auto" />
               </div>
-              <h4 className="font-medium text-gray-900 mb-2">Xử lý bình thường</h4>
+              <h4 className="font-medium text-gray-900 mb-2">
+                Xử lý bình thường
+              </h4>
               <p className="text-2xl font-bold text-yellow-600 mb-1">
-                {operationalData?.processingTimes?.filter(pt => 
-                  pt.processingDays && pt.processingDays > 3 && pt.processingDays <= 7
+                {operationalData?.processingTimes?.filter(
+                  (pt) =>
+                    pt.processingDays &&
+                    pt.processingDays > 3 &&
+                    pt.processingDays <= 7
                 ).length || 0}
               </p>
               <p className="text-sm text-gray-600">4-7 ngày</p>
             </div>
-            
+
             <div className="text-center">
               <div className="p-4 bg-red-50 rounded-lg mb-3">
                 <AlertCircle className="w-8 h-8 text-red-600 mx-auto" />
               </div>
               <h4 className="font-medium text-gray-900 mb-2">Xử lý chậm</h4>
               <p className="text-2xl font-bold text-red-600 mb-1">
-                {operationalData?.processingTimes?.filter(pt => 
-                  pt.processingDays && pt.processingDays > 7
+                {operationalData?.processingTimes?.filter(
+                  (pt) => pt.processingDays && pt.processingDays > 7
                 ).length || 0}
               </p>
-              <p className="text-sm text-gray-600">> 7 ngày</p>
+              <p className="text-sm text-gray-600"> 7 ngày</p>
             </div>
           </div>
         </div>
@@ -583,38 +664,51 @@ const OperationalReports = () => {
                   Nhân viên hoạt động
                 </span>
                 <span className="text-lg font-bold text-gray-900">
-                  {operationalData?.activeEmployees || 0} / {operationalData?.totalEmployees || 0}
+                  {operationalData?.activeEmployees || 0} /{" "}
+                  {operationalData?.totalEmployees || 0}
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
-                <div 
-                  className="bg-blue-600 h-4 rounded-full" 
-                  style={{ 
-                    width: `${operationalData?.totalEmployees > 0 ? 
-                      (operationalData.activeEmployees / operationalData.totalEmployees) * 100 : 
-                      0}%` 
-                  }}
-                ></div>
+                <div
+                  className="bg-blue-600 h-4 rounded-full"
+                  style={{
+                    width: `${
+                      operationalData?.totalEmployees > 0
+                        ? (operationalData.activeEmployees /
+                            operationalData.totalEmployees) *
+                          100
+                        : 0
+                    }%`,
+                  }}></div>
               </div>
               <p className="text-sm text-gray-600">
-                {operationalData?.totalEmployees > 0 ? 
-                  exportUtils.formatPercentage((operationalData.activeEmployees / operationalData.totalEmployees) * 100) : 
-                  '0%'
-                } tỷ lệ sử dụng
+                {operationalData?.totalEmployees > 0
+                  ? exportUtils.formatPercentage(
+                      (operationalData.activeEmployees /
+                        operationalData.totalEmployees) *
+                        100
+                    )
+                  : "0%"}{" "}
+                tỷ lệ sử dụng
               </p>
             </div>
-            
+
             <div className="flex items-center justify-center">
               <div className="text-center">
                 <div className="p-4 bg-blue-50 rounded-full mb-3 inline-block">
                   <Users className="w-12 h-12 text-blue-600" />
                 </div>
-                <h4 className="font-medium text-gray-900">Hiệu suất nhân lực</h4>
+                <h4 className="font-medium text-gray-900">
+                  Hiệu suất nhân lực
+                </h4>
                 <p className="text-sm text-gray-600 mt-1">
-                  {operationalData?.totalEmployees > 0 && operationalData?.totalOrders > 0 ? 
-                    `${(operationalData.totalOrders / operationalData.activeEmployees).toFixed(1)} đơn/người` : 
-                    '0 đơn/người'
-                  }
+                  {operationalData?.totalEmployees > 0 &&
+                  operationalData?.totalOrders > 0
+                    ? `${(
+                        operationalData.totalOrders /
+                        operationalData.activeEmployees
+                      ).toFixed(1)} đơn/người`
+                    : "0 đơn/người"}
                 </p>
               </div>
             </div>
@@ -654,36 +748,39 @@ const OperationalReports = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {operationalData?.processingTimes?.slice(0, 20).map((item) => (
-                    <tr key={item.orderId} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {item.orderId}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {exportUtils.formatDate(item.orderDate)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.expectedArrival ? 
-                          exportUtils.formatDate(item.expectedArrival) : 
-                          'Chưa xác định'
-                        }
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.processingDays ? 
-                          `${item.processingDays} ngày` : 
-                          'N/A'
-                        }
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStageColor(item.status)}`}>
-                          {item.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.currentStage}
-                      </td>
-                    </tr>
-                  ))}
+                  {operationalData?.processingTimes
+                    ?.slice(0, 20)
+                    .map((item) => (
+                      <tr key={item.orderId} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {item.orderId}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {exportUtils.formatDate(item.orderDate)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.expectedArrival
+                            ? exportUtils.formatDate(item.expectedArrival)
+                            : "Chưa xác định"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.processingDays
+                            ? `${item.processingDays} ngày`
+                            : "N/A"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStageColor(
+                              item.status
+                            )}`}>
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.currentStage}
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -702,44 +799,53 @@ const OperationalReports = () => {
                 <div>
                   <h4 className="font-medium text-red-800">Hiệu suất thấp</h4>
                   <p className="text-sm text-red-700 mt-1">
-                    Cần cải thiện quy trình và tăng cường đào tạo nhân viên để nâng cao hiệu suất.
+                    Cần cải thiện quy trình và tăng cường đào tạo nhân viên để
+                    nâng cao hiệu suất.
                   </p>
                 </div>
               </div>
             )}
-            
+
             {operationalData?.averageProcessingTime > 7 && (
               <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <Clock className="w-5 h-5 text-yellow-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <h4 className="font-medium text-yellow-800">Thời gian xử lý chậm</h4>
+                  <h4 className="font-medium text-yellow-800">
+                    Thời gian xử lý chậm
+                  </h4>
                   <p className="text-sm text-yellow-700 mt-1">
-                    Thời gian xử lý trung bình vượt quá mức khuyến nghị. Cần tối ưu hóa quy trình.
+                    Thời gian xử lý trung bình vượt quá mức khuyến nghị. Cần tối
+                    ưu hóa quy trình.
                   </p>
                 </div>
               </div>
             )}
-            
-            {operationalData?.totalEmployees > 0 && 
-             (operationalData.activeEmployees / operationalData.totalEmployees) < 0.8 && (
-              <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <Users className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h4 className="font-medium text-blue-800">Tỷ lệ sử dụng nhân lực thấp</h4>
-                  <p className="text-sm text-blue-700 mt-1">
-                    Có thể tăng hiệu quả bằng cách phân bổ công việc hợp lý hơn cho nhân viên.
-                  </p>
+
+            {operationalData?.totalEmployees > 0 &&
+              operationalData.activeEmployees / operationalData.totalEmployees <
+                0.8 && (
+                <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Users className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-blue-800">
+                      Tỷ lệ sử dụng nhân lực thấp
+                    </h4>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Có thể tăng hiệu quả bằng cách phân bổ công việc hợp lý
+                      hơn cho nhân viên.
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-            
+              )}
+
             {efficiencyScore >= 80 && (
               <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="font-medium text-green-800">Hiệu suất tốt</h4>
                   <p className="text-sm text-green-700 mt-1">
-                    Hệ thống đang hoạt động hiệu quả. Tiếp tục duy trì và cải thiện liên tục.
+                    Hệ thống đang hoạt động hiệu quả. Tiếp tục duy trì và cải
+                    thiện liên tục.
                   </p>
                 </div>
               </div>

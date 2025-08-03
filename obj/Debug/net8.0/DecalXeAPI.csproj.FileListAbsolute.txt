@@ -379,3 +379,4 @@ C:\Users\WIN10\Desktop\backend\DecalXeAPI\obj\Debug\net8.0\refint\DecalXeAPI.dll
 C:\Users\WIN10\Desktop\backend\DecalXeAPI\obj\Debug\net8.0\DecalXeAPI.pdb
 C:\Users\WIN10\Desktop\backend\DecalXeAPI\obj\Debug\net8.0\DecalXeAPI.genruntimeconfig.cache
 C:\Users\WIN10\Desktop\backend\DecalXeAPI\obj\Debug\net8.0\ref\DecalXeAPI.dll
+C:\Users\WIN10\Desktop\backend\DecalXeAPI\bin\Debug\net8.0\railway.json

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-hot-toast';
-import { ArrowLeft, Save, UserEdit } from 'lucide-react';
-import { Button, Input, Card, LoadingSpinner } from '../components/common';
-import { customerService } from '../services/customers';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
+import { ArrowLeft, Save } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { Button, Input, Card, LoadingSpinner } from "../components/common";
+import { customerService } from "../services/customers";
 
 const CustomerEditPage = () => {
   const { id } = useParams();
@@ -14,22 +15,26 @@ const CustomerEditPage = () => {
 
   // Form state
   const [formData, setFormData] = useState({
-    customerFullName: '',
-    phoneNumber: '',
-    email: '',
-    address: '',
-    dateOfBirth: '',
-    gender: '',
-    identityCard: '',
-    accountRoleName: 'Customer'
+    customerFullName: "",
+    phoneNumber: "",
+    email: "",
+    address: "",
+    dateOfBirth: "",
+    gender: "",
+    identityCard: "",
+    accountRoleName: "Customer",
   });
 
   // Validation state
   const [errors, setErrors] = useState({});
 
   // Fetch customer data
-  const { data: customer, isLoading, error } = useQuery({
-    queryKey: ['customer', id],
+  const {
+    data: customer,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["customer", id],
     queryFn: () => customerService.getCustomerById(id),
     enabled: !!id,
   });
@@ -38,14 +43,16 @@ const CustomerEditPage = () => {
   useEffect(() => {
     if (customer) {
       setFormData({
-        customerFullName: customer.customerFullName || '',
-        phoneNumber: customer.phoneNumber || '',
-        email: customer.email || '',
-        address: customer.address || '',
-        dateOfBirth: customer.dateOfBirth ? new Date(customer.dateOfBirth).toISOString().split('T')[0] : '',
-        gender: customer.gender || '',
-        identityCard: customer.identityCard || '',
-        accountRoleName: customer.accountRoleName || 'Customer'
+        customerFullName: customer.customerFullName || "",
+        phoneNumber: customer.phoneNumber || "",
+        email: customer.email || "",
+        address: customer.address || "",
+        dateOfBirth: customer.dateOfBirth
+          ? new Date(customer.dateOfBirth).toISOString().split("T")[0]
+          : "",
+        gender: customer.gender || "",
+        identityCard: customer.identityCard || "",
+        accountRoleName: customer.accountRoleName || "Customer",
       });
     }
   }, [customer]);
@@ -53,16 +60,16 @@ const CustomerEditPage = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -72,33 +79,38 @@ const CustomerEditPage = () => {
     const newErrors = {};
 
     if (!formData.customerFullName.trim()) {
-      newErrors.customerFullName = 'Họ tên khách hàng là bắt buộc';
+      newErrors.customerFullName = "Họ tên khách hàng là bắt buộc";
     }
 
     if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Số điện thoại là bắt buộc';
-    } else if (!/^[0-9]{10,11}$/.test(formData.phoneNumber.replace(/\s/g, ''))) {
-      newErrors.phoneNumber = 'Số điện thoại không hợp lệ';
+      newErrors.phoneNumber = "Số điện thoại là bắt buộc";
+    } else if (
+      !/^[0-9]{10,11}$/.test(formData.phoneNumber.replace(/\s/g, ""))
+    ) {
+      newErrors.phoneNumber = "Số điện thoại không hợp lệ";
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email không hợp lệ';
+      newErrors.email = "Email không hợp lệ";
     }
 
     if (!formData.address.trim()) {
-      newErrors.address = 'Địa chỉ là bắt buộc';
+      newErrors.address = "Địa chỉ là bắt buộc";
     }
 
     if (formData.dateOfBirth) {
       const birthDate = new Date(formData.dateOfBirth);
       const today = new Date();
       if (birthDate > today) {
-        newErrors.dateOfBirth = 'Ngày sinh không thể là ngày trong tương lai';
+        newErrors.dateOfBirth = "Ngày sinh không thể là ngày trong tương lai";
       }
     }
 
-    if (formData.identityCard && !/^[0-9]{9,12}$/.test(formData.identityCard.replace(/\s/g, ''))) {
-      newErrors.identityCard = 'Số CMND/CCCD không hợp lệ';
+    if (
+      formData.identityCard &&
+      !/^[0-9]{9,12}$/.test(formData.identityCard.replace(/\s/g, ""))
+    ) {
+      newErrors.identityCard = "Số CMND/CCCD không hợp lệ";
     }
 
     setErrors(newErrors);
@@ -107,35 +119,40 @@ const CustomerEditPage = () => {
 
   // Update customer mutation
   const updateCustomerMutation = useMutation({
-    mutationFn: (customerData) => customerService.updateCustomer(id, customerData),
+    mutationFn: (customerData) =>
+      customerService.updateCustomer(id, customerData),
     onSuccess: (data) => {
-      toast.success('Cập nhật khách hàng thành công!');
-      queryClient.invalidateQueries(['customers']);
-      queryClient.invalidateQueries(['customer', id]);
+      toast.success("Cập nhật khách hàng thành công!");
+      queryClient.invalidateQueries(["customers"]);
+      queryClient.invalidateQueries(["customer", id]);
       navigate(`/customers/${id}`);
     },
     onError: (error) => {
-      console.error('Error updating customer:', error);
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật khách hàng');
-    }
+      console.error("Error updating customer:", error);
+      toast.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi cập nhật khách hàng"
+      );
+    },
   });
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
-      toast.error('Vui lòng kiểm tra lại thông tin');
+      toast.error("Vui lòng kiểm tra lại thông tin");
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       // Format date if provided
       const submitData = {
         ...formData,
-        dateOfBirth: formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString() : null
+        dateOfBirth: formData.dateOfBirth
+          ? new Date(formData.dateOfBirth).toISOString()
+          : null,
       };
 
       await updateCustomerMutation.mutateAsync(submitData);
@@ -158,8 +175,10 @@ const CustomerEditPage = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <p className="text-red-500 mb-4">Không thể tải thông tin khách hàng</p>
-          <Button onClick={() => navigate('/customers')}>
+          <p className="text-red-500 mb-4">
+            Không thể tải thông tin khách hàng
+          </p>
+          <Button onClick={() => navigate("/customers")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Quay lại danh sách
           </Button>
@@ -173,7 +192,7 @@ const CustomerEditPage = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <p className="text-gray-500 mb-4">Không tìm thấy khách hàng</p>
-          <Button onClick={() => navigate('/customers')}>
+          <Button onClick={() => navigate("/customers")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Quay lại danh sách
           </Button>
@@ -191,13 +210,14 @@ const CustomerEditPage = () => {
             variant="ghost"
             size="sm"
             onClick={() => navigate(`/customers/${id}`)}
-            className="flex items-center space-x-2"
-          >
+            className="flex items-center space-x-2">
             <ArrowLeft className="h-4 w-4" />
             <span>Quay lại</span>
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Chỉnh sửa khách hàng</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Chỉnh sửa khách hàng
+            </h1>
             <p className="text-gray-600">Cập nhật thông tin khách hàng</p>
           </div>
         </div>
@@ -209,10 +229,10 @@ const CustomerEditPage = () => {
           {/* Basic Information */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-              <UserEdit className="h-5 w-5 mr-2" />
+              <UserPen className="h-5 w-5 mr-2" />
               Thông tin cơ bản
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Full Name */}
               <div>
@@ -224,10 +244,12 @@ const CustomerEditPage = () => {
                   value={formData.customerFullName}
                   onChange={handleInputChange}
                   placeholder="Nhập họ tên đầy đủ"
-                  className={errors.customerFullName ? 'border-red-500' : ''}
+                  className={errors.customerFullName ? "border-red-500" : ""}
                 />
                 {errors.customerFullName && (
-                  <p className="text-red-500 text-sm mt-1">{errors.customerFullName}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.customerFullName}
+                  </p>
                 )}
               </div>
 
@@ -241,10 +263,12 @@ const CustomerEditPage = () => {
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                   placeholder="0123456789"
-                  className={errors.phoneNumber ? 'border-red-500' : ''}
+                  className={errors.phoneNumber ? "border-red-500" : ""}
                 />
                 {errors.phoneNumber && (
-                  <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.phoneNumber}
+                  </p>
                 )}
               </div>
 
@@ -259,7 +283,7 @@ const CustomerEditPage = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="example@email.com"
-                  className={errors.email ? 'border-red-500' : ''}
+                  className={errors.email ? "border-red-500" : ""}
                 />
                 {errors.email && (
                   <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -276,10 +300,12 @@ const CustomerEditPage = () => {
                   type="date"
                   value={formData.dateOfBirth}
                   onChange={handleInputChange}
-                  className={errors.dateOfBirth ? 'border-red-500' : ''}
+                  className={errors.dateOfBirth ? "border-red-500" : ""}
                 />
                 {errors.dateOfBirth && (
-                  <p className="text-red-500 text-sm mt-1">{errors.dateOfBirth}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.dateOfBirth}
+                  </p>
                 )}
               </div>
 
@@ -292,8 +318,7 @@ const CustomerEditPage = () => {
                   name="gender"
                   value={formData.gender}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   <option value="">Chọn giới tính</option>
                   <option value="Male">Nam</option>
                   <option value="Female">Nữ</option>
@@ -311,10 +336,12 @@ const CustomerEditPage = () => {
                   value={formData.identityCard}
                   onChange={handleInputChange}
                   placeholder="123456789"
-                  className={errors.identityCard ? 'border-red-500' : ''}
+                  className={errors.identityCard ? "border-red-500" : ""}
                 />
                 {errors.identityCard && (
-                  <p className="text-red-500 text-sm mt-1">{errors.identityCard}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.identityCard}
+                  </p>
                 )}
               </div>
             </div>
@@ -332,7 +359,7 @@ const CustomerEditPage = () => {
               placeholder="Nhập địa chỉ đầy đủ"
               rows={3}
               className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                errors.address ? 'border-red-500' : ''
+                errors.address ? "border-red-500" : ""
               }`}
             />
             {errors.address && (
@@ -349,8 +376,7 @@ const CustomerEditPage = () => {
               name="accountRoleName"
               value={formData.accountRoleName}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
               <option value="Customer">Khách hàng</option>
               <option value="VIP">VIP</option>
               <option value="Regular">Thường xuyên</option>
@@ -363,15 +389,13 @@ const CustomerEditPage = () => {
               type="button"
               variant="outline"
               onClick={() => navigate(`/customers/${id}`)}
-              disabled={isSubmitting}
-            >
+              disabled={isSubmitting}>
               Hủy
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center space-x-2"
-            >
+              className="flex items-center space-x-2">
               {isSubmitting ? (
                 <>
                   <LoadingSpinner size="sm" />
