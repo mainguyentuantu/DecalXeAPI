@@ -120,6 +120,21 @@ EstimatedCompletionDate = order.EstimatedCompletionDate,  // ← Lỗi
 EstimatedCompletionDate = order.ExpectedArrivalTime,
 ```
 
+### 7. OrderStageHistory không có property `StageDate`
+**Lỗi:** `'OrderStageHistory' does not contain a definition for 'StageDate'`
+
+**Nguyên nhân:** OrderStageHistory model có ChangeDate thay vì StageDate
+
+**Giải pháp:** Sử dụng ChangeDate
+
+```csharp
+// Trước
+.Include(o => o.OrderStageHistories.OrderBy(osh => osh.StageDate))  // ← Lỗi
+
+// Sau
+.Include(o => o.OrderStageHistories.OrderBy(osh => osh.ChangeDate))
+```
+
 ## Tóm tắt Model Relationships
 
 ### Employee → Role
