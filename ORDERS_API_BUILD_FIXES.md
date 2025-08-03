@@ -135,6 +135,47 @@ EstimatedCompletionDate = order.ExpectedArrivalTime,
 .Include(o => o.OrderStageHistories.OrderBy(osh => osh.ChangeDate))
 ```
 
+### 8. CustomerVehicle không có `CustomerName` và `CustomerPhone`
+**Lỗi:** `'CustomerVehicle' does not contain a definition for 'CustomerName'`
+
+**Nguyên nhân:** CustomerVehicle không chứa thông tin customer trực tiếp, cần lấy từ Customer relationship
+
+**Giải pháp:** Include Customer và lấy từ Customer entity
+
+```csharp
+// Include Customer relationship
+.Include(o => o.CustomerVehicle)
+    .ThenInclude(cv => cv.Customer)
+
+// Trước
+CustomerName = order.CustomerVehicle.CustomerName,  // ← Lỗi
+CustomerPhone = order.CustomerVehicle.CustomerPhone,  // ← Lỗi
+
+// Sau
+CustomerName = order.CustomerVehicle.Customer != null 
+    ? $"{order.CustomerVehicle.Customer.FirstName} {order.CustomerVehicle.Customer.LastName}" 
+    : null,
+CustomerPhone = order.CustomerVehicle.Customer?.PhoneNumber,
+
+// Query filter cũng cần sửa
+query = query.Where(o => o.CustomerVehicle.Customer.PhoneNumber == customerPhone);
+```
+
+### 9. Payment không có property `AmountPaid`
+**Lỗi:** `'Payment' does not contain a definition for 'AmountPaid'`
+
+**Nguyên nhân:** Payment model có PaymentAmount thay vì AmountPaid
+
+**Giải pháp:** Sử dụng PaymentAmount
+
+```csharp
+// Trước
+PaidAmount = order.Payments?.Sum(p => p.AmountPaid) ?? 0,  // ← Lỗi
+
+// Sau
+PaidAmount = order.Payments?.Sum(p => p.PaymentAmount) ?? 0,
+```
+
 ## Tóm tắt Model Relationships
 
 ### Employee → Role
@@ -147,6 +188,11 @@ Employee → Account → Role
 Order → AssignedEmployee → Store
 ```
 
+### Order → Customer Info
+```
+Order → CustomerVehicle → Customer → (FirstName, LastName, PhoneNumber)
+```
+
 ### Order → Completion Date
 ```
 Order.ExpectedArrivalTime (không phải EstimatedCompletionDate)
@@ -155,6 +201,21 @@ Order.ExpectedArrivalTime (không phải EstimatedCompletionDate)
 ### Employee Name
 ```
 Employee.FirstName + " " + Employee.LastName (không có FullName property)
+```
+
+### Customer Name
+```
+Customer.FirstName + " " + Customer.LastName (không có FullName property)
+```
+
+### Payment Amount
+```
+Payment.PaymentAmount (không phải AmountPaid)
+```
+
+### OrderStageHistory Date
+```
+OrderStageHistory.ChangeDate (không phải StageDate)
 ```
 
 ## Kết quả

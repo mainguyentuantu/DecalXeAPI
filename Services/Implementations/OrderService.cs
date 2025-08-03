@@ -383,6 +383,8 @@ namespace DecalXeAPI.Services.Implementations
                     .Include(o => o.AssignedEmployee)
                         .ThenInclude(e => e.Store)
                     .Include(o => o.CustomerVehicle)
+                        .ThenInclude(cv => cv.Customer)
+                    .Include(o => o.CustomerVehicle)
                         .ThenInclude(cv => cv.VehicleModel)
                         .ThenInclude(vm => vm.VehicleBrand)
                     .Include(o => o.OrderDetails)
@@ -398,7 +400,7 @@ namespace DecalXeAPI.Services.Implementations
                 }
                 else if (!string.IsNullOrEmpty(customerPhone))
                 {
-                    query = query.Where(o => o.CustomerVehicle.CustomerPhone == customerPhone);
+                    query = query.Where(o => o.CustomerVehicle.Customer.PhoneNumber == customerPhone);
                 }
                 else if (!string.IsNullOrEmpty(licensePlate))
                 {
@@ -414,8 +416,10 @@ namespace DecalXeAPI.Services.Implementations
                 var trackingDto = new OrderTrackingDto
                 {
                     OrderID = order.OrderID,
-                    CustomerName = order.CustomerVehicle.CustomerName,
-                    CustomerPhone = order.CustomerVehicle.CustomerPhone,
+                    CustomerName = order.CustomerVehicle.Customer != null 
+                        ? $"{order.CustomerVehicle.Customer.FirstName} {order.CustomerVehicle.Customer.LastName}" 
+                        : null,
+                    CustomerPhone = order.CustomerVehicle.Customer?.PhoneNumber,
                     LicensePlate = order.CustomerVehicle.LicensePlate,
                     VehicleBrand = order.CustomerVehicle.VehicleModel?.VehicleBrand?.BrandName,
                     VehicleModel = order.CustomerVehicle.VehicleModel?.ModelName,
@@ -428,7 +432,7 @@ namespace DecalXeAPI.Services.Implementations
                         : null,
                     StoreName = order.AssignedEmployee?.Store?.StoreName,
                     TotalAmount = order.TotalAmount,
-                    PaidAmount = order.Payments?.Sum(p => p.AmountPaid) ?? 0,
+                    PaidAmount = order.Payments?.Sum(p => p.PaymentAmount) ?? 0,
                     StageHistory = _mapper.Map<List<OrderStageHistoryDto>>(order.OrderStageHistories),
                     OrderDetails = _mapper.Map<List<OrderDetailDto>>(order.OrderDetails)
                 };
