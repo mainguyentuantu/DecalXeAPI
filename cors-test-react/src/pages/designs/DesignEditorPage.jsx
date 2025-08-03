@@ -21,8 +21,7 @@ const DesignEditorPage = () => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isConverting, setIsConverting] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [designURL, setDesignURL] = useState('');
   const [preview, setPreview] = useState(null);
 
   // Form state
@@ -37,38 +36,30 @@ const DesignEditorPage = () => {
   // Validation state
   const [errors, setErrors] = useState({});
 
-  // Handle file selection
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        toast.error('Vui lòng chọn file hình ảnh!');
-        return;
-      }
+  // Handle URL input
+  const handleURLChange = (event) => {
+    const url = event.target.value;
+    setDesignURL(url);
+    
+    // Update preview if URL is valid
+    if (url && isValidURL(url)) {
+      setPreview(url);
+    } else {
+      setPreview(null);
+    }
 
-      // Check file size (5MB limit)
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        toast.error('File quá lớn! Vui lòng chọn file nhỏ hơn 5MB.');
-        return;
-      }
+    // Clear URL error
+    if (errors.designURL) {
+      setErrors(prev => ({ ...prev, designURL: '' }));
+    }
+  };
 
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => setPreview(e.target.result);
-      reader.readAsDataURL(file);
-      
-      // Auto-fill design name if empty
-      if (!formData.designName) {
-        const fileName = file.name.replace(/\.[^/.]+$/, "");
-        setFormData(prev => ({ ...prev, designName: fileName }));
-      }
-
-      // Clear file error
-      if (errors.file) {
-        setErrors(prev => ({ ...prev, file: '' }));
-      }
+  const isValidURL = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
     }
   };
 
@@ -97,8 +88,10 @@ const DesignEditorPage = () => {
       newErrors.designName = 'Tên thiết kế là bắt buộc';
     }
 
-    if (!selectedFile) {
-      newErrors.file = 'Vui lòng chọn file thiết kế';
+    if (!designURL.trim()) {
+      newErrors.designURL = 'URL thiết kế là bắt buộc';
+    } else if (!isValidURL(designURL)) {
+      newErrors.designURL = 'URL không hợp lệ';
     }
 
     if (formData.price && isNaN(parseFloat(formData.price))) {
@@ -112,13 +105,8 @@ const DesignEditorPage = () => {
   // Save design mutation
   const saveDesignMutation = useMutation({
     mutationFn: async (data) => {
-      setIsConverting(true);
-      try {
-        const result = await designService.uploadDesign(data);
-        return result;
-      } finally {
-        setIsConverting(false);
-      }
+      const result = await designService.uploadDesign(data);
+      return result;
     },
     onSuccess: (data) => {
       toast.success('Thiết kế đã được lưu thành công!');
@@ -157,14 +145,13 @@ const DesignEditorPage = () => {
     setIsSubmitting(true);
     
     try {
-      console.log('Starting upload with Base64...', {
-        fileName: selectedFile.name,
-        fileSize: selectedFile.size,
+      console.log('Starting upload with URL...', {
+        designURL: designURL,
         designName: formData.designName
       });
 
       const uploadData = {
-        file: selectedFile,
+        designURL: designURL,
         designName: formData.designName,
         description: formData.description,
         category: formData.category,
@@ -181,12 +168,9 @@ const DesignEditorPage = () => {
     }
   };
 
-  const removeFile = () => {
-    setSelectedFile(null);
+  const removeURL = () => {
+    setDesignURL('');
     setPreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
   return (
@@ -212,15 +196,13 @@ const DesignEditorPage = () => {
           
                       <Button
               onClick={handleSave}
-              disabled={isSubmitting || !selectedFile}
+              disabled={isSubmitting || !designURL}
               className="flex items-center space-x-2"
             >
               {isSubmitting ? (
                 <>
                   <LoadingSpinner size="sm" />
-                  <span>
-                    {isConverting ? 'Đang chuyển đổi...' : 'Đang lưu...'}
-                  </span>
+                  <span>Đang lưu...</span>
                 </>
               ) : (
                 <>
@@ -236,86 +218,52 @@ const DesignEditorPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Form Section */}
           <div className="space-y-6">
-            {/* File Upload */}
+            {/* URL Input */}
             <Card className="p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <Upload className="h-5 w-5 mr-2" />
-                Tải lên thiết kế
+                <Link className="h-5 w-5 mr-2" />
+                URL thiết kế
               </h3>
               
-              {!selectedFile ? (
+              {!designURL ? (
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <ImageIcon className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-600 mb-4">Kéo thả file thiết kế vào đây hoặc click để chọn</p>
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    variant="outline"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Chọn file
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
+                  <Link className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-600 mb-4">Nhập URL hình ảnh thiết kế</p>
+                  <Input
+                    type="url"
+                    placeholder="https://example.com/design.jpg"
+                    value={designURL}
+                    onChange={handleURLChange}
+                    className="w-full"
                   />
                 </div>
               ) : (
                 <div className="space-y-4">
-                                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                     <div className="flex items-center space-x-3">
-                       <ImageIcon className="h-8 w-8 text-blue-500" />
-                       <div>
-                         <p className="font-medium text-gray-900">{selectedFile.name}</p>
-                         <p className="text-sm text-gray-500">
-                           {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                         </p>
-                         {/* Base64 size indicator */}
-                         <div className="mt-1">
-                           <div className="flex items-center space-x-2">
-                             <div className="w-full bg-gray-200 rounded-full h-1.5">
-                               <div 
-                                 className="bg-blue-500 h-1.5 rounded-full" 
-                                 style={{ 
-                                   width: `${Math.min((selectedFile.size / (5 * 1024 * 1024)) * 100, 100)}%` 
-                                 }}
-                               ></div>
-                             </div>
-                             <span className="text-xs text-gray-500">
-                               {Math.min((selectedFile.size / (5 * 1024 * 1024)) * 100, 100).toFixed(0)}%
-                             </span>
-                           </div>
-                           <p className="text-xs text-gray-400 mt-1">
-                             Base64 size: ~{((selectedFile.size * 1.33) / 1024 / 1024).toFixed(2)} MB
-                           </p>
-                         </div>
-                       </div>
-                     </div>
-                     <Button
-                       variant="ghost"
-                       size="sm"
-                       onClick={removeFile}
-                       className="text-red-600 hover:text-red-700"
-                     >
-                       <X className="h-4 w-4" />
-                     </Button>
-                   </div>
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    variant="outline"
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Link className="h-8 w-8 text-blue-500" />
+                      <div>
+                        <p className="font-medium text-gray-900">URL thiết kế</p>
+                        <p className="text-sm text-gray-500 break-all">
+                          {designURL}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={removeURL}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Input
+                    type="url"
+                    placeholder="https://example.com/design.jpg"
+                    value={designURL}
+                    onChange={handleURLChange}
                     className="w-full"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Thay đổi file
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
                   />
                 </div>
               )}
@@ -456,23 +404,23 @@ const DesignEditorPage = () => {
                              <div className="space-y-3 text-sm text-gray-600">
                  <div className="flex items-start space-x-2">
                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                   <p>Đảm bảo file có độ phân giải cao (tối thiểu 300 DPI)</p>
+                   <p>Nhập URL hình ảnh thiết kế từ internet</p>
                  </div>
                  <div className="flex items-start space-x-2">
                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                   <p>Hỗ trợ các định dạng: PNG, JPG, JPEG, SVG</p>
+                   <p>Hỗ trợ các định dạng: PNG, JPG, JPEG, SVG, WebP</p>
                  </div>
                  <div className="flex items-start space-x-2">
                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                   <p>Kích thước file tối đa: <strong>5MB</strong> (do sử dụng Base64)</p>
+                   <p>URL phải có thể truy cập công khai</p>
                  </div>
                  <div className="flex items-start space-x-2">
                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                   <p>File sẽ được chuyển đổi sang Base64 để upload</p>
+                   <p>Có thể sử dụng: Imgur, Google Drive, Dropbox, etc.</p>
                  </div>
                  <div className="flex items-start space-x-2">
                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                   <p>Đặt tên file có ý nghĩa để dễ quản lý</p>
+                   <p>Đảm bảo URL bắt đầu bằng http:// hoặc https://</p>
                  </div>
                </div>
             </Card>

@@ -10,7 +10,8 @@ const DesignTestPage = () => {
     description: 'Test description',
     category: 'Test',
     tags: 'test, demo',
-    price: 100000
+    price: 100000,
+    designURL: 'https://via.placeholder.com/300x200/0066cc/ffffff?text=Test+Design'
   });
 
   // Test mutation without file
@@ -108,6 +109,16 @@ const DesignTestPage = () => {
               type="number"
               value={testData.price}
               onChange={(e) => setTestData(prev => ({ ...prev, price: parseInt(e.target.value) }))}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">Design URL</label>
+            <Input
+              type="url"
+              value={testData.designURL}
+              onChange={(e) => setTestData(prev => ({ ...prev, designURL: e.target.value }))}
+              placeholder="https://example.com/design.jpg"
             />
           </div>
           
