@@ -36,5 +36,11 @@ namespace DecalXeAPI.Services.Interfaces
         Task<(bool Success, string? ErrorMessage)> AssignEmployeeToOrderAsync(string orderId, string employeeId);
         Task<(bool Success, string? ErrorMessage)> UnassignEmployeeFromOrderAsync(string orderId);
         Task<EmployeeDto?> GetAssignedEmployeeForOrderAsync(string orderId);
+
+        // Phương thức lấy dữ liệu form tạo đơn hàng mới
+        Task<OrderCreateFormDataDto> GetOrderCreateFormDataAsync();
+
+        // Phương thức tracking đơn hàng
+        Task<OrderTrackingDto?> TrackOrderAsync(string? orderId, string? customerPhone, string? licensePlate);
     }
 }
