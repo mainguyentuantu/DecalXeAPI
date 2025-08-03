@@ -48,7 +48,19 @@ const DesignGalleryPage = () => {
     },
     onError: (error) => {
       console.error('Error uploading design:', error);
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi tải lên thiết kế');
+      
+      // Handle specific error cases
+      if (error.response?.status === 415) {
+        toast.error('API không hỗ trợ upload file. Vui lòng liên hệ admin để cấu hình.');
+      } else if (error.response?.status === 413) {
+        toast.error('File quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
+      } else if (error.response?.status === 400) {
+        toast.error('Dữ liệu không hợp lệ: ' + (error.response?.data?.message || ''));
+      } else if (error.response?.status === 500) {
+        toast.error('Lỗi server. Vui lòng thử lại sau.');
+      } else {
+        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi tải lên thiết kế');
+      }
     },
   });
 
@@ -66,14 +78,23 @@ const DesignGalleryPage = () => {
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
-      if (file.type.startsWith('image/')) {
-        setUploadFile(file);
-        const reader = new FileReader();
-        reader.onload = (e) => setUploadPreview(e.target.result);
-        reader.readAsDataURL(file);
-      } else {
+      // Check file type
+      if (!file.type.startsWith('image/')) {
         toast.error('Vui lòng chọn file hình ảnh!');
+        return;
       }
+
+      // Check file size (5MB limit for Base64)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error('File quá lớn! Vui lòng chọn file nhỏ hơn 5MB.');
+        return;
+      }
+
+      setUploadFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setUploadPreview(e.target.result);
+      reader.readAsDataURL(file);
     }
   };
 

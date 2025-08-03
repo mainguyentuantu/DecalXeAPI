@@ -48,36 +48,47 @@ export const designService = {
 
   // Upload design with file (Base64)
   uploadDesign: async ({ file, designName, description, category, tags, price }) => {
-    // Convert file to Base64
-    const base64Data = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result.split(',')[1]; // Remove data:image/...;base64, prefix
-        resolve(base64);
+    try {
+      // Convert file to Base64
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result.split(',')[1]; // Remove data:image/...;base64, prefix
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Prepare JSON payload
+      const payload = {
+        designName: designName || 'Thiết kế mới',
+        description: description || '',
+        category: category || 'General',
+        tags: tags || '',
+        price: price || 0,
+        imageData: base64Data,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
       };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
 
-    // Prepare JSON payload
-    const payload = {
-      designName: designName || 'Thiết kế mới',
-      description: description || '',
-      category: category || 'General',
-      tags: tags || '',
-      price: price || 0,
-      imageData: base64Data,
-      fileName: file.name,
-      fileType: file.type,
-      fileSize: file.size
-    };
+      console.log('Uploading design with Base64...', {
+        designName: payload.designName,
+        fileSize: payload.fileSize,
+        base64Length: payload.imageData.length
+      });
 
-    const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, payload, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.data;
+      const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error in uploadDesign:', error);
+      throw error;
+    }
   },
 
   // Update design
