@@ -36,7 +36,7 @@ export const designService = {
       category: designData.category || 'General',
       tags: designData.tags || '',
       price: designData.price || 0,
-      designURL: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+      designURL: designData.designURL || 'https://via.placeholder.com/300x200/0066cc/ffffff?text=Design'
     };
 
     const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, payload, {
@@ -54,7 +54,7 @@ export const designService = {
       description: 'Test description',
       category: 'Test',
       price: 0,
-      designURL: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+      designURL: 'https://via.placeholder.com/300x200/0066cc/ffffff?text=Test+Design',
       isActive: true
     };
 
@@ -73,7 +73,7 @@ export const designService = {
     const simplePayload = {
       designName: 'Simple Test Design',
       description: 'Simple test',
-      designURL: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+      designURL: 'https://via.placeholder.com/300x200/ff6600/ffffff?text=Simple+Design'
     };
 
     console.log('Testing with simple payload:', simplePayload);
@@ -86,20 +86,9 @@ export const designService = {
     return response.data;
   },
 
-  // Upload design with file (Base64)
-  uploadDesign: async ({ file, designName, description, category, tags, price }) => {
+  // Upload design with URL
+  uploadDesign: async ({ designURL, designName, description, category, tags, price }) => {
     try {
-      // Convert file to Base64
-      const base64Data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64 = reader.result.split(',')[1]; // Remove data:image/...;base64, prefix
-          resolve(base64);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
       // Prepare JSON payload with DesignURL field
       const payload = {
         // Basic design info
@@ -110,25 +99,18 @@ export const designService = {
         price: price || 0,
         
         // DesignURL field - API expects this
-        designURL: `data:${file.type};base64,${base64Data}`,
+        designURL: designURL,
         
         // Additional metadata
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
         isActive: true
       };
 
-      console.log('Uploading design with DesignURL...', {
+      console.log('Uploading design with URL...', {
         designName: payload.designName,
-        fileSize: payload.fileSize,
-        designURLLength: payload.designURL.length
+        designURL: payload.designURL
       });
 
-      console.log('Full payload structure:', {
-        ...payload,
-        designURL: payload.designURL.substring(0, 100) + '...' // Log first 100 chars
-      });
+      console.log('Full payload structure:', payload);
 
       const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, payload, {
         headers: {
