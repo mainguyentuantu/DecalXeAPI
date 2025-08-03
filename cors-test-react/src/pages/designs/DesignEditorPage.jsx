@@ -17,6 +17,8 @@ import { Button, Input, Card, LoadingSpinner } from '../../components/common';
 import { designService } from '../../services/designService';
 
 const DesignEditorPage = () => {
+  console.log('DesignEditorPage component loaded successfully');
+  
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -267,8 +269,8 @@ const DesignEditorPage = () => {
                 </div>
               )}
               
-              {errors.file && (
-                <p className="text-red-500 text-sm mt-2">{errors.file}</p>
+              {errors.designURL && (
+                <p className="text-red-500 text-sm mt-2">{errors.designURL}</p>
               )}
             </Card>
 
