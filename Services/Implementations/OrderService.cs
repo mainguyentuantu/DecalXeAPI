@@ -299,7 +299,145 @@ namespace DecalXeAPI.Services.Implementations
 
             return _mapper.Map<EmployeeDto>(order.AssignedEmployee);
         }
-    }
-    
 
+        public async Task<OrderCreateFormDataDto> GetOrderCreateFormDataAsync()
+        {
+            _logger.LogInformation("Lấy dữ liệu form tạo đơn hàng mới");
+
+            try
+            {
+                var formData = new OrderCreateFormDataDto();
+
+                // Lấy danh sách dịch vụ decal
+                var decalServices = await _context.DecalServices
+                    .Where(ds => ds.IsActive)
+                    .ToListAsync();
+                formData.DecalServices = _mapper.Map<List<DecalServiceDto>>(decalServices);
+
+                // Lấy danh sách loại decal
+                var decalTypes = await _context.DecalTypes
+                    .Where(dt => dt.IsActive)
+                    .ToListAsync();
+                formData.DecalTypes = _mapper.Map<List<DecalTypeDto>>(decalTypes);
+
+                // Lấy danh sách thương hiệu xe
+                var vehicleBrands = await _context.VehicleBrands
+                    .OrderBy(vb => vb.BrandName)
+                    .ToListAsync();
+                formData.VehicleBrands = _mapper.Map<List<VehicleBrandDto>>(vehicleBrands);
+
+                // Lấy danh sách model xe
+                var vehicleModels = await _context.VehicleModels
+                    .Include(vm => vm.VehicleBrand)
+                    .OrderBy(vm => vm.VehicleBrand.BrandName)
+                    .ThenBy(vm => vm.ModelName)
+                    .ToListAsync();
+                formData.VehicleModels = _mapper.Map<List<VehicleModelDto>>(vehicleModels);
+
+                // Lấy danh sách cửa hàng
+                var stores = await _context.Stores
+                    .Where(s => s.IsActive)
+                    .OrderBy(s => s.StoreName)
+                    .ToListAsync();
+                formData.Stores = _mapper.Map<List<StoreDto>>(stores);
+
+                // Lấy danh sách nhân viên bán hàng
+                var salesEmployees = await _context.Employees
+                    .Include(e => e.Role)
+                    .Where(e => e.IsActive && (e.Role.RoleName == "Sales" || e.Role.RoleName == "Manager"))
+                    .OrderBy(e => e.FullName)
+                    .ToListAsync();
+                formData.SalesEmployees = _mapper.Map<List<EmployeeDto>>(salesEmployees);
+
+                // Lấy danh sách kỹ thuật viên
+                var technicians = await _context.Employees
+                    .Include(e => e.Role)
+                    .Where(e => e.IsActive && e.Role.RoleName == "Technician")
+                    .OrderBy(e => e.FullName)
+                    .ToListAsync();
+                formData.Technicians = _mapper.Map<List<EmployeeDto>>(technicians);
+
+                // Danh sách trạng thái đơn hàng
+                formData.OrderStatuses = new List<string> { "New", "In Progress", "Completed", "Cancelled", "On Hold" };
+
+                // Danh sách giai đoạn đơn hàng
+                formData.OrderStages = new List<string> { "New Profile", "Design", "Production", "Quality Check", "Delivery", "Completed" };
+
+                return formData;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi lấy dữ liệu form tạo đơn hàng");
+                throw;
+            }
+        }
+
+        public async Task<OrderTrackingDto?> TrackOrderAsync(string? orderId, string? customerPhone, string? licensePlate)
+        {
+            _logger.LogInformation("Tracking đơn hàng với OrderID: {OrderId}, Phone: {Phone}, LicensePlate: {LicensePlate}", 
+                orderId, customerPhone, licensePlate);
+
+            try
+            {
+                var query = _context.Orders
+                    .Include(o => o.AssignedEmployee)
+                    .Include(o => o.CustomerVehicle)
+                        .ThenInclude(cv => cv.VehicleModel)
+                        .ThenInclude(vm => vm.VehicleBrand)
+                    .Include(o => o.Store)
+                    .Include(o => o.OrderDetails)
+                        .ThenInclude(od => od.DecalService)
+                    .Include(o => o.OrderStageHistories.OrderBy(osh => osh.StageDate))
+                    .Include(o => o.Payments)
+                    .AsQueryable();
+
+                // Tìm kiếm theo các tiêu chí
+                if (!string.IsNullOrEmpty(orderId))
+                {
+                    query = query.Where(o => o.OrderID == orderId);
+                }
+                else if (!string.IsNullOrEmpty(customerPhone))
+                {
+                    query = query.Where(o => o.CustomerVehicle.CustomerPhone == customerPhone);
+                }
+                else if (!string.IsNullOrEmpty(licensePlate))
+                {
+                    query = query.Where(o => o.CustomerVehicle.LicensePlate == licensePlate);
+                }
+
+                var order = await query.FirstOrDefaultAsync();
+                if (order == null)
+                {
+                    return null;
+                }
+
+                var trackingDto = new OrderTrackingDto
+                {
+                    OrderID = order.OrderID,
+                    CustomerName = order.CustomerVehicle.CustomerName,
+                    CustomerPhone = order.CustomerVehicle.CustomerPhone,
+                    LicensePlate = order.CustomerVehicle.LicensePlate,
+                    VehicleBrand = order.CustomerVehicle.VehicleModel?.VehicleBrand?.BrandName,
+                    VehicleModel = order.CustomerVehicle.VehicleModel?.ModelName,
+                    OrderStatus = order.OrderStatus,
+                    CurrentStage = order.CurrentStage,
+                    OrderDate = order.OrderDate,
+                    EstimatedCompletionDate = order.EstimatedCompletionDate,
+                    AssignedEmployeeName = order.AssignedEmployee?.FullName,
+                    StoreName = order.Store?.StoreName,
+                    TotalAmount = order.TotalAmount,
+                    PaidAmount = order.Payments?.Sum(p => p.AmountPaid) ?? 0,
+                    StageHistory = _mapper.Map<List<OrderStageHistoryDto>>(order.OrderStageHistories),
+                    OrderDetails = _mapper.Map<List<OrderDetailDto>>(order.OrderDetails)
+                };
+
+                return trackingDto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi tracking đơn hàng");
+                throw;
+            }
+        }
+    }
 }

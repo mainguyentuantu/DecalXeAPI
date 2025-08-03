@@ -11,6 +11,8 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import OrderListPage from './pages/orders/OrderListPage';
 import OrderDetailPage from './pages/orders/OrderDetailPage';
+import OrderCreatePage from './pages/orders/OrderCreatePage';
+import OrderTrackingPage from './pages/orders/OrderTrackingPage';
 import CustomerListPage from './pages/CustomerListPage';
 
 // Design & Template Module Pages
@@ -100,6 +102,8 @@ function App() {
               
               {/* Order Management Routes */}
               <Route path="orders" element={<OrderListPage />} />
+              <Route path="orders/create" element={<OrderCreatePage />} />
+              <Route path="orders/tracking" element={<OrderTrackingPage />} />
               <Route path="orders/:id" element={<OrderDetailPage />} />
               
               {/* Customer Management Routes */}

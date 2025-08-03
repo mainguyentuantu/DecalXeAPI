@@ -173,6 +173,42 @@ namespace DecalXeAPI.Controllers
             return Ok(employee);
         }
 
+        /// <summary>
+        /// API để lấy dữ liệu form tạo đơn hàng mới (stores, employees, decal services, etc.)
+        /// </summary>
+        [HttpGet("create")]
+        [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
+        public async Task<ActionResult<OrderCreateFormDataDto>> GetOrderCreateFormData()
+        {
+            var formData = await _orderService.GetOrderCreateFormDataAsync();
+            return Ok(formData);
+        }
+
+        /// <summary>
+        /// API để tracking đơn hàng theo ID, số điện thoại khách hàng hoặc biển số xe
+        /// </summary>
+        [HttpGet("tracking")]
+        [AllowAnonymous] 
+        public async Task<ActionResult<OrderTrackingDto>> TrackOrder(
+            [FromQuery] string orderId = null,
+            [FromQuery] string customerPhone = null,
+            [FromQuery] string licensePlate = null)
+        {
+            if (string.IsNullOrEmpty(orderId) && string.IsNullOrEmpty(customerPhone) && string.IsNullOrEmpty(licensePlate))
+            {
+                return BadRequest("Vui lòng cung cấp ít nhất một trong các thông tin: Order ID, số điện thoại khách hàng, hoặc biển số xe.");
+            }
+
+            var trackingInfo = await _orderService.TrackOrderAsync(orderId, customerPhone, licensePlate);
+            if (trackingInfo == null)
+            {
+                return NotFound("Không tìm thấy đơn hàng với thông tin đã cung cấp.");
+            }
+
+            return Ok(trackingInfo);
+        }
+
 
         // --- HÀM HỖ TRỢ (PRIVATE): KIỂM TRA SỰ TỒN TẠI CỦA CÁC ĐỐI TƯỢNG ---
         // Các hàm này vẫn được giữ ở Controller để kiểm tra FKs trước khi gọi Service
