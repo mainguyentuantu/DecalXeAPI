@@ -14,6 +14,9 @@ import OrderDetailPage from './pages/orders/OrderDetailPage';
 import OrderCreatePage from './pages/orders/OrderCreatePage';
 import OrderTrackingPage from './pages/orders/OrderTrackingPage';
 import CustomerListPage from './pages/CustomerListPage';
+import CustomerCreatePage from './pages/CustomerCreatePage';
+import CustomerDetailPage from './pages/CustomerDetailPage';
+import CustomerEditPage from './pages/CustomerEditPage';
 
 // Design & Template Module Pages
 import DesignGalleryPage from './pages/designs/DesignGalleryPage';
@@ -115,6 +118,9 @@ function App() {
               
               {/* Customer Management Routes */}
               <Route path="customers" element={<CustomerListPage />} />
+              <Route path="customers/create" element={<CustomerCreatePage />} />
+              <Route path="customers/:id" element={<CustomerDetailPage />} />
+              <Route path="customers/:id/edit" element={<CustomerEditPage />} />
               
               {/* Design & Template Module Routes */}
               <Route path="designs" element={<DesignGalleryPage />} />
