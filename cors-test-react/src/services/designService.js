@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import { API_ENDPOINTS } from '../constants/api';
 
 export const designService = {
   // Get all designs with optional filters
@@ -11,25 +12,33 @@ export const designService = {
     if (params.page) queryParams.append('page', params.page);
     if (params.limit) queryParams.append('limit', params.limit);
 
-    const response = await apiClient.get(`/designs?${queryParams}`);
+    const response = await apiClient.get(`${API_ENDPOINTS.DESIGNS.BASE}?${queryParams}`);
     return response.data;
   },
 
   // Get design by ID
   getDesignById: async (id) => {
-    const response = await apiClient.get(`/designs/${id}`);
+    const response = await apiClient.get(API_ENDPOINTS.DESIGNS.BY_ID(id));
     return response.data;
   },
 
-  // Upload new design
-  uploadDesign: async ({ file, designName, designPrice, size }) => {
+  // Create new design
+  createDesign: async (designData) => {
+    const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, designData);
+    return response.data;
+  },
+
+  // Upload design with file
+  uploadDesign: async ({ file, designName, description, category, tags, price }) => {
     const formData = new FormData();
     formData.append('file', file);
     if (designName) formData.append('designName', designName);
-    if (designPrice) formData.append('designPrice', designPrice);
-    if (size) formData.append('size', size);
+    if (description) formData.append('description', description);
+    if (category) formData.append('category', category);
+    if (tags) formData.append('tags', tags);
+    if (price) formData.append('price', price);
 
-    const response = await apiClient.post('/designs/upload', formData, {
+    const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -39,13 +48,13 @@ export const designService = {
 
   // Update design
   updateDesign: async (id, data) => {
-    const response = await apiClient.put(`/designs/${id}`, data);
+    const response = await apiClient.put(API_ENDPOINTS.DESIGNS.BY_ID(id), data);
     return response.data;
   },
 
   // Delete design
   deleteDesign: async (id) => {
-    const response = await apiClient.delete(`/designs/${id}`);
+    const response = await apiClient.delete(API_ENDPOINTS.DESIGNS.BY_ID(id));
     return response.data;
   },
 

@@ -47,7 +47,8 @@ const DesignGalleryPage = () => {
       queryClient.invalidateQueries(['designs']);
     },
     onError: (error) => {
-      toast.error('Lỗi khi tải lên thiết kế: ' + error.message);
+      console.error('Error uploading design:', error);
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi tải lên thiết kế');
     },
   });
 
@@ -81,7 +82,17 @@ const DesignGalleryPage = () => {
       toast.error('Vui lòng chọn file để tải lên!');
       return;
     }
-    uploadMutation.mutate({ file: uploadFile, ...formData });
+    
+    const uploadData = {
+      file: uploadFile,
+      designName: formData.designName || 'Thiết kế mới',
+      description: formData.description || '',
+      category: formData.category || 'General',
+      tags: formData.tags || '',
+      price: formData.price || '0'
+    };
+    
+    uploadMutation.mutate(uploadData);
   };
 
   const handleDelete = (designId) => {
