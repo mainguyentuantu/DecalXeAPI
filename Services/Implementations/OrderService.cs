@@ -310,13 +310,11 @@ namespace DecalXeAPI.Services.Implementations
 
                 // Lấy danh sách dịch vụ decal
                 var decalServices = await _context.DecalServices
-                    .Where(ds => ds.IsActive)
                     .ToListAsync();
                 formData.DecalServices = _mapper.Map<List<DecalServiceDto>>(decalServices);
 
                 // Lấy danh sách loại decal
                 var decalTypes = await _context.DecalTypes
-                    .Where(dt => dt.IsActive)
                     .ToListAsync();
                 formData.DecalTypes = _mapper.Map<List<DecalTypeDto>>(decalTypes);
 
@@ -336,24 +334,26 @@ namespace DecalXeAPI.Services.Implementations
 
                 // Lấy danh sách cửa hàng
                 var stores = await _context.Stores
-                    .Where(s => s.IsActive)
                     .OrderBy(s => s.StoreName)
                     .ToListAsync();
                 formData.Stores = _mapper.Map<List<StoreDto>>(stores);
 
                 // Lấy danh sách nhân viên bán hàng
                 var salesEmployees = await _context.Employees
-                    .Include(e => e.Role)
-                    .Where(e => e.IsActive && (e.Role.RoleName == "Sales" || e.Role.RoleName == "Manager"))
-                    .OrderBy(e => e.FullName)
+                    .Include(e => e.Account)
+                        .ThenInclude(a => a.Role)
+                    .Where(e => e.IsActive && e.Account != null && 
+                           (e.Account.Role.RoleName == "Sales" || e.Account.Role.RoleName == "Manager"))
+                    .OrderBy(e => e.FirstName + " " + e.LastName)
                     .ToListAsync();
                 formData.SalesEmployees = _mapper.Map<List<EmployeeDto>>(salesEmployees);
 
                 // Lấy danh sách kỹ thuật viên
                 var technicians = await _context.Employees
-                    .Include(e => e.Role)
-                    .Where(e => e.IsActive && e.Role.RoleName == "Technician")
-                    .OrderBy(e => e.FullName)
+                    .Include(e => e.Account)
+                        .ThenInclude(a => a.Role)
+                    .Where(e => e.IsActive && e.Account != null && e.Account.Role.RoleName == "Technician")
+                    .OrderBy(e => e.FirstName + " " + e.LastName)
                     .ToListAsync();
                 formData.Technicians = _mapper.Map<List<EmployeeDto>>(technicians);
 
@@ -381,10 +381,10 @@ namespace DecalXeAPI.Services.Implementations
             {
                 var query = _context.Orders
                     .Include(o => o.AssignedEmployee)
+                        .ThenInclude(e => e.Store)
                     .Include(o => o.CustomerVehicle)
                         .ThenInclude(cv => cv.VehicleModel)
                         .ThenInclude(vm => vm.VehicleBrand)
-                    .Include(o => o.Store)
                     .Include(o => o.OrderDetails)
                         .ThenInclude(od => od.DecalService)
                     .Include(o => o.OrderStageHistories.OrderBy(osh => osh.StageDate))
@@ -422,9 +422,11 @@ namespace DecalXeAPI.Services.Implementations
                     OrderStatus = order.OrderStatus,
                     CurrentStage = order.CurrentStage,
                     OrderDate = order.OrderDate,
-                    EstimatedCompletionDate = order.EstimatedCompletionDate,
-                    AssignedEmployeeName = order.AssignedEmployee?.FullName,
-                    StoreName = order.Store?.StoreName,
+                    EstimatedCompletionDate = order.ExpectedArrivalTime,
+                    AssignedEmployeeName = order.AssignedEmployee != null 
+                        ? $"{order.AssignedEmployee.FirstName} {order.AssignedEmployee.LastName}" 
+                        : null,
+                    StoreName = order.AssignedEmployee?.Store?.StoreName,
                     TotalAmount = order.TotalAmount,
                     PaidAmount = order.Payments?.Sum(p => p.AmountPaid) ?? 0,
                     StageHistory = _mapper.Map<List<OrderStageHistoryDto>>(order.OrderStageHistories),

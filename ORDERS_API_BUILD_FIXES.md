@@ -1,0 +1,146 @@
+# Sửa lỗi Build cho Orders API
+
+## Các lỗi gặp phải
+
+### 1. DecalService và DecalType không có property `IsActive`
+**Lỗi:** `'DecalService' does not contain a definition for 'IsActive'`
+
+**Nguyên nhân:** Models DecalService và DecalType không có property IsActive
+
+**Giải pháp:** Loại bỏ filter `.Where(ds => ds.IsActive)` và `.Where(dt => dt.IsActive)`
+
+```csharp
+// Trước
+var decalServices = await _context.DecalServices
+    .Where(ds => ds.IsActive)  // ← Lỗi
+    .ToListAsync();
+
+// Sau
+var decalServices = await _context.DecalServices
+    .ToListAsync();
+```
+
+### 2. Store không có property `IsActive`
+**Lỗi:** `'Store' does not contain a definition for 'IsActive'`
+
+**Nguyên nhân:** Model Store không có property IsActive
+
+**Giải pháp:** Loại bỏ filter `.Where(s => s.IsActive)`
+
+```csharp
+// Trước
+var stores = await _context.Stores
+    .Where(s => s.IsActive)  // ← Lỗi
+    .OrderBy(s => s.StoreName)
+    .ToListAsync();
+
+// Sau
+var stores = await _context.Stores
+    .OrderBy(s => s.StoreName)
+    .ToListAsync();
+```
+
+### 3. Employee không có property `Role`
+**Lỗi:** `'Employee' does not contain a definition for 'Role'`
+
+**Nguyên nhân:** Role relationship nằm trong Account, không phải trực tiếp trong Employee
+
+**Giải pháp:** Sử dụng Include chain qua Account
+
+```csharp
+// Trước
+var salesEmployees = await _context.Employees
+    .Include(e => e.Role)  // ← Lỗi
+    .Where(e => e.IsActive && (e.Role.RoleName == "Sales" || e.Role.RoleName == "Manager"))
+    .OrderBy(e => e.FullName)  // ← Cũng lỗi
+    .ToListAsync();
+
+// Sau
+var salesEmployees = await _context.Employees
+    .Include(e => e.Account)
+        .ThenInclude(a => a.Role)
+    .Where(e => e.IsActive && e.Account != null && 
+           (e.Account.Role.RoleName == "Sales" || e.Account.Role.RoleName == "Manager"))
+    .OrderBy(e => e.FirstName + " " + e.LastName)
+    .ToListAsync();
+```
+
+### 4. Order không có property `Store`
+**Lỗi:** `'Order' does not contain a definition for 'Store'`
+
+**Nguyên nhân:** Order không có trực tiếp relationship với Store, mà thông qua AssignedEmployee
+
+**Giải pháp:** Include Store qua AssignedEmployee
+
+```csharp
+// Trước
+var query = _context.Orders
+    .Include(o => o.Store)  // ← Lỗi
+    .AsQueryable();
+
+// Sau
+var query = _context.Orders
+    .Include(o => o.AssignedEmployee)
+        .ThenInclude(e => e.Store)
+    .AsQueryable();
+
+// Và khi sử dụng
+StoreName = order.AssignedEmployee?.Store?.StoreName,
+```
+
+### 5. Employee không có property `FullName`
+**Lỗi:** `'Employee' does not contain a definition for 'FullName'`
+
+**Nguyên nhân:** Employee chỉ có FirstName và LastName riêng biệt
+
+**Giải pháp:** Concatenate FirstName và LastName
+
+```csharp
+// Trước
+AssignedEmployeeName = order.AssignedEmployee?.FullName,  // ← Lỗi
+
+// Sau
+AssignedEmployeeName = order.AssignedEmployee != null 
+    ? $"{order.AssignedEmployee.FirstName} {order.AssignedEmployee.LastName}" 
+    : null,
+```
+
+### 6. Order không có property `EstimatedCompletionDate`
+**Lỗi:** `'Order' does not contain a definition for 'EstimatedCompletionDate'`
+
+**Nguyên nhân:** Order model có ExpectedArrivalTime thay vì EstimatedCompletionDate
+
+**Giải pháp:** Sử dụng ExpectedArrivalTime
+
+```csharp
+// Trước
+EstimatedCompletionDate = order.EstimatedCompletionDate,  // ← Lỗi
+
+// Sau
+EstimatedCompletionDate = order.ExpectedArrivalTime,
+```
+
+## Tóm tắt Model Relationships
+
+### Employee → Role
+```
+Employee → Account → Role
+```
+
+### Order → Store
+```
+Order → AssignedEmployee → Store
+```
+
+### Order → Completion Date
+```
+Order.ExpectedArrivalTime (không phải EstimatedCompletionDate)
+```
+
+### Employee Name
+```
+Employee.FirstName + " " + Employee.LastName (không có FullName property)
+```
+
+## Kết quả
+Sau khi sửa các lỗi trên, code sẽ build thành công và các API endpoints sẽ hoạt động đúng với cấu trúc database thực tế.
