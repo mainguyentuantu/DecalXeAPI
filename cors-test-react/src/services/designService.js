@@ -35,7 +35,8 @@ export const designService = {
       description: designData.description || '',
       category: designData.category || 'General',
       tags: designData.tags || '',
-      price: designData.price || 0
+      price: designData.price || 0,
+      designURL: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
     };
 
     const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, payload, {
@@ -49,10 +50,11 @@ export const designService = {
   // Test function with minimal payload
   testCreateDesign: async () => {
     const minimalPayload = {
-      name: 'Test Design',
+      designName: 'Test Design',
       description: 'Test description',
       category: 'Test',
       price: 0,
+      designURL: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
       isActive: true
     };
 
@@ -70,7 +72,8 @@ export const designService = {
   testCreateDesignSimple: async () => {
     const simplePayload = {
       designName: 'Simple Test Design',
-      description: 'Simple test'
+      description: 'Simple test',
+      designURL: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
     };
 
     console.log('Testing with simple payload:', simplePayload);
@@ -97,49 +100,34 @@ export const designService = {
         reader.readAsDataURL(file);
       });
 
-      // Prepare JSON payload - try different field names
+      // Prepare JSON payload with DesignURL field
       const payload = {
-        // Try common field names
-        name: designName || 'Thiết kế mới',
+        // Basic design info
         designName: designName || 'Thiết kế mới',
-        title: designName || 'Thiết kế mới',
-        
         description: description || '',
         category: category || 'General',
         tags: tags || '',
         price: price || 0,
         
-        // Image data fields - try different approaches
-        imageData: base64Data,
-        image: base64Data,
-        fileData: base64Data,
-        data: base64Data,
-        imageUrl: `data:${file.type};base64,${base64Data}`,
-        fileContent: base64Data,
+        // DesignURL field - API expects this
+        designURL: `data:${file.type};base64,${base64Data}`,
         
-        // File metadata
+        // Additional metadata
         fileName: file.name,
         fileType: file.type,
         fileSize: file.size,
-        
-        // Additional fields that might be required
-        isActive: true,
-        status: 'Active',
-        createdDate: new Date().toISOString(),
-        
-        // Try without some fields that might cause issues
-        // Remove complex fields that might not be expected
+        isActive: true
       };
 
-      console.log('Uploading design with Base64...', {
+      console.log('Uploading design with DesignURL...', {
         designName: payload.designName,
         fileSize: payload.fileSize,
-        base64Length: payload.imageData.length
+        designURLLength: payload.designURL.length
       });
 
       console.log('Full payload structure:', {
         ...payload,
-        imageData: payload.imageData.substring(0, 100) + '...' // Log first 100 chars
+        designURL: payload.designURL.substring(0, 100) + '...' // Log first 100 chars
       });
 
       const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, payload, {

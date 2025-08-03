@@ -55,7 +55,12 @@ const DesignGalleryPage = () => {
       } else if (error.response?.status === 413) {
         toast.error('File quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
       } else if (error.response?.status === 400) {
-        toast.error('Dữ liệu không hợp lệ: ' + (error.response?.data?.message || ''));
+        const errorData = error.response?.data;
+        if (errorData?.errors?.DesignURL) {
+          toast.error('Lỗi DesignURL: ' + errorData.errors.DesignURL[0]);
+        } else {
+          toast.error('Dữ liệu không hợp lệ: ' + (errorData?.message || ''));
+        }
       } else if (error.response?.status === 500) {
         toast.error('Lỗi server. Vui lòng thử lại sau.');
       } else {
