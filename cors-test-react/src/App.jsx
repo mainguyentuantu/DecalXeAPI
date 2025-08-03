@@ -18,6 +18,12 @@ import CustomerCreatePage from './pages/CustomerCreatePage';
 import CustomerDetailPage from './pages/CustomerDetailPage';
 import CustomerEditPage from './pages/CustomerEditPage';
 
+// Vehicle Management Pages
+import VehicleListPage from './pages/vehicles/VehicleListPage';
+import BrandCreatePage from './pages/vehicles/BrandCreatePage';
+import BrandDetailPage from './pages/vehicles/BrandDetailPage';
+import ModelCreatePage from './pages/vehicles/ModelCreatePage';
+
 // Design & Template Module Pages
 import DesignGalleryPage from './pages/designs/DesignGalleryPage';
 import DesignApprovalPage from './pages/designs/DesignApprovalPage';
@@ -121,6 +127,12 @@ function App() {
               <Route path="customers/create" element={<CustomerCreatePage />} />
               <Route path="customers/:id" element={<CustomerDetailPage />} />
               <Route path="customers/:id/edit" element={<CustomerEditPage />} />
+              
+              {/* Vehicle Management Routes */}
+              <Route path="vehicles" element={<VehicleListPage />} />
+              <Route path="vehicles/brands/create" element={<BrandCreatePage />} />
+              <Route path="vehicles/brands/:id" element={<BrandDetailPage />} />
+              <Route path="vehicles/models/create" element={<ModelCreatePage />} />
               
               {/* Design & Template Module Routes */}
               <Route path="designs" element={<DesignGalleryPage />} />
