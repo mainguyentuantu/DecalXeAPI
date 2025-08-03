@@ -26,6 +26,8 @@ export const API_ENDPOINTS = {
   ORDERS: {
     BASE: '/Orders',
     BY_ID: (id) => `/Orders/${id}`,
+    CREATE: '/Orders/create',
+    TRACKING: '/Orders/tracking',
     ASSIGN_EMPLOYEE: (orderId, employeeId) => `/Orders/${orderId}/assign/${employeeId}`,
     UNASSIGN_EMPLOYEE: (orderId) => `/Orders/${orderId}/unassign`,
     ASSIGNED_EMPLOYEE: (orderId) => `/Orders/${orderId}/assigned-employee`,
