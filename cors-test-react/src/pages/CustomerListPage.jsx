@@ -91,7 +91,12 @@ const CustomerListPage = () => {
             {/* Birth Date */}
             <div className="mb-4 text-sm">
               <span className="text-gray-600">Ngày sinh: </span>
-              <span>{format(new Date(customer.dateOfBirth), 'dd/MM/yyyy')}</span>
+              <span>
+                {customer.dateOfBirth && !isNaN(new Date(customer.dateOfBirth).getTime()) 
+                  ? format(new Date(customer.dateOfBirth), 'dd/MM/yyyy')
+                  : 'Chưa cập nhật'
+                }
+              </span>
             </div>
 
             {/* Actions */}
