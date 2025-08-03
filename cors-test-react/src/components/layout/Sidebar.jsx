@@ -58,7 +58,8 @@ const navigation = [
     roles: ['Admin', 'Manager', 'Sales', 'Technician'],
     children: [
       { name: 'Danh sách xe', href: '/vehicles' },
-      { name: 'Đăng ký xe mới', href: '/vehicles/register' },
+      { name: 'Thêm thương hiệu', href: '/vehicles/brands/create' },
+      { name: 'Thêm mẫu xe', href: '/vehicles/models/create' },
     ],
   },
   {

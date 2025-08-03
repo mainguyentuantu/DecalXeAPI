@@ -75,6 +75,21 @@ export const API_ENDPOINTS = {
     BASE: '/Roles',
     BY_ID: (id) => `/Roles/${id}`,
   },
+  
+  // Vehicle Brands
+  VEHICLE_BRANDS: {
+    BASE: '/VehicleBrands',
+    BY_ID: (id) => `/VehicleBrands/${id}`,
+  },
+  
+  // Vehicle Models
+  VEHICLE_MODELS: {
+    BASE: '/VehicleModels',
+    BY_ID: (id) => `/VehicleModels/${id}`,
+    DECAL_TYPES: (modelId) => `/VehicleModels/${modelId}/decaltypes`,
+    DECAL_TYPE: (modelId, decalTypeId) => `/VehicleModels/${modelId}/decaltypes/${decalTypeId}`,
+    TEMPLATES: (modelId) => `/VehicleModels/${modelId}/templates`,
+  },
 };
 
 export const HTTP_STATUS = {
