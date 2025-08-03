@@ -38,10 +38,12 @@ const CustomerListPage = () => {
           <h1 className="text-2xl font-bold text-gray-900">Quản lý khách hàng</h1>
           <p className="text-gray-600">Danh sách tất cả khách hàng trong hệ thống</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Thêm khách hàng mới
-        </Button>
+        <Link to="/customers/create">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Thêm khách hàng mới
+          </Button>
+        </Link>
       </div>
 
       {/* Search */}
@@ -102,14 +104,18 @@ const CustomerListPage = () => {
             {/* Actions */}
             <div className="flex justify-between pt-4 border-t border-gray-200">
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
-                  <Eye className="h-4 w-4 mr-1" />
-                  Xem
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Edit className="h-4 w-4 mr-1" />
-                  Sửa
-                </Button>
+                <Link to={`/customers/${customer.customerID}`}>
+                  <Button variant="outline" size="sm">
+                    <Eye className="h-4 w-4 mr-1" />
+                    Xem
+                  </Button>
+                </Link>
+                <Link to={`/customers/${customer.customerID}/edit`}>
+                  <Button variant="outline" size="sm">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Sửa
+                  </Button>
+                </Link>
               </div>
               
               <Button
