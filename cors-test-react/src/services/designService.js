@@ -28,19 +28,53 @@ export const designService = {
     return response.data;
   },
 
-  // Upload design with file
-  uploadDesign: async ({ file, designName, description, category, tags, price }) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    if (designName) formData.append('designName', designName);
-    if (description) formData.append('description', description);
-    if (category) formData.append('category', category);
-    if (tags) formData.append('tags', tags);
-    if (price) formData.append('price', price);
+  // Create design without file (for testing)
+  createDesignWithoutFile: async (designData) => {
+    const payload = {
+      designName: designData.designName || 'Thiết kế mới',
+      description: designData.description || '',
+      category: designData.category || 'General',
+      tags: designData.tags || '',
+      price: designData.price || 0
+    };
 
-    const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, formData, {
+    const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, payload, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.data;
+  },
+
+  // Upload design with file (Base64)
+  uploadDesign: async ({ file, designName, description, category, tags, price }) => {
+    // Convert file to Base64
+    const base64Data = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result.split(',')[1]; // Remove data:image/...;base64, prefix
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    // Prepare JSON payload
+    const payload = {
+      designName: designName || 'Thiết kế mới',
+      description: description || '',
+      category: category || 'General',
+      tags: tags || '',
+      price: price || 0,
+      imageData: base64Data,
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size
+    };
+
+    const response = await apiClient.post(API_ENDPOINTS.DESIGNS.BASE, payload, {
+      headers: {
+        'Content-Type': 'application/json',
       },
     });
     return response.data;

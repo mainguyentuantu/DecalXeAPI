@@ -40,19 +40,33 @@ const DesignEditorPage = () => {
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
-      if (file.type.startsWith('image/')) {
-        setSelectedFile(file);
-        const reader = new FileReader();
-        reader.onload = (e) => setPreview(e.target.result);
-        reader.readAsDataURL(file);
-        
-        // Auto-fill design name if empty
-        if (!formData.designName) {
-          const fileName = file.name.replace(/\.[^/.]+$/, "");
-          setFormData(prev => ({ ...prev, designName: fileName }));
-        }
-      } else {
+      // Check file type
+      if (!file.type.startsWith('image/')) {
         toast.error('Vui lòng chọn file hình ảnh!');
+        return;
+      }
+
+      // Check file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error('File quá lớn! Vui lòng chọn file nhỏ hơn 5MB.');
+        return;
+      }
+
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => setPreview(e.target.result);
+      reader.readAsDataURL(file);
+      
+      // Auto-fill design name if empty
+      if (!formData.designName) {
+        const fileName = file.name.replace(/\.[^/.]+$/, "");
+        setFormData(prev => ({ ...prev, designName: fileName }));
+      }
+
+      // Clear file error
+      if (errors.file) {
+        setErrors(prev => ({ ...prev, file: '' }));
       }
     }
   };
@@ -104,7 +118,17 @@ const DesignEditorPage = () => {
     },
     onError: (error) => {
       console.error('Error saving design:', error);
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi lưu thiết kế');
+      
+      // Handle specific error cases
+      if (error.response?.status === 415) {
+        toast.error('API không hỗ trợ upload file. Vui lòng liên hệ admin để cấu hình.');
+      } else if (error.response?.status === 413) {
+        toast.error('File quá lớn. Vui lòng chọn file nhỏ hơn 5MB.');
+      } else if (error.response?.status === 400) {
+        toast.error('Dữ liệu không hợp lệ: ' + (error.response?.data?.message || ''));
+      } else {
+        toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi lưu thiết kế');
+      }
     }
   });
 
