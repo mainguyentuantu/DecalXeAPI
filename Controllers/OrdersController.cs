@@ -61,11 +61,18 @@ namespace DecalXeAPI.Controllers
         {
             try
             {
+                // Log thông tin đầu vào để debug
+                Console.WriteLine($"Creating order with data: CustomerName={createDto.CustomerName}, CustomerPhone={createDto.CustomerPhone}, TotalAmount={createDto.TotalAmount}");
+                Console.WriteLine($"Vehicle info: VehicleID={createDto.VehicleID}, ChassisNumber={createDto.ChassisNumber}, LicensePlate={createDto.LicensePlate}");
+                Console.WriteLine($"Order details count: {createDto.OrderDetails?.Count ?? 0}");
+                
                 var orderDto = await _orderService.CreateOrderWithCustomerAndVehicleAsync(createDto);
                 return CreatedAtAction(nameof(GetOrder), new { id = orderDto.OrderID }, orderDto);
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error creating order: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return BadRequest(new { message = ex.Message });
             }
         }

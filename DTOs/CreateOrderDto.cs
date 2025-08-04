@@ -34,7 +34,6 @@ namespace DecalXeAPI.DTOs
         [Column(TypeName = "decimal(18,2)")]
         public decimal TotalAmount { get; set; }
 
-        public string? StoreId { get; set; }
         public string? AssignedEmployeeID { get; set; }
         public DateTime? EstimatedCompletionDate { get; set; }
         public DateTime? ExpectedArrivalTime { get; set; }
