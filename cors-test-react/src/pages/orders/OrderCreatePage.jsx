@@ -89,6 +89,9 @@ const OrderCreatePage = () => {
       chassisNumber: formState.chassisNumber,
       assignedEmployeeID: formState.assignedEmployeeId,
       estimatedCompletionDate: formState.estimatedCompletionDate ? new Date(formState.estimatedCompletionDate).toISOString() : null,
+      expectedArrivalTime: null, // Có thể thêm field này vào form sau
+      priority: "Medium", // Có thể thêm field này vào form sau
+      isCustomDecal: false, // Có thể thêm field này vào form sau
       notes: formState.notes,
       totalAmount: formState.totalAmount,
       orderDetails: [

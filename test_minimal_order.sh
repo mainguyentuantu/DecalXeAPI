@@ -12,6 +12,9 @@ ORDER_DATA='{
   "chassisNumber": "MIN123456",
   "assignedEmployeeID": "",
   "estimatedCompletionDate": null,
+  "expectedArrivalTime": null,
+  "priority": "Medium",
+  "isCustomDecal": false,
   "notes": "",
   "totalAmount": 100000,
   "orderDetails": [
