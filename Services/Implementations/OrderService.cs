@@ -252,6 +252,13 @@ namespace DecalXeAPI.Services.Implementations
                     _logger.LogInformation("Processing detail: DecalServiceId={DecalServiceId}, DecalTypeId={DecalTypeId}, Quantity={Quantity}", 
                         detail.DecalServiceId, detail.DecalTypeId, detail.Quantity);
                     
+                    // Kiểm tra xem có ít nhất một trong hai trường được điền không
+                    if (string.IsNullOrEmpty(detail.DecalServiceId) && string.IsNullOrEmpty(detail.DecalTypeId))
+                    {
+                        _logger.LogWarning("Bỏ qua order detail vì không có DecalServiceId hoặc DecalTypeId");
+                        continue;
+                    }
+                    
                     var orderDetail = new OrderDetail
                     {
                         OrderID = order.OrderID,
@@ -274,6 +281,7 @@ namespace DecalXeAPI.Services.Implementations
                         else
                         {
                             _logger.LogWarning("DecalService với ID {ServiceID} không tồn tại", detail.DecalServiceId);
+                            continue; // Bỏ qua nếu không tìm thấy service
                         }
                     }
                     else if (!string.IsNullOrEmpty(detail.DecalTypeId))
@@ -294,18 +302,32 @@ namespace DecalXeAPI.Services.Implementations
                             {
                                 _logger.LogWarning("VehicleModelDecalType không tồn tại cho ModelID={ModelID}, DecalTypeID={DecalTypeID}", 
                                     createDto.VehicleID, detail.DecalTypeId);
+                                continue; // Bỏ qua nếu không tìm thấy vehicle model decal type
                             }
                         }
                         else
                         {
                             _logger.LogWarning("Không có VehicleID để tìm VehicleModelDecalType");
+                            continue; // Bỏ qua nếu không có vehicle ID
                         }
                     }
 
                     _context.OrderDetails.Add(orderDetail);
+                    _logger.LogInformation("Added order detail: ServiceID={ServiceID}, DecalTypeID={DecalTypeID}, Price={Price}, FinalPrice={FinalPrice}", 
+                        orderDetail.ServiceID, orderDetail.DecalTypeID, orderDetail.Price, orderDetail.FinalCalculatedPrice);
                 }
 
                 await _context.SaveChangesAsync();
+                
+                // Kiểm tra xem có order detail nào được tạo không
+                var orderDetailsCount = await _context.OrderDetails.CountAsync(od => od.OrderID == order.OrderID);
+                if (orderDetailsCount == 0)
+                {
+                    throw new InvalidOperationException("Không thể tạo đơn hàng vì không có chi tiết đơn hàng hợp lệ");
+                }
+                
+                _logger.LogInformation("Đã tạo {Count} order details cho order {OrderID}", orderDetailsCount, order.OrderID);
+                
                 await transaction.CommitAsync();
 
                 _logger.LogInformation("Đã tạo đơn hàng thành công với ID: {OrderID}", order.OrderID);

@@ -74,6 +74,25 @@ const OrderCreatePage = () => {
         return;
       }
 
+      // Kiểm tra xem có dữ liệu form không
+      if (!formData) {
+        toast.error("Dữ liệu form chưa được tải");
+        return;
+      }
+
+      // Kiểm tra xem các service/type được chọn có tồn tại trong dữ liệu không
+      const selectedServices = formData.decalServices?.filter(s => formState.decalServices.includes(s.serviceID)) || [];
+      const selectedTypes = formData.decalTypes?.filter(t => formState.decalTypes.includes(t.decalTypeID)) || [];
+      
+      console.log("Selected services:", selectedServices);
+      console.log("Selected types:", selectedTypes);
+
+      // Kiểm tra xem có service/type nào được chọn không
+      if (selectedServices.length === 0 && selectedTypes.length === 0) {
+        toast.error("Không tìm thấy dịch vụ hoặc loại decal đã chọn trong dữ liệu");
+        return;
+      }
+
     const orderData = {
       customerName: formState.customerName,
       customerPhone: formState.customerPhone,
@@ -87,16 +106,20 @@ const OrderCreatePage = () => {
       notes: formState.notes,
       totalAmount: formState.totalAmount,
       orderDetails: [
-        ...formState.decalServices.map((serviceId) => ({
-          decalServiceId: serviceId,
+        ...selectedServices.map((service) => ({
+          decalServiceId: service.serviceID,
           quantity: 1,
         })),
-        ...formState.decalTypes.map((typeId) => ({
-          decalTypeId: typeId,
+        ...selectedTypes.map((type) => ({
+          decalTypeId: type.decalTypeID,
           quantity: 1,
         })),
       ],
     };
+
+    console.log("Form state:", formState);
+    console.log("Decal services selected:", formState.decalServices);
+    console.log("Decal types selected:", formState.decalTypes);
 
     try {
       console.log("Sending order data:", orderData);
@@ -133,11 +156,25 @@ const OrderCreatePage = () => {
     );
   }
 
-  console.log("Form data loaded:", formData);
-  console.log("Vehicle brands:", formData?.vehicleBrands);
-  console.log("Vehicle models:", formData?.vehicleModels);
-  console.log("Decal services:", formData?.decalServices);
-  console.log("Decal types:", formData?.decalTypes);
+        console.log("Form data loaded:", formData);
+      console.log("Vehicle brands:", formData?.vehicleBrands);
+      console.log("Vehicle models:", formData?.vehicleModels);
+      console.log("Decal services:", formData?.decalServices);
+      console.log("Decal types:", formData?.decalTypes);
+      
+      // Kiểm tra xem có dữ liệu không
+      if (!formData?.vehicleBrands || formData.vehicleBrands.length === 0) {
+        console.warn("Không có dữ liệu vehicle brands");
+      }
+      if (!formData?.vehicleModels || formData.vehicleModels.length === 0) {
+        console.warn("Không có dữ liệu vehicle models");
+      }
+      if (!formData?.decalServices || formData.decalServices.length === 0) {
+        console.warn("Không có dữ liệu decal services");
+      }
+      if (!formData?.decalTypes || formData.decalTypes.length === 0) {
+        console.warn("Không có dữ liệu decal types");
+      }
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
