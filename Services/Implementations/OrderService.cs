@@ -156,6 +156,13 @@ namespace DecalXeAPI.Services.Implementations
                 {
                     throw new ArgumentException("Phải có ít nhất một chi tiết đơn hàng");
                 }
+                
+                // Kiểm tra xem có thông tin xe nào được cung cấp không
+                if (string.IsNullOrEmpty(createDto.ChassisNumber) && 
+                    string.IsNullOrEmpty(createDto.LicensePlate))
+                {
+                    throw new ArgumentException("Phải cung cấp ít nhất một thông tin xe (số khung hoặc biển số)");
+                }
                 // 1. Tìm hoặc tạo khách hàng
                 var customer = await _context.Customers
                     .FirstOrDefaultAsync(c => c.PhoneNumber == createDto.CustomerPhone);
@@ -180,34 +187,39 @@ namespace DecalXeAPI.Services.Implementations
 
                 // 2. Tìm hoặc tạo xe của khách hàng
                 CustomerVehicle? customerVehicle = null;
-                if (!string.IsNullOrEmpty(createDto.VehicleID))
+                
+                // Tìm xe theo thứ tự ưu tiên: ChassisNumber > LicensePlate > VehicleID
+                if (!string.IsNullOrEmpty(createDto.ChassisNumber))
                 {
-                    // Nếu có VehicleID, tìm xe theo ID
-                    customerVehicle = await _context.CustomerVehicles
-                        .FirstOrDefaultAsync(cv => cv.VehicleID == createDto.VehicleID);
-                }
-                else if (!string.IsNullOrEmpty(createDto.ChassisNumber))
-                {
-                    // Nếu có số khung, tìm xe theo số khung
                     customerVehicle = await _context.CustomerVehicles
                         .FirstOrDefaultAsync(cv => cv.ChassisNumber == createDto.ChassisNumber);
                 }
                 else if (!string.IsNullOrEmpty(createDto.LicensePlate))
                 {
-                    // Nếu có biển số, tìm xe theo biển số
                     customerVehicle = await _context.CustomerVehicles
                         .FirstOrDefaultAsync(cv => cv.LicensePlate == createDto.LicensePlate);
                 }
-
-                if (customerVehicle == null && !string.IsNullOrEmpty(createDto.ChassisNumber))
+                else if (!string.IsNullOrEmpty(createDto.VehicleID))
                 {
-                    // Tạo xe mới nếu có thông tin số khung
+                    customerVehicle = await _context.CustomerVehicles
+                        .FirstOrDefaultAsync(cv => cv.VehicleID == createDto.VehicleID);
+                }
+
+                // Tạo xe mới nếu không tìm thấy và có thông tin cần thiết
+                if (customerVehicle == null && (!string.IsNullOrEmpty(createDto.ChassisNumber) || !string.IsNullOrEmpty(createDto.LicensePlate)))
+                {
+                    // Đảm bảo có ít nhất một trong hai thông tin bắt buộc
+                    if (string.IsNullOrEmpty(createDto.ChassisNumber) && string.IsNullOrEmpty(createDto.LicensePlate))
+                    {
+                        throw new ArgumentException("Phải cung cấp ít nhất số khung hoặc biển số xe");
+                    }
+
                     customerVehicle = new CustomerVehicle
                     {
                         CustomerID = customer.CustomerID,
-                        ChassisNumber = createDto.ChassisNumber,
-                        LicensePlate = createDto.LicensePlate,
-                        ModelID = createDto.VehicleID ?? "" // Nếu có VehicleID thì dùng làm ModelID
+                        ChassisNumber = createDto.ChassisNumber ?? "N/A", // Đặt giá trị mặc định nếu không có
+                        LicensePlate = createDto.LicensePlate ?? "",
+                        ModelID = createDto.VehicleID ?? "" // VehicleID từ frontend thực chất là ModelID
                     };
                     
                     // Kiểm tra xem ModelID có tồn tại không
@@ -233,8 +245,10 @@ namespace DecalXeAPI.Services.Implementations
                     AssignedEmployeeID = createDto.AssignedEmployeeID,
                     VehicleID = customerVehicle?.VehicleID,
                     ExpectedArrivalTime = createDto.ExpectedArrivalTime,
+                    EstimatedCompletionDate = createDto.EstimatedCompletionDate,
                     Priority = createDto.Priority,
                     IsCustomDecal = createDto.IsCustomDecal,
+                    Notes = createDto.Notes,
                     OrderStatus = "New",
                     CurrentStage = "New Profile"
                 };

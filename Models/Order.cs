@@ -35,6 +35,8 @@ namespace DecalXeAPI.Models
 
         public DateTime? ExpectedArrivalTime { get; set; } // Thời gian dự kiến khách hàng đến (Nullable)
 
+        public DateTime? EstimatedCompletionDate { get; set; } // Ngày dự kiến hoàn thành
+
         [Required] // Bắt buộc phải có giai đoạn hiện tại
         [MaxLength(50)]
         public string CurrentStage { get; set; } = "New Profile"; // Giai đoạn hiện tại của đơn hàng
@@ -43,6 +45,9 @@ namespace DecalXeAPI.Models
         public string? Priority { get; set; } // Độ ưu tiên (ví dụ: "Low", "Medium", "High")
 
         public bool IsCustomDecal { get; set; } = false; // <-- MỚI: Đánh dấu đây có phải đơn hàng decal tùy chỉnh không
+
+        [MaxLength(1000)]
+        public string? Notes { get; set; } // Ghi chú cho đơn hàng
 
         // --- NAVIGATION PROPERTIES HIỆN CÓ (Giữ nguyên) ---
         [JsonIgnore] // Để tránh lỗi vòng lặp JSON

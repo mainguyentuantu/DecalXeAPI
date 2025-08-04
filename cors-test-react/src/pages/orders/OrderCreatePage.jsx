@@ -74,16 +74,21 @@ const OrderCreatePage = () => {
         return;
       }
 
+      // Kiểm tra thông tin xe
+      if (!formState.chassisNumber && !formState.licensePlate) {
+        toast.error("Vui lòng nhập ít nhất một thông tin xe (số khung hoặc biển số)");
+        return;
+      }
+
     const orderData = {
       customerName: formState.customerName,
       customerPhone: formState.customerPhone,
       customerEmail: formState.customerEmail,
-      vehicleID: formState.vehicleModel, // Assuming vehicleModel contains the vehicle ID
+      vehicleID: formState.vehicleModel, // This should be the vehicle model ID
       licensePlate: formState.licensePlate,
       chassisNumber: formState.chassisNumber,
-      storeId: formState.storeId,
       assignedEmployeeID: formState.assignedEmployeeId,
-      estimatedCompletionDate: formState.estimatedCompletionDate,
+      estimatedCompletionDate: formState.estimatedCompletionDate ? new Date(formState.estimatedCompletionDate).toISOString() : null,
       notes: formState.notes,
       totalAmount: formState.totalAmount,
       orderDetails: [
@@ -106,6 +111,13 @@ const OrderCreatePage = () => {
     } catch (error) {
       console.error("Error creating order:", error);
       console.error("Error response:", error.response?.data);
+      
+      // Hiển thị thông báo lỗi chi tiết hơn
+      if (error.response?.data?.message) {
+        toast.error(`Lỗi tạo đơn hàng: ${error.response.data.message}`);
+      } else {
+        toast.error("Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.");
+      }
     }
   };
 
