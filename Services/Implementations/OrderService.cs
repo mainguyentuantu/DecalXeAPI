@@ -29,66 +29,88 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<(IEnumerable<OrderDto> Orders, int TotalCount)> GetOrdersAsync(OrderQueryParams queryParams)
         {
-            _logger.LogInformation("Lấy danh sách đơn hàng với các tham số: {SearchTerm}, {Status}, {SortBy}, {SortOrder}, Page {PageNumber} Size {PageSize}",
-                                    queryParams.SearchTerm, queryParams.Status, queryParams.SortBy, queryParams.SortOrder, queryParams.PageNumber, queryParams.PageSize);
-
-            var query = _context.Orders
-                                .Include(o => o.AssignedEmployee)
-                                .Include(o => o.CustomerVehicle) // <-- BƯỚC 1: NẠP DỮ LIỆU XE
-                                .ThenInclude(cv => cv.VehicleModel) 
-                                .ThenInclude(vm => vm.VehicleBrand) 
-                
-                                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(queryParams.Status))
+            try
             {
-                query = query.Where(o => o.OrderStatus.ToLower() == queryParams.Status.ToLower());
-            }
+                _logger.LogInformation("Lấy danh sách đơn hàng với các tham số: {SearchTerm}, {Status}, {SortBy}, {SortOrder}, Page {PageNumber} Size {PageSize}",
+                                        queryParams.SearchTerm, queryParams.Status, queryParams.SortBy, queryParams.SortOrder, queryParams.PageNumber, queryParams.PageSize);
 
-            if (!string.IsNullOrEmpty(queryParams.SearchTerm))
-            {
-                var searchTermLower = queryParams.SearchTerm.ToLower();
-                // BƯỚC 2: CẬP NHẬT LẠI TOÀN BỘ LOGIC TÌM KIẾM (REMOVED CUSTOMER SEARCH)
-                query = query.Where(o =>
-                    (o.AssignedEmployee != null && (o.AssignedEmployee.FirstName + " " + o.AssignedEmployee.LastName).ToLower().Contains(searchTermLower)) ||
-                    (o.CustomerVehicle != null && o.CustomerVehicle.ChassisNumber.ToLower().Contains(searchTermLower)) // <-- Sửa từ LicensePlate thành ChassisNumber
-                );
-            }
+                var query = _context.Orders
+                                    .Include(o => o.AssignedEmployee)
+                                    .Include(o => o.CustomerVehicle)
+                                        .ThenInclude(cv => cv.VehicleModel)
+                                            .ThenInclude(vm => vm.VehicleBrand)
+                                    .AsQueryable();
 
-            if (!string.IsNullOrEmpty(queryParams.SortBy))
-            {
-                switch (queryParams.SortBy.ToLower())
+                if (!string.IsNullOrEmpty(queryParams.Status))
                 {
-                    case "orderdate":
-                        query = queryParams.SortOrder.ToLower() == "desc" ? query.OrderByDescending(o => o.OrderDate) : query.OrderBy(o => o.OrderDate);
-                        break;
-                    case "totalamount":
-                        query = queryParams.SortOrder.ToLower() == "desc" ? query.OrderByDescending(o => o.TotalAmount) : query.OrderBy(o => o.TotalAmount);
-                        break;
-                    // Removed customername sorting as Customer is disconnected
-                    case "orderstatus":
-                        query = queryParams.SortOrder.ToLower() == "desc" ? query.OrderByDescending(o => o.OrderStatus) : query.OrderBy(o => o.OrderStatus);
-                        break;
-                    default:
-                        query = query.OrderBy(o => o.OrderDate);
-                        break;
+                    query = query.Where(o => o.OrderStatus.ToLower() == queryParams.Status.ToLower());
                 }
+
+                if (!string.IsNullOrEmpty(queryParams.SearchTerm))
+                {
+                    var searchTermLower = queryParams.SearchTerm.ToLower();
+                    query = query.Where(o =>
+                        (o.AssignedEmployee != null && (o.AssignedEmployee.FirstName + " " + o.AssignedEmployee.LastName).ToLower().Contains(searchTermLower)) ||
+                        (o.CustomerVehicle != null && o.CustomerVehicle.ChassisNumber.ToLower().Contains(searchTermLower))
+                    );
+                }
+
+                if (!string.IsNullOrEmpty(queryParams.SortBy))
+                {
+                    switch (queryParams.SortBy.ToLower())
+                    {
+                        case "orderdate":
+                            query = queryParams.SortOrder.ToLower() == "desc" ? query.OrderByDescending(o => o.OrderDate) : query.OrderBy(o => o.OrderDate);
+                            break;
+                        case "totalamount":
+                            query = queryParams.SortOrder.ToLower() == "desc" ? query.OrderByDescending(o => o.TotalAmount) : query.OrderBy(o => o.TotalAmount);
+                            break;
+                        case "orderstatus":
+                            query = queryParams.SortOrder.ToLower() == "desc" ? query.OrderByDescending(o => o.OrderStatus) : query.OrderBy(o => o.OrderStatus);
+                            break;
+                        default:
+                            query = query.OrderBy(o => o.OrderDate);
+                            break;
+                    }
+                }
+                else
+                {
+                    query = query.OrderBy(o => o.OrderDate);
+                }
+
+                var totalCount = await query.CountAsync();
+                var orders = await query
+                                    .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
+                                    .Take(queryParams.PageSize)
+                                    .ToListAsync();
+
+                // Lọc các order có liên kết bị thiếu để tránh lỗi khi map
+                var safeOrders = orders.Where(o =>
+                    (o.CustomerVehicle == null || (o.CustomerVehicle.VehicleModel == null || o.CustomerVehicle.VehicleModel.VehicleBrand != null))
+                ).ToList();
+
+                var orderDtos = new List<OrderDto>();
+                foreach (var order in safeOrders)
+                {
+                    try
+                    {
+                        var dto = _mapper.Map<OrderDto>(order);
+                        orderDtos.Add(dto);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Lỗi ánh xạ Order sang OrderDto với OrderID={order.OrderID}");
+                    }
+                }
+
+                _logger.LogInformation("Đã trả về {Count} đơn hàng (tổng cộng {TotalCount}).", orderDtos.Count, totalCount);
+                return (orderDtos, totalCount);
             }
-            else
+            catch (Exception ex)
             {
-                query = query.OrderBy(o => o.OrderDate);
+                _logger.LogError(ex, "Lỗi khi lấy danh sách đơn hàng");
+                return (new List<OrderDto>(), 0);
             }
-
-            var totalCount = await query.CountAsync();
-            var orders = await query
-                                .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
-                                .Take(queryParams.PageSize)
-                                .ToListAsync();
-
-            var orderDtos = _mapper.Map<List<OrderDto>>(orders);
-
-            _logger.LogInformation("Đã trả về {Count} đơn hàng (tổng cộng {TotalCount}).", orderDtos.Count, totalCount);
-            return (orderDtos, totalCount);
         }
 
         public async Task<OrderDto?> GetOrderByIdAsync(string id)

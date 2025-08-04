@@ -4,8 +4,13 @@ import { API_ENDPOINTS } from '../constants/api';
 export const orderService = {
   // Get all orders with pagination and filtering
   getOrders: async (params = {}) => {
-    const response = await apiClient.get(API_ENDPOINTS.ORDERS.BASE, { params });
-    return response.data;
+    try {
+      const response = await apiClient.get(API_ENDPOINTS.ORDERS.BASE, { params });
+      return response.data;
+    } catch (error) {
+      // Có thể log lỗi tại đây nếu muốn
+      throw error;
+    }
   },
 
   // Get order by ID
