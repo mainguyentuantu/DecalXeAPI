@@ -115,11 +115,6 @@ namespace DecalXeAPI.Services.Implementations
         {
             _logger.LogInformation("Yêu cầu tạo đơn hàng mới");
 
-
-
-
-           
-
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Đã tạo Order mới với ID: {OrderID}", order.OrderID);
@@ -130,6 +125,204 @@ namespace DecalXeAPI.Services.Implementations
 
             var orderDto = _mapper.Map<OrderDto>(order);
             return orderDto;
+        }
+
+        public async Task<OrderDto> CreateOrderWithCustomerAndVehicleAsync(CreateOrderDto createDto)
+        {
+            _logger.LogInformation("Yêu cầu tạo đơn hàng mới với thông tin khách hàng và xe");
+            _logger.LogInformation("CreateDto: CustomerName={CustomerName}, CustomerPhone={CustomerPhone}, TotalAmount={TotalAmount}", 
+                createDto.CustomerName, createDto.CustomerPhone, createDto.TotalAmount);
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Validation
+                if (string.IsNullOrEmpty(createDto.CustomerName))
+                {
+                    throw new ArgumentException("Tên khách hàng không được để trống");
+                }
+                
+                if (string.IsNullOrEmpty(createDto.CustomerPhone))
+                {
+                    throw new ArgumentException("Số điện thoại khách hàng không được để trống");
+                }
+                
+                if (createDto.TotalAmount <= 0)
+                {
+                    throw new ArgumentException("Tổng tiền phải lớn hơn 0");
+                }
+                
+                if (createDto.OrderDetails == null || createDto.OrderDetails.Count == 0)
+                {
+                    throw new ArgumentException("Phải có ít nhất một chi tiết đơn hàng");
+                }
+                // 1. Tìm hoặc tạo khách hàng
+                var customer = await _context.Customers
+                    .FirstOrDefaultAsync(c => c.PhoneNumber == createDto.CustomerPhone);
+
+                if (customer == null)
+                {
+                    customer = new Customer
+                    {
+                        FirstName = createDto.CustomerName,
+                        LastName = "", // Có thể để trống hoặc tách tên
+                        PhoneNumber = createDto.CustomerPhone,
+                        Email = createDto.CustomerEmail
+                    };
+                    _context.Customers.Add(customer);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Đã tạo khách hàng mới với ID: {CustomerID}", customer.CustomerID);
+                }
+                else
+                {
+                    _logger.LogInformation("Tìm thấy khách hàng hiện có với ID: {CustomerID}", customer.CustomerID);
+                }
+
+                // 2. Tìm hoặc tạo xe của khách hàng
+                CustomerVehicle? customerVehicle = null;
+                if (!string.IsNullOrEmpty(createDto.VehicleID))
+                {
+                    // Nếu có VehicleID, tìm xe theo ID
+                    customerVehicle = await _context.CustomerVehicles
+                        .FirstOrDefaultAsync(cv => cv.VehicleID == createDto.VehicleID);
+                }
+                else if (!string.IsNullOrEmpty(createDto.ChassisNumber))
+                {
+                    // Nếu có số khung, tìm xe theo số khung
+                    customerVehicle = await _context.CustomerVehicles
+                        .FirstOrDefaultAsync(cv => cv.ChassisNumber == createDto.ChassisNumber);
+                }
+                else if (!string.IsNullOrEmpty(createDto.LicensePlate))
+                {
+                    // Nếu có biển số, tìm xe theo biển số
+                    customerVehicle = await _context.CustomerVehicles
+                        .FirstOrDefaultAsync(cv => cv.LicensePlate == createDto.LicensePlate);
+                }
+
+                if (customerVehicle == null && !string.IsNullOrEmpty(createDto.ChassisNumber))
+                {
+                    // Tạo xe mới nếu có thông tin số khung
+                    customerVehicle = new CustomerVehicle
+                    {
+                        CustomerID = customer.CustomerID,
+                        ChassisNumber = createDto.ChassisNumber,
+                        LicensePlate = createDto.LicensePlate,
+                        ModelID = createDto.VehicleID ?? "" // Nếu có VehicleID thì dùng làm ModelID
+                    };
+                    
+                    // Kiểm tra xem ModelID có tồn tại không
+                    if (!string.IsNullOrEmpty(customerVehicle.ModelID))
+                    {
+                        var vehicleModel = await _context.VehicleModels.FindAsync(customerVehicle.ModelID);
+                        if (vehicleModel == null)
+                        {
+                            _logger.LogWarning("VehicleModel với ID {ModelID} không tồn tại", customerVehicle.ModelID);
+                            customerVehicle.ModelID = ""; // Reset về empty nếu không tìm thấy
+                        }
+                    }
+                    
+                    _context.CustomerVehicles.Add(customerVehicle);
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("Đã tạo xe mới với ID: {VehicleID}", customerVehicle.VehicleID);
+                }
+
+                // 3. Tạo đơn hàng
+                var order = new Order
+                {
+                    TotalAmount = createDto.TotalAmount,
+                    AssignedEmployeeID = createDto.AssignedEmployeeID,
+                    VehicleID = customerVehicle?.VehicleID,
+                    ExpectedArrivalTime = createDto.ExpectedArrivalTime,
+                    Priority = createDto.Priority,
+                    IsCustomDecal = createDto.IsCustomDecal,
+                    OrderStatus = "New",
+                    CurrentStage = "New Profile"
+                };
+
+                _logger.LogInformation("Tạo order với TotalAmount={TotalAmount}, AssignedEmployeeID={AssignedEmployeeID}, VehicleID={VehicleID}", 
+                    order.TotalAmount, order.AssignedEmployeeID, order.VehicleID);
+
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                // 4. Tạo chi tiết đơn hàng
+                _logger.LogInformation("Tạo {Count} order details", createDto.OrderDetails.Count);
+                foreach (var detail in createDto.OrderDetails)
+                {
+                    _logger.LogInformation("Processing detail: DecalServiceId={DecalServiceId}, DecalTypeId={DecalTypeId}, Quantity={Quantity}", 
+                        detail.DecalServiceId, detail.DecalTypeId, detail.Quantity);
+                    
+                    var orderDetail = new OrderDetail
+                    {
+                        OrderID = order.OrderID,
+                        Quantity = detail.Quantity,
+                        Price = 0, // Sẽ được tính toán sau
+                        FinalCalculatedPrice = 0 // Sẽ được tính toán sau
+                    };
+
+                    if (!string.IsNullOrEmpty(detail.DecalServiceId))
+                    {
+                        orderDetail.ServiceID = detail.DecalServiceId;
+                        // Lấy giá từ DecalService
+                        var decalService = await _context.DecalServices.FindAsync(detail.DecalServiceId);
+                        if (decalService != null)
+                        {
+                            orderDetail.Price = decalService.Price;
+                            orderDetail.FinalCalculatedPrice = decalService.Price * detail.Quantity;
+                            _logger.LogInformation("Found decal service: {ServiceName}, Price: {Price}", decalService.ServiceName, decalService.Price);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("DecalService với ID {ServiceID} không tồn tại", detail.DecalServiceId);
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(detail.DecalTypeId))
+                    {
+                        orderDetail.DecalTypeID = detail.DecalTypeId;
+                        // Lấy giá từ VehicleModelDecalType nếu có vehicle model
+                        if (!string.IsNullOrEmpty(createDto.VehicleID))
+                        {
+                            var vehicleModelDecalType = await _context.VehicleModelDecalTypes
+                                .FirstOrDefaultAsync(vmdt => vmdt.ModelID == createDto.VehicleID && vmdt.DecalTypeID == detail.DecalTypeId);
+                            if (vehicleModelDecalType != null)
+                            {
+                                orderDetail.Price = vehicleModelDecalType.Price;
+                                orderDetail.FinalCalculatedPrice = vehicleModelDecalType.Price * detail.Quantity;
+                                _logger.LogInformation("Found vehicle model decal type: Price: {Price}", vehicleModelDecalType.Price);
+                            }
+                            else
+                            {
+                                _logger.LogWarning("VehicleModelDecalType không tồn tại cho ModelID={ModelID}, DecalTypeID={DecalTypeID}", 
+                                    createDto.VehicleID, detail.DecalTypeId);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Không có VehicleID để tìm VehicleModelDecalType");
+                        }
+                    }
+
+                    _context.OrderDetails.Add(orderDetail);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                _logger.LogInformation("Đã tạo đơn hàng thành công với ID: {OrderID}", order.OrderID);
+
+                // Tải lại các thực thể liên quan
+                await _context.Entry(order).Reference(o => o.AssignedEmployee).LoadAsync();
+                await _context.Entry(order).Reference(o => o.CustomerVehicle).LoadAsync();
+
+                var orderDto = _mapper.Map<OrderDto>(order);
+                return orderDto;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Lỗi khi tạo đơn hàng với thông tin khách hàng và xe");
+                throw;
+            }
         }
 
         // ... (Các phương thức còn lại không thay đổi)
@@ -312,17 +505,20 @@ namespace DecalXeAPI.Services.Implementations
                 var decalServices = await _context.DecalServices
                     .ToListAsync();
                 formData.DecalServices = _mapper.Map<List<DecalServiceDto>>(decalServices);
+                _logger.LogInformation("Loaded {Count} decal services", decalServices.Count);
 
                 // Lấy danh sách loại decal
                 var decalTypes = await _context.DecalTypes
                     .ToListAsync();
                 formData.DecalTypes = _mapper.Map<List<DecalTypeDto>>(decalTypes);
+                _logger.LogInformation("Loaded {Count} decal types", decalTypes.Count);
 
                 // Lấy danh sách thương hiệu xe
                 var vehicleBrands = await _context.VehicleBrands
                     .OrderBy(vb => vb.BrandName)
                     .ToListAsync();
                 formData.VehicleBrands = _mapper.Map<List<VehicleBrandDto>>(vehicleBrands);
+                _logger.LogInformation("Loaded {Count} vehicle brands", vehicleBrands.Count);
 
                 // Lấy danh sách model xe
                 var vehicleModels = await _context.VehicleModels
@@ -331,6 +527,7 @@ namespace DecalXeAPI.Services.Implementations
                     .ThenBy(vm => vm.ModelName)
                     .ToListAsync();
                 formData.VehicleModels = _mapper.Map<List<VehicleModelDto>>(vehicleModels);
+                _logger.LogInformation("Loaded {Count} vehicle models", vehicleModels.Count);
 
                 // Lấy danh sách cửa hàng
                 var stores = await _context.Stores

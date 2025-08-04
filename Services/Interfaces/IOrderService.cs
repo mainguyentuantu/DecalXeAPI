@@ -18,6 +18,9 @@ namespace DecalXeAPI.Services.Interfaces
         // Phương thức tạo đơn hàng mới
         Task<OrderDto> CreateOrderAsync(Order order);
 
+        // Phương thức tạo đơn hàng với thông tin khách hàng và xe
+        Task<OrderDto> CreateOrderWithCustomerAndVehicleAsync(CreateOrderDto createDto);
+
         // Phương thức cập nhật đơn hàng
         Task<bool> UpdateOrderAsync(string id, Order order);
 

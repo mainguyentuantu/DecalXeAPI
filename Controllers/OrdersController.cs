@@ -59,17 +59,15 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous] 
         public async Task<ActionResult<OrderDto>> PostOrder(CreateOrderDto createDto)
         {
-            if (!string.IsNullOrEmpty(createDto.VehicleID) && !VehicleExists(createDto.VehicleID))
+            try
             {
-                return BadRequest("VehicleID không tồn tại.");
+                var orderDto = await _orderService.CreateOrderWithCustomerAndVehicleAsync(createDto);
+                return CreatedAtAction(nameof(GetOrder), new { id = orderDto.OrderID }, orderDto);
             }
-
-            var order = _mapper.Map<Order>(createDto);
-            order.OrderStatus = "New";
-            order.CurrentStage = "New Profile";
-
-            var orderDto = await _orderService.CreateOrderAsync(order);
-            return CreatedAtAction(nameof(GetOrder), new { id = orderDto.OrderID }, orderDto);
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id}")]

@@ -56,28 +56,33 @@ const OrderCreatePage = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+      const handleSubmit = async (e) => {
+      e.preventDefault();
 
-    if (!formState.customerName || !formState.customerPhone) {
-      toast.error("Vui lòng nhập tên và số điện thoại khách hàng");
-      return;
-    }
+      if (!formState.customerName || !formState.customerPhone) {
+        toast.error("Vui lòng nhập tên và số điện thoại khách hàng");
+        return;
+      }
 
-    if (formState.decalServices.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một dịch vụ");
-      return;
-    }
+      if (formState.decalServices.length === 0 && formState.decalTypes.length === 0) {
+        toast.error("Vui lòng chọn ít nhất một dịch vụ hoặc loại decal");
+        return;
+      }
+
+      if (formState.totalAmount <= 0) {
+        toast.error("Vui lòng nhập tổng tiền hợp lệ");
+        return;
+      }
 
     const orderData = {
       customerName: formState.customerName,
       customerPhone: formState.customerPhone,
       customerEmail: formState.customerEmail,
-      vehicleId: formState.vehicleModel, // Assuming vehicleModel contains the vehicle ID
+      vehicleID: formState.vehicleModel, // Assuming vehicleModel contains the vehicle ID
       licensePlate: formState.licensePlate,
       chassisNumber: formState.chassisNumber,
       storeId: formState.storeId,
-      assignedEmployeeId: formState.assignedEmployeeId,
+      assignedEmployeeID: formState.assignedEmployeeId,
       estimatedCompletionDate: formState.estimatedCompletionDate,
       notes: formState.notes,
       totalAmount: formState.totalAmount,
@@ -94,10 +99,13 @@ const OrderCreatePage = () => {
     };
 
     try {
+      console.log("Sending order data:", orderData);
+      console.log("Order details:", orderData.orderDetails);
       await createOrderMutation.mutateAsync(orderData);
       navigate("/orders");
     } catch (error) {
       console.error("Error creating order:", error);
+      console.error("Error response:", error.response?.data);
     }
   };
 
@@ -124,6 +132,12 @@ const OrderCreatePage = () => {
       </div>
     );
   }
+
+  console.log("Form data loaded:", formData);
+  console.log("Vehicle brands:", formData?.vehicleBrands);
+  console.log("Vehicle models:", formData?.vehicleModels);
+  console.log("Decal services:", formData?.decalServices);
+  console.log("Decal types:", formData?.decalTypes);
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -181,11 +195,14 @@ const OrderCreatePage = () => {
                 }>
                 <option value="">Chọn hãng xe</option>
                 {formData?.vehicleBrands?.map((brand) => (
-                  <option key={brand.brandId} value={brand.brandId}>
+                  <option key={brand.brandID} value={brand.brandID}>
                     {brand.brandName}
                   </option>
                 ))}
               </Select>
+              {!formData?.vehicleBrands && (
+                <p className="text-red-500 text-sm">Không có dữ liệu hãng xe</p>
+              )}
               <Select
                 label="Dòng xe"
                 value={formState.vehicleModel}
@@ -197,14 +214,17 @@ const OrderCreatePage = () => {
                   ?.filter(
                     (model) =>
                       !formState.vehicleBrand ||
-                      model.vehicleBrandId === formState.vehicleBrand
+                      model.brandID === formState.vehicleBrand
                   )
                   ?.map((model) => (
-                    <option key={model.modelId} value={model.modelId}>
+                    <option key={model.modelID} value={model.modelID}>
                       {model.modelName}
                     </option>
                   ))}
               </Select>
+              {!formData?.vehicleModels && (
+                <p className="text-red-500 text-sm">Không có dữ liệu dòng xe</p>
+              )}
               <Input
                 label="Biển số xe"
                 value={formState.licensePlate}
@@ -236,15 +256,15 @@ const OrderCreatePage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {formData?.decalServices?.map((service) => (
                   <label
-                    key={service.serviceId}
+                    key={service.serviceID}
                     className="flex items-center space-x-3">
                     <input
                       type="checkbox"
                       checked={formState.decalServices.includes(
-                        service.serviceId
+                        service.serviceID
                       )}
                       onChange={(e) =>
-                        handleServiceChange(service.serviceId, e.target.checked)
+                        handleServiceChange(service.serviceID, e.target.checked)
                       }
                       className="rounded border-gray-300"
                     />
@@ -252,6 +272,9 @@ const OrderCreatePage = () => {
                   </label>
                 ))}
               </div>
+              {!formData?.decalServices && (
+                <p className="text-red-500 text-sm">Không có dữ liệu dịch vụ decal</p>
+              )}
             </div>
 
             {/* Decal Types */}
@@ -260,20 +283,23 @@ const OrderCreatePage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {formData?.decalTypes?.map((type) => (
                   <label
-                    key={type.typeId}
+                    key={type.decalTypeID}
                     className="flex items-center space-x-3">
                     <input
                       type="checkbox"
-                      checked={formState.decalTypes.includes(type.typeId)}
+                      checked={formState.decalTypes.includes(type.decalTypeID)}
                       onChange={(e) =>
-                        handleTypeChange(type.typeId, e.target.checked)
+                        handleTypeChange(type.decalTypeID, e.target.checked)
                       }
                       className="rounded border-gray-300"
                     />
-                    <span className="text-sm">{type.typeName}</span>
+                    <span className="text-sm">{type.decalTypeName}</span>
                   </label>
                 ))}
               </div>
+              {!formData?.decalTypes && (
+                <p className="text-red-500 text-sm">Không có dữ liệu loại decal</p>
+              )}
             </div>
           </div>
         </Card>
@@ -289,7 +315,7 @@ const OrderCreatePage = () => {
                 onChange={(e) => handleInputChange("storeId", e.target.value)}>
                 <option value="">Chọn cửa hàng</option>
                 {formData?.stores?.map((store) => (
-                  <option key={store.storeId} value={store.storeId}>
+                  <option key={store.storeID} value={store.storeID}>
                     {store.storeName}
                   </option>
                 ))}
@@ -302,7 +328,7 @@ const OrderCreatePage = () => {
                 }>
                 <option value="">Chọn nhân viên</option>
                 {formData?.salesEmployees?.map((employee) => (
-                  <option key={employee.employeeId} value={employee.employeeId}>
+                  <option key={employee.employeeID} value={employee.employeeID}>
                     {employee.firstName} {employee.lastName}
                   </option>
                 ))}
