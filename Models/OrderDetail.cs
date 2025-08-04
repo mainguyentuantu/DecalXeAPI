@@ -16,8 +16,13 @@ namespace DecalXeAPI.Models
 
         // Khóa ngoại (Foreign Key): Chi tiết này là dịch vụ nào
         [ForeignKey("DecalService")]
-        public string ServiceID { get; set; } = string.Empty; // FK_ServiceID
+        public string? ServiceID { get; set; } // FK_ServiceID (nullable)
         public DecalService? DecalService { get; set; }
+
+        // Khóa ngoại (Foreign Key): Chi tiết này là loại decal nào (cho trường hợp chọn trực tiếp loại decal)
+        [ForeignKey("DecalType")]
+        public string? DecalTypeID { get; set; } // FK_DecalTypeID (nullable)
+        public DecalType? DecalType { get; set; }
 
         [Required]
         public int Quantity { get; set; } // Số lượng dịch vụ/sản phẩm trong chi tiết này
