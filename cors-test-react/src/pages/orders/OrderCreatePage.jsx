@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOrderCreateFormData, useCreateOrder } from "../../hooks/useOrders";
+import { useCreateCustomer } from "../../hooks/useCustomers";
+import { useCreateCustomerVehicle } from "../../hooks/useCustomerVehicles";
 import { toast } from "react-hot-toast";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -13,23 +15,37 @@ const OrderCreatePage = () => {
   const navigate = useNavigate();
   const { data: formData, isLoading, error } = useOrderCreateFormData();
   const createOrderMutation = useCreateOrder();
+  const createCustomerMutation = useCreateCustomer();
+  const createVehicleMutation = useCreateCustomerVehicle();
 
   const [formState, setFormState] = useState({
-    customerName: "",
+    // Customer Information
+    customerFirstName: "",
+    customerLastName: "",
     customerPhone: "",
     customerEmail: "",
+    customerAddress: "",
+    
+    // Vehicle Information
     vehicleBrand: "",
     vehicleModel: "",
     licensePlate: "",
     chassisNumber: "",
-    decalServices: [],
-    decalTypes: [],
-    storeId: "",
-    assignedEmployeeId: "",
-    estimatedCompletionDate: "",
-    notes: "",
+    vehicleColor: "",
+    vehicleYear: "",
+    initialKM: "",
+    
+    // Order Information (matching CreateOrderDto)
     totalAmount: 0,
+    assignedEmployeeID: "",
+    vehicleID: "", // This will be set after vehicle creation
+    expectedArrivalTime: "",
+    priority: "Normal",
+    isCustomDecal: false,
+    description: "",
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormState((prev) => ({
@@ -38,66 +54,76 @@ const OrderCreatePage = () => {
     }));
   };
 
-  const handleServiceChange = (serviceId, checked) => {
-    setFormState((prev) => ({
-      ...prev,
-      decalServices: checked
-        ? [...prev.decalServices, serviceId]
-        : prev.decalServices.filter((id) => id !== serviceId),
-    }));
-  };
-
-  const handleTypeChange = (typeId, checked) => {
-    setFormState((prev) => ({
-      ...prev,
-      decalTypes: checked
-        ? [...prev.decalTypes, typeId]
-        : prev.decalTypes.filter((id) => id !== typeId),
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formState.customerName || !formState.customerPhone) {
-      toast.error("Vui lòng nhập tên và số điện thoại khách hàng");
-      return;
-    }
-
-    if (formState.decalServices.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một dịch vụ");
-      return;
-    }
-
-    const orderData = {
-      customerName: formState.customerName,
-      customerPhone: formState.customerPhone,
-      customerEmail: formState.customerEmail,
-      vehicleId: formState.vehicleModel, // Assuming vehicleModel contains the vehicle ID
-      licensePlate: formState.licensePlate,
-      chassisNumber: formState.chassisNumber,
-      storeId: formState.storeId,
-      assignedEmployeeId: formState.assignedEmployeeId,
-      estimatedCompletionDate: formState.estimatedCompletionDate,
-      notes: formState.notes,
-      totalAmount: formState.totalAmount,
-      orderDetails: [
-        ...formState.decalServices.map((serviceId) => ({
-          decalServiceId: serviceId,
-          quantity: 1,
-        })),
-        ...formState.decalTypes.map((typeId) => ({
-          decalTypeId: typeId,
-          quantity: 1,
-        })),
-      ],
-    };
+    setIsSubmitting(true);
 
     try {
+      // Validation
+      if (!formState.customerFirstName || !formState.customerLastName || !formState.customerPhone) {
+        toast.error("Vui lòng nhập đầy đủ thông tin khách hàng");
+        return;
+      }
+
+      if (!formState.chassisNumber) {
+        toast.error("Vui lòng nhập số khung xe");
+        return;
+      }
+
+      if (!formState.vehicleModel) {
+        toast.error("Vui lòng chọn dòng xe");
+        return;
+      }
+
+      if (formState.totalAmount <= 0) {
+        toast.error("Vui lòng nhập tổng tiền hợp lệ");
+        return;
+      }
+
+      // Step 1: Create customer
+      const customerData = {
+        firstName: formState.customerFirstName,
+        lastName: formState.customerLastName,
+        phoneNumber: formState.customerPhone,
+        email: formState.customerEmail || null,
+        address: formState.customerAddress || null,
+        accountID: null, // Not linking to account for now
+      };
+
+      const createdCustomer = await createCustomerMutation.mutateAsync(customerData);
+
+      // Step 2: Create vehicle
+      const vehicleData = {
+        chassisNumber: formState.chassisNumber,
+        licensePlate: formState.licensePlate || null,
+        color: formState.vehicleColor || null,
+        year: formState.vehicleYear ? parseInt(formState.vehicleYear) : null,
+        initialKM: formState.initialKM ? parseFloat(formState.initialKM) : null,
+        customerID: createdCustomer.customerID,
+        modelID: formState.vehicleModel,
+      };
+
+      const createdVehicle = await createVehicleMutation.mutateAsync(vehicleData);
+
+      // Step 3: Create order with the new backend format
+      const orderData = {
+        totalAmount: parseFloat(formState.totalAmount),
+        assignedEmployeeID: formState.assignedEmployeeID || null,
+        vehicleID: createdVehicle.vehicleID,
+        expectedArrivalTime: formState.expectedArrivalTime ? new Date(formState.expectedArrivalTime).toISOString() : null,
+        priority: formState.priority || "Normal",
+        isCustomDecal: formState.isCustomDecal,
+        description: formState.description || null,
+      };
+
       await createOrderMutation.mutateAsync(orderData);
       navigate("/orders");
+      
     } catch (error) {
       console.error("Error creating order:", error);
+      toast.error("Có lỗi xảy ra khi tạo đơn hàng. Vui lòng thử lại.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -141,10 +167,18 @@ const OrderCreatePage = () => {
             <h2 className="text-xl font-semibold mb-4">Thông tin khách hàng</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Tên khách hàng *"
-                value={formState.customerName}
+                label="Họ *"
+                value={formState.customerFirstName}
                 onChange={(e) =>
-                  handleInputChange("customerName", e.target.value)
+                  handleInputChange("customerFirstName", e.target.value)
+                }
+                required
+              />
+              <Input
+                label="Tên *"
+                value={formState.customerLastName}
+                onChange={(e) =>
+                  handleInputChange("customerLastName", e.target.value)
                 }
                 required
               />
@@ -164,6 +198,15 @@ const OrderCreatePage = () => {
                   handleInputChange("customerEmail", e.target.value)
                 }
               />
+              <div className="md:col-span-2">
+                <Input
+                  label="Địa chỉ"
+                  value={formState.customerAddress}
+                  onChange={(e) =>
+                    handleInputChange("customerAddress", e.target.value)
+                  }
+                />
+              </div>
             </div>
           </div>
         </Card>
@@ -187,11 +230,12 @@ const OrderCreatePage = () => {
                 ))}
               </Select>
               <Select
-                label="Dòng xe"
+                label="Dòng xe *"
                 value={formState.vehicleModel}
                 onChange={(e) =>
                   handleInputChange("vehicleModel", e.target.value)
-                }>
+                }
+                required>
                 <option value="">Chọn dòng xe</option>
                 {formData?.vehicleModels
                   ?.filter(
@@ -213,66 +257,40 @@ const OrderCreatePage = () => {
                 }
               />
               <Input
-                label="Số khung"
+                label="Số khung *"
                 value={formState.chassisNumber}
                 onChange={(e) =>
                   handleInputChange("chassisNumber", e.target.value)
                 }
+                required
               />
-            </div>
-          </div>
-        </Card>
-
-        {/* Services and Types */}
-        <Card>
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">
-              Dịch vụ và loại decal
-            </h2>
-
-            {/* Decal Services */}
-            <div className="mb-6">
-              <h3 className="text-lg font-medium mb-3">Dịch vụ decal</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {formData?.decalServices?.map((service) => (
-                  <label
-                    key={service.serviceId}
-                    className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={formState.decalServices.includes(
-                        service.serviceId
-                      )}
-                      onChange={(e) =>
-                        handleServiceChange(service.serviceId, e.target.checked)
-                      }
-                      className="rounded border-gray-300"
-                    />
-                    <span className="text-sm">{service.serviceName}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Decal Types */}
-            <div>
-              <h3 className="text-lg font-medium mb-3">Loại decal</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {formData?.decalTypes?.map((type) => (
-                  <label
-                    key={type.typeId}
-                    className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={formState.decalTypes.includes(type.typeId)}
-                      onChange={(e) =>
-                        handleTypeChange(type.typeId, e.target.checked)
-                      }
-                      className="rounded border-gray-300"
-                    />
-                    <span className="text-sm">{type.typeName}</span>
-                  </label>
-                ))}
+              <Input
+                label="Màu xe"
+                value={formState.vehicleColor}
+                onChange={(e) =>
+                  handleInputChange("vehicleColor", e.target.value)
+                }
+              />
+              <Input
+                label="Năm sản xuất"
+                type="number"
+                min="1990"
+                max={new Date().getFullYear()}
+                value={formState.vehicleYear}
+                onChange={(e) =>
+                  handleInputChange("vehicleYear", e.target.value)
+                }
+              />
+              <div className="md:col-span-2">
+                <Input
+                  label="Số km ban đầu"
+                  type="number"
+                  min="0"
+                  value={formState.initialKM}
+                  onChange={(e) =>
+                    handleInputChange("initialKM", e.target.value)
+                  }
+                />
               </div>
             </div>
           </div>
@@ -283,22 +301,22 @@ const OrderCreatePage = () => {
           <div className="p-6">
             <h2 className="text-xl font-semibold mb-4">Chi tiết đơn hàng</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select
-                label="Cửa hàng"
-                value={formState.storeId}
-                onChange={(e) => handleInputChange("storeId", e.target.value)}>
-                <option value="">Chọn cửa hàng</option>
-                {formData?.stores?.map((store) => (
-                  <option key={store.storeId} value={store.storeId}>
-                    {store.storeName}
-                  </option>
-                ))}
-              </Select>
+              <Input
+                label="Tổng tiền *"
+                type="number"
+                min="0"
+                step="0.01"
+                value={formState.totalAmount}
+                onChange={(e) =>
+                  handleInputChange("totalAmount", e.target.value)
+                }
+                required
+              />
               <Select
                 label="Nhân viên phụ trách"
-                value={formState.assignedEmployeeId}
+                value={formState.assignedEmployeeID}
                 onChange={(e) =>
-                  handleInputChange("assignedEmployeeId", e.target.value)
+                  handleInputChange("assignedEmployeeID", e.target.value)
                 }>
                 <option value="">Chọn nhân viên</option>
                 {formData?.salesEmployees?.map((employee) => (
@@ -308,32 +326,46 @@ const OrderCreatePage = () => {
                 ))}
               </Select>
               <Input
-                label="Ngày dự kiến hoàn thành"
-                type="date"
-                value={formState.estimatedCompletionDate}
+                label="Thời gian dự kiến hoàn thành"
+                type="datetime-local"
+                value={formState.expectedArrivalTime}
                 onChange={(e) =>
-                  handleInputChange("estimatedCompletionDate", e.target.value)
+                  handleInputChange("expectedArrivalTime", e.target.value)
                 }
               />
-              <Input
-                label="Tổng tiền"
-                type="number"
-                value={formState.totalAmount}
+              <Select
+                label="Độ ưu tiên"
+                value={formState.priority}
                 onChange={(e) =>
-                  handleInputChange(
-                    "totalAmount",
-                    parseFloat(e.target.value) || 0
-                  )
-                }
-              />
-            </div>
-            <div className="mt-4">
-              <Textarea
-                label="Ghi chú"
-                value={formState.notes}
-                onChange={(e) => handleInputChange("notes", e.target.value)}
-                rows={3}
-              />
+                  handleInputChange("priority", e.target.value)
+                }>
+                <option value="Low">Thấp</option>
+                <option value="Normal">Bình thường</option>
+                <option value="High">Cao</option>
+                <option value="Urgent">Khẩn cấp</option>
+              </Select>
+              <div className="md:col-span-2">
+                <label className="flex items-center space-x-3 mb-4">
+                  <input
+                    type="checkbox"
+                    checked={formState.isCustomDecal}
+                    onChange={(e) =>
+                      handleInputChange("isCustomDecal", e.target.checked)
+                    }
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm font-medium">Đây là decal tùy chỉnh</span>
+                </label>
+              </div>
+              <div className="md:col-span-2">
+                <Textarea
+                  label="Mô tả đơn hàng"
+                  value={formState.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  rows={3}
+                  placeholder="Nhập mô tả chi tiết về đơn hàng..."
+                />
+              </div>
             </div>
           </div>
         </Card>
@@ -343,11 +375,12 @@ const OrderCreatePage = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate("/orders")}>
+            onClick={() => navigate("/orders")}
+            disabled={isSubmitting}>
             Hủy
           </Button>
-          <Button type="submit" disabled={createOrderMutation.isPending}>
-            {createOrderMutation.isPending ? "Đang tạo..." : "Tạo đơn hàng"}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Đang tạo..." : "Tạo đơn hàng"}
           </Button>
         </div>
       </form>
