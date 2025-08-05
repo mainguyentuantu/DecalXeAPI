@@ -67,6 +67,7 @@ import OperationalReports from "./components/analytics/OperationalReports";
 
 // Auth hook
 import { useAuth } from "./hooks/useAuth";
+import OrderCreateDemo from "./components/demo/OrderCreateDemo";
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -133,6 +134,7 @@ function App() {
               <Route path="orders/create" element={<OrderCreatePage />} />
               <Route path="orders/tracking" element={<OrderTrackingPage />} />
               <Route path="orders/:id" element={<OrderDetailPage />} />
+              <Route path="demo/order-create" element={<OrderCreateDemo />} />
 
               {/* Customer Management Routes */}
               <Route path="customers" element={<CustomerListPage />} />

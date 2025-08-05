@@ -1,23 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useOrderCreateFormData, useCreateOrder } from "../../hooks/useOrders";
-import { useCreateCustomer } from "../../hooks/useCustomers";
-import { useCreateCustomerVehicle } from "../../hooks/useCustomerVehicles";
-import { toast } from "react-hot-toast";
-import Button from "../../components/common/Button";
-import Input from "../../components/common/Input";
-import { Select } from "../../components/ui/Select";
-import { Textarea } from "../../components/ui/Textarea";
-import Card from "../../components/common/Card";
-import LoadingSpinner from "../../components/common/LoadingSpinner";
+import React, { useState } from "react";
+import Button from "../common/Button";
+import Input from "../common/Input";
+import { Select } from "../ui/Select";
+import { Textarea } from "../ui/Textarea";
+import Card from "../common/Card";
+import LoadingSpinner from "../common/LoadingSpinner";
 
-const OrderCreatePage = () => {
-  const navigate = useNavigate();
-  const { data: formData, isLoading, error } = useOrderCreateFormData();
-  const createOrderMutation = useCreateOrder();
-  const createCustomerMutation = useCreateCustomer();
-  const createVehicleMutation = useCreateCustomerVehicle();
-
+const OrderCreateDemo = () => {
   const [formState, setFormState] = useState({
     // Customer Information
     customerFirstName: "",
@@ -35,10 +24,9 @@ const OrderCreatePage = () => {
     vehicleYear: "",
     initialKM: "",
     
-    // Order Information (matching CreateOrderDto)
+    // Order Information
     totalAmount: "",
     assignedEmployeeID: "",
-    vehicleID: "", // This will be set after vehicle creation
     expectedArrivalTime: "",
     priority: "Normal",
     isCustomDecal: false,
@@ -46,14 +34,28 @@ const OrderCreatePage = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1); // For showing progress
+  const [currentStep, setCurrentStep] = useState(1);
 
-  // Reset vehicle model when brand changes
-  useEffect(() => {
-    if (formState.vehicleBrand) {
-      setFormState(prev => ({ ...prev, vehicleModel: "" }));
-    }
-  }, [formState.vehicleBrand]);
+  // Mock data
+  const mockData = {
+    vehicleBrands: [
+      { brandId: "1", brandName: "Toyota" },
+      { brandId: "2", brandName: "Honda" },
+      { brandId: "3", brandName: "Hyundai" },
+    ],
+    vehicleModels: [
+      { modelId: "1", modelName: "Camry", vehicleBrandId: "1" },
+      { modelId: "2", modelName: "Corolla", vehicleBrandId: "1" },
+      { modelId: "3", modelName: "Civic", vehicleBrandId: "2" },
+      { modelId: "4", modelName: "Accord", vehicleBrandId: "2" },
+      { modelId: "5", modelName: "Elantra", vehicleBrandId: "3" },
+    ],
+    salesEmployees: [
+      { employeeId: "1", firstName: "Nguyễn", lastName: "Văn A" },
+      { employeeId: "2", firstName: "Trần", lastName: "Thị B" },
+      { employeeId: "3", firstName: "Lê", lastName: "Văn C" },
+    ],
+  };
 
   const handleInputChange = (field, value) => {
     setFormState((prev) => ({
@@ -62,141 +64,33 @@ const OrderCreatePage = () => {
     }));
   };
 
-  const validateForm = () => {
-    // Customer validation
-    if (!formState.customerFirstName.trim()) {
-      toast.error("Vui lòng nhập họ khách hàng");
-      return false;
-    }
-    if (!formState.customerLastName.trim()) {
-      toast.error("Vui lòng nhập tên khách hàng");
-      return false;
-    }
-    if (!formState.customerPhone.trim()) {
-      toast.error("Vui lòng nhập số điện thoại khách hàng");
-      return false;
-    }
-
-    // Vehicle validation
-    if (!formState.chassisNumber.trim()) {
-      toast.error("Vui lòng nhập số khung xe");
-      return false;
-    }
-    if (!formState.vehicleModel) {
-      toast.error("Vui lòng chọn dòng xe");
-      return false;
-    }
-
-    // Order validation
-    if (!formState.totalAmount || parseFloat(formState.totalAmount) <= 0) {
-      toast.error("Vui lòng nhập tổng tiền hợp lệ");
-      return false;
-    }
-
-    return true;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
     setIsSubmitting(true);
-    setCurrentStep(1);
-
-    try {
-      // Step 1: Create customer
-      toast.loading("Đang tạo thông tin khách hàng...", { id: "order-creation" });
-      const customerData = {
-        firstName: formState.customerFirstName.trim(),
-        lastName: formState.customerLastName.trim(),
-        phoneNumber: formState.customerPhone.trim(),
-        email: formState.customerEmail.trim() || null,
-        address: formState.customerAddress.trim() || null,
-        accountID: null, // Not linking to account for now
-      };
-
-      const createdCustomer = await createCustomerMutation.mutateAsync(customerData);
-      setCurrentStep(2);
-
-      // Step 2: Create vehicle
-      toast.loading("Đang tạo thông tin xe...", { id: "order-creation" });
-      const vehicleData = {
-        chassisNumber: formState.chassisNumber.trim(),
-        licensePlate: formState.licensePlate.trim() || null,
-        color: formState.vehicleColor.trim() || null,
-        year: formState.vehicleYear ? parseInt(formState.vehicleYear) : null,
-        initialKM: formState.initialKM ? parseFloat(formState.initialKM) : null,
-        customerID: createdCustomer.customerID,
-        modelID: formState.vehicleModel,
-      };
-
-      const createdVehicle = await createVehicleMutation.mutateAsync(vehicleData);
-      setCurrentStep(3);
-
-      // Step 3: Create order with the new backend format
-      toast.loading("Đang tạo đơn hàng...", { id: "order-creation" });
-      const orderData = {
-        totalAmount: parseFloat(formState.totalAmount),
-        assignedEmployeeID: formState.assignedEmployeeID || null,
-        vehicleID: createdVehicle.vehicleID,
-        expectedArrivalTime: formState.expectedArrivalTime ? new Date(formState.expectedArrivalTime).toISOString() : null,
-        priority: formState.priority || "Normal",
-        isCustomDecal: formState.isCustomDecal,
-        description: formState.description.trim() || null,
-      };
-
-      await createOrderMutation.mutateAsync(orderData);
-      toast.success("Tạo đơn hàng thành công!", { id: "order-creation" });
-      navigate("/orders");
-      
-    } catch (error) {
-      console.error("Error creating order:", error);
-      toast.error(`Có lỗi xảy ra ở bước ${currentStep}: ${error.message || 'Vui lòng thử lại.'}`, { id: "order-creation" });
-    } finally {
-      setIsSubmitting(false);
-      setCurrentStep(1);
+    
+    // Simulate API calls
+    for (let step = 1; step <= 3; step++) {
+      setCurrentStep(step);
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
+    
+    setIsSubmitting(false);
+    setCurrentStep(1);
+    alert("Demo: Đơn hàng đã được tạo thành công!");
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">
-            Lỗi tải dữ liệu
-          </h1>
-          <p className="text-gray-600">{error.message}</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
-            Thử lại
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   // Get filtered vehicle models based on selected brand
-  const filteredVehicleModels = formData?.vehicleModels?.filter(
+  const filteredVehicleModels = mockData.vehicleModels.filter(
     (model) => !formState.vehicleBrand || model.vehicleBrandId === formState.vehicleBrand
-  ) || [];
+  );
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Tạo đơn hàng mới
+          Demo: Tạo đơn hàng mới
         </h1>
-        <p className="text-gray-600">Nhập thông tin để tạo đơn hàng mới theo format API backend</p>
+        <p className="text-gray-600">Giao diện demo theo format API backend mới</p>
         
         {/* Progress indicator when submitting */}
         {isSubmitting && (
@@ -290,7 +184,7 @@ const OrderCreatePage = () => {
                 }
                 disabled={isSubmitting}>
                 <option value="">Chọn hãng xe</option>
-                {formData?.vehicleBrands?.map((brand) => (
+                {mockData.vehicleBrands.map((brand) => (
                   <option key={brand.brandId} value={brand.brandId}>
                     {brand.brandName}
                   </option>
@@ -318,6 +212,7 @@ const OrderCreatePage = () => {
                   handleInputChange("licensePlate", e.target.value)
                 }
                 disabled={isSubmitting}
+                placeholder="Ví dụ: 30A-12345"
               />
               <Input
                 label="Số khung *"
@@ -327,6 +222,7 @@ const OrderCreatePage = () => {
                 }
                 required
                 disabled={isSubmitting}
+                placeholder="Ví dụ: JTDKN3DP0E0123456"
               />
               <Input
                 label="Màu xe"
@@ -335,6 +231,7 @@ const OrderCreatePage = () => {
                   handleInputChange("vehicleColor", e.target.value)
                 }
                 disabled={isSubmitting}
+                placeholder="Ví dụ: Trắng"
               />
               <Input
                 label="Năm sản xuất"
@@ -346,6 +243,7 @@ const OrderCreatePage = () => {
                   handleInputChange("vehicleYear", e.target.value)
                 }
                 disabled={isSubmitting}
+                placeholder="Ví dụ: 2020"
               />
               <div className="md:col-span-2">
                 <Input
@@ -357,6 +255,7 @@ const OrderCreatePage = () => {
                     handleInputChange("initialKM", e.target.value)
                   }
                   disabled={isSubmitting}
+                  placeholder="Ví dụ: 50000"
                 />
               </div>
             </div>
@@ -392,7 +291,7 @@ const OrderCreatePage = () => {
                 }
                 disabled={isSubmitting}>
                 <option value="">Chọn nhân viên</option>
-                {formData?.salesEmployees?.map((employee) => (
+                {mockData.salesEmployees.map((employee) => (
                   <option key={employee.employeeId} value={employee.employeeId}>
                     {employee.firstName} {employee.lastName}
                   </option>
@@ -447,17 +346,37 @@ const OrderCreatePage = () => {
           </div>
         </Card>
 
+        {/* API Format Preview */}
+        <Card>
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <span className="bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">API</span>
+              Format sẽ gửi lên backend
+            </h2>
+            <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+{JSON.stringify({
+  totalAmount: parseFloat(formState.totalAmount) || 0,
+  assignedEmployeeID: formState.assignedEmployeeID || null,
+  vehicleID: "sẽ-được-tạo-sau-khi-tạo-xe",
+  expectedArrivalTime: formState.expectedArrivalTime ? new Date(formState.expectedArrivalTime).toISOString() : null,
+  priority: formState.priority || "Normal",
+  isCustomDecal: formState.isCustomDecal,
+  description: formState.description || null,
+}, null, 2)}
+            </pre>
+          </div>
+        </Card>
+
         {/* Form Actions */}
         <div className="flex justify-end space-x-4">
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate("/orders")}
             disabled={isSubmitting}>
             Hủy
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Đang tạo..." : "Tạo đơn hàng"}
+            {isSubmitting ? "Đang tạo..." : "Demo: Tạo đơn hàng"}
           </Button>
         </div>
       </form>
@@ -465,4 +384,4 @@ const OrderCreatePage = () => {
   );
 };
 
-export default OrderCreatePage;
+export default OrderCreateDemo;
