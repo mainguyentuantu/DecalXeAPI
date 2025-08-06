@@ -197,7 +197,8 @@ const OrderListPage = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Tìm kiếm theo mã đơn hàng..."
+              icon={<Search className="h-4 w-4" />}
+              placeholder="Tìm kiếm theo mã đơn hàng, tên khách hàng, SĐT..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -348,6 +349,7 @@ const OrderListPage = () => {
                 <TableHead>Phương Tiện</TableHead>
                 <TableHead>Nhân Viên</TableHead>
                 <TableHead>Tổng Tiền</TableHead>
+                <TableHead>Mô Tả</TableHead>
                 <TableHead>Ngày Tạo</TableHead>
                 <TableHead className="text-right">Hành Động</TableHead>
               </TableRow>
@@ -369,7 +371,22 @@ const OrderListPage = () => {
                     <TableCell>
                       <div>
                         <div className="font-medium">{order.customerFullName || 'N/A'}</div>
-                        <div className="text-sm text-gray-500">{order.customerPhone || 'N/A'}</div>
+                        <div className="text-sm text-gray-500 flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          {order.customerPhoneNumber || 'N/A'}
+                        </div>
+                        {order.customerEmail && (
+                          <div className="text-xs text-gray-400 flex items-center gap-1">
+                            <span>📧</span>
+                            {order.customerEmail}
+                          </div>
+                        )}
+                        {order.accountCreated && (
+                          <div className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                            <CheckCircle className="h-3 w-3" />
+                            Có tài khoản
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -401,6 +418,17 @@ const OrderListPage = () => {
                     <TableCell>
                       <div className="font-semibold text-gray-900">
                         {formatCurrency(order.totalAmount)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-600">
+                        {order.description ? (
+                          <div className="max-w-xs truncate" title={order.description}>
+                            {order.description}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">Không có mô tả</span>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
