@@ -282,7 +282,7 @@ const CreateVehicleModal = ({
                     value={formData.customerFirstName}
                     onChange={(e) => handleInputChange('customerFirstName', e.target.value)}
                     error={errors.customerFirstName}
-                    required
+                    required={!customerID && createNewCustomer}
                     placeholder="Nguyễn"
                   />
 
@@ -291,7 +291,7 @@ const CreateVehicleModal = ({
                     value={formData.customerLastName}
                     onChange={(e) => handleInputChange('customerLastName', e.target.value)}
                     error={errors.customerLastName}
-                    required
+                    required={!customerID && createNewCustomer}
                     placeholder="Văn A"
                   />
 
@@ -300,7 +300,7 @@ const CreateVehicleModal = ({
                     value={formData.customerPhone}
                     onChange={(e) => handleInputChange('customerPhone', e.target.value)}
                     error={errors.customerPhone}
-                    required
+                    required={!customerID && createNewCustomer}
                     placeholder="0901234567"
                   />
 
