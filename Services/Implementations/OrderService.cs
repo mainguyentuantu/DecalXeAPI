@@ -89,8 +89,6 @@ namespace DecalXeAPI.Services.Implementations
 
             var totalCount = await query.CountAsync();
             var orders = await query
-                                .Skip((queryParams.PageNumber - 1) * queryParams.PageSize)
-                                .Take(queryParams.PageSize)
                                 .ToListAsync();
 
             var orderDtos = _mapper.Map<List<OrderDto>>(orders);

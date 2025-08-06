@@ -4588,24 +4588,26 @@
     ]
   },
   "packageFolders": {
-    "/home/ubuntu/.nuget/packages/": {}
+    "C:\\Users\\WIN10\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/workspace/DecalXeAPI.csproj",
+      "projectUniqueName": "C:\\Users\\WIN10\\Desktop\\backend\\DecalXeAPI\\DecalXeAPI.csproj",
       "projectName": "DecalXeAPI",
-      "projectPath": "/workspace/DecalXeAPI.csproj",
-      "packagesPath": "/home/ubuntu/.nuget/packages/",
-      "outputPath": "/workspace/obj/",
+      "projectPath": "C:\\Users\\WIN10\\Desktop\\backend\\DecalXeAPI\\DecalXeAPI.csproj",
+      "packagesPath": "C:\\Users\\WIN10\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\WIN10\\Desktop\\backend\\DecalXeAPI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/ubuntu/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\WIN10\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -4623,7 +4625,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net8.0": {
@@ -4687,6 +4690,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[8.0.16, 8.0.16]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[8.0.16, 8.0.16]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[8.0.16, 8.0.16]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[8.0.16, 8.0.16]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -4695,7 +4716,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/home/ubuntu/.dotnet/sdk/8.0.413/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
       }
     }
   },
@@ -4704,7 +4725,7 @@
       "code": "NU1603",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "DecalXeAPI depends on Swashbuckle.AspNetCore.Filters (>= 6.5.0) but Swashbuckle.AspNetCore.Filters 6.5.0 was not found. An approximate best match of Swashbuckle.AspNetCore.Filters 7.0.0 was resolved.",
+      "message": "DecalXeAPI depends on Swashbuckle.AspNetCore.Filters (>= 6.5.0) but Swashbuckle.AspNetCore.Filters 6.5.0 was not found. Swashbuckle.AspNetCore.Filters 7.0.0 was resolved instead.",
       "libraryId": "Swashbuckle.AspNetCore.Filters",
       "targetGraphs": [
         "net8.0"

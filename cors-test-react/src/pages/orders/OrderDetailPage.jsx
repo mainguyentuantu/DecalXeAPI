@@ -1,51 +1,64 @@
-import React from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  User, 
-  Calendar, 
-  MapPin, 
-  Phone, 
+import React from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  User,
+  Calendar,
+  MapPin,
+  Phone,
   Mail,
   CheckCircle,
   Clock,
   AlertCircle,
   FileText,
   Car,
-  DollarSign
-} from 'lucide-react';
-import { useOrder, useDeleteOrder, useUpdateOrderStatus } from '../../hooks/useOrders';
-import { useOrderStageHistories, useCreateOrderStageHistory, useUpdateOrderCurrentStage } from '../../hooks/useOrderStageHistories';
-import OrderStageChangeModal from '../../components/ui/OrderStageChangeModal';
-import { Button, Card, Badge, LoadingSpinner } from '../../components/common';
-import { ORDER_STAGES, ORDER_PRIORITIES } from '../../constants/ui';
-import { format } from 'date-fns';
-import OrderStageTimeline from '../../components/ui/OrderStageTimeline';
+  DollarSign,
+} from "lucide-react";
+import {
+  useOrder,
+  useDeleteOrder,
+  useUpdateOrderStatus,
+} from "../../hooks/useOrders";
+import {
+  useOrderStageHistories,
+  useCreateOrderStageHistory,
+  useUpdateOrderCurrentStage,
+} from "../../hooks/useOrderStageHistories";
+import OrderStageChangeModal from "../../components/ui/OrderStageChangeModal";
+import { Button, Card, Badge, LoadingSpinner } from "../../components/common";
+import { ORDER_STAGES, ORDER_PRIORITIES } from "../../constants/ui";
+import { format } from "date-fns";
+import OrderStageTimeline from "../../components/ui/OrderStageTimeline";
 
 const ORDER_STAGES_LIST = [
-  { value: 'New', label: 'Mới', stage: 1 },
-  { value: 'In Progress', label: 'Đang xử lý', stage: 2 },
-  { value: 'Completed', label: 'Hoàn thành', stage: 3 },
-  { value: 'Cancel', label: 'Đã hủy', stage: 4 },
+  { value: "New", label: "Mới", stage: 1 },
+  { value: "In Progress", label: "Đang xử lý", stage: 2 },
+  { value: "Completed", label: "Hoàn thành", stage: 4 },
+  { value: "Cancel", label: "Đã hủy", stage: 4 },
 ];
 
 const OrderDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const { data: order, isLoading, error } = useOrder(id);
   const deleteOrderMutation = useDeleteOrder();
   const updateStatusMutation = useUpdateOrderStatus();
-  const { data: stageHistories = [], isLoading: isStagesLoading } = useOrderStageHistories(id);
+  const { data: stageHistories = [], isLoading: isStagesLoading } =
+    useOrderStageHistories(id);
   const createStageMutation = useCreateOrderStageHistory();
   const updateCurrentStageMutation = useUpdateOrderCurrentStage();
   const [showStageModal, setShowStageModal] = React.useState(false);
   const [selectedStage, setSelectedStage] = React.useState(null);
 
   // Lấy trạng thái hiện tại từ order hoặc stageHistories
-  const currentStage = order?.currentStage || (stageHistories.length ? stageHistories[stageHistories.length-1].stageName : '');
+  const currentStage =
+    order?.currentStage ||
+    (stageHistories.length
+      ? stageHistories[stageHistories.length - 1].stageName
+      : "");
 
   // Khi click vào trạng thái
   const handleStageClick = (stage) => {
@@ -69,19 +82,23 @@ const OrderDetailPage = () => {
     await createStageMutation.mutateAsync({
       stageName: selectedStage.value,
       orderID: order.orderID,
+
       changedByEmployeeID,
       notes,
       stage,
       ...(completionPercentage !== undefined ? { completionPercentage } : {})
+
+   
+
     });
   };
 
   const handleDeleteOrder = () => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
+    if (window.confirm("Bạn có chắc chắn muốn xóa đơn hàng này?")) {
       deleteOrderMutation.mutate(id, {
         onSuccess: () => {
-          navigate('/orders');
-        }
+          navigate("/orders");
+        },
       });
     }
   };
@@ -92,28 +109,39 @@ const OrderDetailPage = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'New': return 'primary';
-      case 'In Progress': return 'warning';
-      case 'Completed': return 'success';
-      case 'Cancelled': return 'danger';
-      default: return 'default';
+      case "New":
+        return "primary";
+      case "In Progress":
+        return "warning";
+      case "Completed":
+        return "success";
+      case "Cancelled":
+        return "danger";
+      default:
+        return "default";
     }
   };
 
   const getPriorityColor = (priority) => {
-    return ORDER_PRIORITIES[priority?.toUpperCase()]?.color || 'bg-gray-100 text-gray-800';
+    return (
+      ORDER_PRIORITIES[priority?.toUpperCase()]?.color ||
+      "bg-gray-100 text-gray-800"
+    );
   };
 
   const getStageInfo = (stageName) => {
-    return Object.values(ORDER_STAGES).find(stage => 
-      stage.label === stageName || stage.description.includes(stageName)
-    ) || ORDER_STAGES.SURVEY;
+    return (
+      Object.values(ORDER_STAGES).find(
+        (stage) =>
+          stage.label === stageName || stage.description.includes(stageName)
+      ) || ORDER_STAGES.SURVEY
+    );
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(amount);
   };
 
@@ -164,13 +192,15 @@ const OrderDetailPage = () => {
             </Button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{order.orderID}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {order.orderID}
+            </h1>
             <p className="text-gray-600">
-              Tạo ngày {format(new Date(order.orderDate), 'dd/MM/yyyy HH:mm')}
+              Tạo ngày {format(new Date(order.orderDate), "dd/MM/yyyy HH:mm")}
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <Badge variant={getStatusColor(order.orderStatus)}>
             {order.orderStatus}
@@ -187,8 +217,7 @@ const OrderDetailPage = () => {
           <Button
             variant="danger"
             onClick={handleDeleteOrder}
-            disabled={deleteOrderMutation.isPending}
-          >
+            disabled={deleteOrderMutation.isPending}>
             <Trash2 className="h-4 w-4 mr-2" />
             Xóa
           </Button>
@@ -208,10 +237,25 @@ const OrderDetailPage = () => {
                 {ORDER_STAGES_LIST.map((stage, idx) => (
                   <button
                     key={stage.value}
-                    className={`flex flex-col items-center px-3 py-2 rounded transition border-2 ${currentStage === stage.value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 bg-white'} ${createStageMutation.isPending || updateCurrentStageMutation.isPending ? 'opacity-50 pointer-events-none' : ''}`}
-                    onClick={() => handleStageClick(stage)}
-                  >
-                    <span className={`font-semibold ${currentStage === stage.value ? 'text-blue-700' : 'text-gray-700'}`}>{stage.label}</span>
+                    className={`flex flex-col items-center px-3 py-2 rounded transition border-2 ${
+                      currentStage === stage.value
+                        ? "border-blue-600 bg-blue-50"
+                        : "border-gray-200 bg-white"
+                    } ${
+                      createStageMutation.isPending ||
+                      updateCurrentStageMutation.isPending
+                        ? "opacity-50 pointer-events-none"
+                        : ""
+                    }`}
+                    onClick={() => handleStageClick(stage)}>
+                    <span
+                      className={`font-semibold ${
+                        currentStage === stage.value
+                          ? "text-blue-700"
+                          : "text-gray-700"
+                      }`}>
+                      {stage.label}
+                    </span>
                     <span className="text-xs text-gray-400">{stage.value}</span>
                   </button>
                 ))}
@@ -223,7 +267,7 @@ const OrderDetailPage = () => {
             isOpen={showStageModal}
             onClose={() => setShowStageModal(false)}
             onSubmit={handleConfirmStage}
-            stageName={selectedStage?.label || ''}
+            stageName={selectedStage?.label || ""}
           />
 
           {/* Customer Info */}
@@ -240,11 +284,15 @@ const OrderDetailPage = () => {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Tên khách hàng:</span>
-                      <span className="font-medium">{order.customerFullName}</span>
+                      <span className="font-medium">
+                        {order.customerFullName}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Số điện thoại:</span>
-                      <span className="font-mono">{order.customerPhoneNumber}</span>
+                      <span className="font-mono">
+                        {order.customerPhoneNumber}
+                      </span>
                     </div>
                     {order.customerEmail && (
                       <div className="flex items-center justify-between">
@@ -255,25 +303,31 @@ const OrderDetailPage = () => {
                     {order.customerAddress && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Địa chỉ:</span>
-                        <span className="text-right">{order.customerAddress}</span>
+                        <span className="text-right">
+                          {order.customerAddress}
+                        </span>
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-3">
                     {order.accountCreated && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Tài khoản:</span>
                         <div className="flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span className="text-green-600 font-medium">Đã tạo</span>
+                          <span className="text-green-600 font-medium">
+                            Đã tạo
+                          </span>
                         </div>
                       </div>
                     )}
                     {order.accountUsername && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Username:</span>
-                        <span className="font-mono">{order.accountUsername}</span>
+                        <span className="font-mono">
+                          {order.accountUsername}
+                        </span>
                       </div>
                     )}
                     <div className="flex items-center justify-between">
@@ -294,7 +348,9 @@ const OrderDetailPage = () => {
             <Card.Content>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-3">Chi tiết cơ bản</h4>
+                  <h4 className="font-medium text-gray-900 mb-3">
+                    Chi tiết cơ bản
+                  </h4>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Mã đơn hàng:</span>
@@ -302,17 +358,23 @@ const OrderDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Ngày tạo:</span>
-                      <span>{format(new Date(order.orderDate), 'dd/MM/yyyy HH:mm')}</span>
+                      <span>
+                        {format(new Date(order.orderDate), "dd/MM/yyyy HH:mm")}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Trạng thái:</span>
-                      <Badge variant={getStatusColor(order.orderStatus)} size="sm">
+                      <Badge
+                        variant={getStatusColor(order.orderStatus)}
+                        size="sm">
                         {order.orderStatus}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Độ ưu tiên:</span>
-                      <Badge className={getPriorityColor(order.priority)} size="sm">
+                      <Badge
+                        className={getPriorityColor(order.priority)}
+                        size="sm">
                         {order.priority}
                       </Badge>
                     </div>
@@ -325,7 +387,9 @@ const OrderDetailPage = () => {
                     {order.description && (
                       <div className="flex items-start justify-between">
                         <span className="text-gray-600">Mô tả:</span>
-                        <span className="text-right max-w-xs">{order.description}</span>
+                        <span className="text-right max-w-xs">
+                          {order.description}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -337,19 +401,15 @@ const OrderDetailPage = () => {
                     {order.expectedArrivalTime && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Dự kiến đến:</span>
-                        <span>{format(new Date(order.expectedArrivalTime), 'dd/MM/yyyy HH:mm')}</span>
+                        <span>
+                          {format(
+                            new Date(order.expectedArrivalTime),
+                            "dd/MM/yyyy HH:mm"
+                          )}
+                        </span>
                       </div>
                     )}
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Giai đoạn hiện tại:</span>
-                      <Badge variant="info" size="sm">
-                        {order.currentStage}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Tiến độ:</span>
-                      <span>{stageInfo.progress}%</span>
-                    </div>
+
                     {order.isCustomDecal && (
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Loại:</span>
@@ -379,7 +439,9 @@ const OrderDetailPage = () => {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Model:</span>
-                      <span className="font-medium">{order.vehicleModelName}</span>
+                      <span className="font-medium">
+                        {order.vehicleModelName}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Hãng:</span>
@@ -387,11 +449,15 @@ const OrderDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Số khung:</span>
-                      <span className="font-mono text-sm">{order.chassisNumber}</span>
+                      <span className="font-mono text-sm">
+                        {order.chassisNumber}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">ID phương tiện:</span>
-                      <span className="font-mono text-sm">{order.vehicleID}</span>
+                      <span className="font-mono text-sm">
+                        {order.vehicleID}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -406,7 +472,9 @@ const OrderDetailPage = () => {
             </Card.Header>
             <Card.Content>
               {isStagesLoading ? (
-                <div className="flex items-center gap-2 text-gray-500"><Clock className="animate-spin h-4 w-4" /> Đang tải tiến độ...</div>
+                <div className="flex items-center gap-2 text-gray-500">
+                  <Clock className="animate-spin h-4 w-4" /> Đang tải tiến độ...
+                </div>
               ) : (
                 <OrderStageTimeline histories={stageHistories} />
               )}
@@ -430,9 +498,13 @@ const OrderDetailPage = () => {
                   <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <User className="h-8 w-8 text-primary-600" />
                   </div>
-                  <h3 className="font-medium text-gray-900">{order.assignedEmployeeFullName}</h3>
-                  <p className="text-sm text-gray-600">{order.assignedEmployeeID}</p>
-                  
+                  <h3 className="font-medium text-gray-900">
+                    {order.assignedEmployeeFullName}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {order.assignedEmployeeID}
+                  </p>
+
                   <div className="mt-4 space-y-2">
                     <Button variant="outline" size="sm" className="w-full">
                       <Phone className="h-4 w-4 mr-2" />
@@ -482,21 +554,30 @@ const OrderDetailPage = () => {
             </Card.Header>
             <Card.Content>
               <div className="space-y-3">
-                {['New', 'In Progress', 'Completed', 'Cancelled'].map((status) => (
-                  <Button
-                    key={status}
-                    variant={order.orderStatus === status ? 'default' : 'outline'}
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={() => handleStatusChange(status)}
-                    disabled={updateStatusMutation.isPending || order.orderStatus === status}
-                  >
-                    <Badge variant={getStatusColor(status)} size="sm" className="mr-2">
+                {["New", "In Progress", "Completed", "Cancelled"].map(
+                  (status) => (
+                    <Button
+                      key={status}
+                      variant={
+                        order.orderStatus === status ? "default" : "outline"
+                      }
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => handleStatusChange(status)}
+                      disabled={
+                        updateStatusMutation.isPending ||
+                        order.orderStatus === status
+                      }>
+                      <Badge
+                        variant={getStatusColor(status)}
+                        size="sm"
+                        className="mr-2">
+                        {status}
+                      </Badge>
                       {status}
-                    </Badge>
-                    {status}
-                  </Button>
-                ))}
+                    </Button>
+                  )
+                )}
               </div>
             </Card.Content>
           </Card>
