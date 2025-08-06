@@ -13,6 +13,8 @@ const VehicleSearchInput = ({
   onSelect,
   vehicles = [],
   placeholder = "Tìm kiếm theo biển số hoặc số khung xe...",
+  allowCreate = true,
+  onCreateNew,
   ...props
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,15 +26,27 @@ const VehicleSearchInput = ({
 
   // Filter vehicles based on search term
   const filteredVehicles = vehicles.filter(vehicle => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      vehicle.licensePlate?.toLowerCase().includes(searchLower) ||
-      vehicle.chassisNumber?.toLowerCase().includes(searchLower) ||
-      vehicle.vehicleModelName?.toLowerCase().includes(searchLower) ||
-      vehicle.vehicleBrandName?.toLowerCase().includes(searchLower) ||
-      vehicle.customerFullName?.toLowerCase().includes(searchLower)
-    );
+    if (!searchTerm) return true;
+    
+    try {
+      const searchLower = searchTerm.toLowerCase().trim();
+      if (!searchLower) return true;
+      
+      return (
+        vehicle.licensePlate?.toLowerCase().includes(searchLower) ||
+        vehicle.chassisNumber?.toLowerCase().includes(searchLower) ||
+        vehicle.vehicleModelName?.toLowerCase().includes(searchLower) ||
+        vehicle.vehicleBrandName?.toLowerCase().includes(searchLower) ||
+        vehicle.customerFullName?.toLowerCase().includes(searchLower)
+      );
+    } catch (error) {
+      console.warn('Error filtering vehicle:', vehicle, error);
+      return false;
+    }
   });
+
+  // Check if we should show "Create new" option
+  const showCreateOption = allowCreate && searchTerm && searchTerm.length >= 2 && filteredVehicles.length === 0;
 
   // Handle input change
   const handleInputChange = (e) => {
@@ -85,6 +99,14 @@ const VehicleSearchInput = ({
     }
     if (onSelect) {
       onSelect(null);
+    }
+  };
+
+  // Handle create new vehicle
+  const handleCreateNew = () => {
+    setIsOpen(false);
+    if (onCreateNew) {
+      onCreateNew(searchTerm);
     }
   };
 
@@ -185,9 +207,29 @@ const VehicleSearchInput = ({
                   </div>
                 </div>
               ))
+            ) : showCreateOption ? (
+              <div
+                onClick={handleCreateNew}
+                className="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 text-blue-600"
+              >
+                <div className="flex items-center gap-2">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <div>
+                    <div className="font-medium text-sm">Tạo phương tiện mới</div>
+                    <div className="text-xs text-blue-500">"{searchTerm}"</div>
+                  </div>
+                </div>
+              </div>
             ) : (
               <div className="px-3 py-2 text-sm text-gray-500">
                 Không tìm thấy phương tiện nào
+                {allowCreate && (
+                  <div className="text-xs mt-1 text-blue-600">
+                    Gõ ít nhất 2 ký tự để tạo mới
+                  </div>
+                )}
               </div>
             )}
           </div>
