@@ -20,6 +20,12 @@ export const orderService = {
     return response.data;
   },
 
+  // Create order with customer information
+  createOrderWithCustomer: async (orderData) => {
+    const response = await apiClient.post(API_ENDPOINTS.ORDERS.WITH_CUSTOMER, orderData);
+    return response.data;
+  },
+
   // Update order
   updateOrder: async (id, orderData) => {
     const response = await apiClient.put(API_ENDPOINTS.ORDERS.BY_ID(id), orderData);

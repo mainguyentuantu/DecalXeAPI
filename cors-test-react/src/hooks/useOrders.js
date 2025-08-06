@@ -34,6 +34,23 @@ export const useCreateOrder = () => {
   });
 };
 
+// New hook for creating orders with customer information
+export const useCreateOrderWithCustomer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: orderService.createOrderWithCustomer,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['orders']);
+      queryClient.invalidateQueries(['customers']);
+      // Toast message will be handled in the component for better UX
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Tạo đơn hàng với khách hàng thất bại');
+    },
+  });
+};
+
 export const useUpdateOrder = () => {
   const queryClient = useQueryClient();
 

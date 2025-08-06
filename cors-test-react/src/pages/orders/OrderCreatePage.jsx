@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useOrderCreateFormData, useCreateOrder } from "../../hooks/useOrders";
+import { useOrderCreateFormData, useCreateOrderWithCustomer } from "../../hooks/useOrders";
 import { useCustomerVehicles, useVehicleModels, useCreateCustomerVehicle } from "../../hooks/useVehicles";
 import { useTechnicians } from "../../hooks/useEmployees";
+import { useSearchCustomers, useCreateCustomer } from "../../hooks/useCustomers";
 import { toast } from "react-hot-toast";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -13,6 +14,8 @@ import DateTimePicker from "../../components/ui/DateTimePicker";
 import VehicleSearchInput from "../../components/ui/VehicleSearchInput";
 import SearchableSelect from "../../components/ui/SearchableSelect";
 import CreateVehicleModal from "../../components/ui/CreateVehicleModal";
+import CustomerSearchModal from "../../components/ui/CustomerSearchModal";
+import CreateCustomerModal from "../../components/ui/CreateCustomerModal";
 
 const OrderCreatePage = () => {
   const navigate = useNavigate();
@@ -20,16 +23,12 @@ const OrderCreatePage = () => {
   const { data: vehicles = [], isLoading: isVehiclesLoading } = useCustomerVehicles();
   const { data: vehicleModels = [], isLoading: isVehicleModelsLoading } = useVehicleModels();
   const { data: technicians = [], isLoading: isTechniciansLoading } = useTechnicians();
-  const createOrderMutation = useCreateOrder();
+  
+  // New hooks for customer functionality
+  const searchCustomersMutation = useSearchCustomers();
+  const createCustomerMutation = useCreateCustomer();
+  const createOrderWithCustomerMutation = useCreateOrderWithCustomer();
   const createVehicleMutation = useCreateCustomerVehicle();
-
-  // Debug logging
-  useEffect(() => {
-    if (formData?.employees) {
-      console.log('Employees data:', formData.employees);
-      console.log('First employee:', formData.employees[0]);
-    }
-  }, [formData]);
 
   // Form state
   const [formState, setFormState] = useState({
@@ -40,6 +39,9 @@ const OrderCreatePage = () => {
     priority: "",
     isCustomDecal: false,
     description: "",
+    // Customer fields
+    existingCustomerID: "",
+    newCustomerPayload: null,
   });
 
   // Validation errors
@@ -47,9 +49,12 @@ const OrderCreatePage = () => {
 
   // Selected vehicle info for display
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
-  // Create vehicle modal state
+  // Modal states
   const [showCreateVehicleModal, setShowCreateVehicleModal] = useState(false);
+  const [showCustomerSearchModal, setShowCustomerSearchModal] = useState(false);
+  const [showCreateCustomerModal, setShowCreateCustomerModal] = useState(false);
   const [createVehicleSearchTerm, setCreateVehicleSearchTerm] = useState('');
 
   // Priority options
@@ -98,24 +103,81 @@ const OrderCreatePage = () => {
       setSelectedVehicle(newVehicle);
       handleInputChange("vehicleID", newVehicle.vehicleID);
       
-      // Close modal
       setShowCreateVehicleModal(false);
       setCreateVehicleSearchTerm('');
-      
-      toast.success(`Đã tạo phương tiện cho ${newVehicle.vehicleBrandName} ${newVehicle.vehicleModelName}`);
+      toast.success("Đã tạo phương tiện mới thành công");
     } catch (error) {
-      console.error('Error creating vehicle:', error);
-      // Error is handled by the mutation
+      console.error("Error creating vehicle:", error);
+      toast.error("Có lỗi xảy ra khi tạo phương tiện");
     }
   };
 
-  // Validation function
+  // Handle customer search
+  const handleCustomerSearch = async (searchTerm) => {
+    if (!searchTerm.trim()) {
+      toast.error("Vui lòng nhập số điện thoại hoặc email để tìm kiếm");
+      return;
+    }
+
+    try {
+      const customers = await searchCustomersMutation.mutateAsync(searchTerm);
+      if (customers && customers.length > 0) {
+        setShowCustomerSearchModal(true);
+      } else {
+        // No customers found, show create customer modal
+        setShowCreateCustomerModal(true);
+      }
+    } catch (error) {
+      console.error("Error searching customers:", error);
+      toast.error("Có lỗi xảy ra khi tìm kiếm khách hàng");
+    }
+  };
+
+  // Handle customer selection
+  const handleCustomerSelect = (customer) => {
+    setSelectedCustomer(customer);
+    handleInputChange("existingCustomerID", customer.customerID);
+    handleInputChange("newCustomerPayload", null);
+    setShowCustomerSearchModal(false);
+    toast.success(`Đã chọn khách hàng: ${customer.firstName} ${customer.lastName}`);
+  };
+
+  // Handle create new customer
+  const handleCreateNewCustomer = () => {
+    setShowCustomerSearchModal(false);
+    setShowCreateCustomerModal(true);
+  };
+
+  // Handle save new customer
+  const handleSaveNewCustomer = async (customerData) => {
+    try {
+      const newCustomer = await createCustomerMutation.mutateAsync(customerData);
+      
+      setSelectedCustomer(newCustomer);
+      handleInputChange("existingCustomerID", "");
+      handleInputChange("newCustomerPayload", {
+        firstName: newCustomer.firstName,
+        lastName: newCustomer.lastName,
+        phoneNumber: newCustomer.phoneNumber,
+        email: newCustomer.email,
+        address: newCustomer.address,
+        createAccount: customerData.createAccount || false,
+      });
+      
+      setShowCreateCustomerModal(false);
+      toast.success("Đã tạo khách hàng mới thành công");
+    } catch (error) {
+      console.error("Error creating customer:", error);
+      toast.error("Có lỗi xảy ra khi tạo khách hàng");
+    }
+  };
+
+  // Validate form
   const validateForm = () => {
     const newErrors = {};
 
-    // Required fields
     if (!formState.totalAmount || parseFloat(formState.totalAmount) <= 0) {
-      newErrors.totalAmount = "Vui lòng nhập tổng tiền hợp lệ";
+      newErrors.totalAmount = "Tổng tiền phải lớn hơn 0";
     }
 
     if (!formState.assignedEmployeeID) {
@@ -128,17 +190,15 @@ const OrderCreatePage = () => {
 
     if (!formState.expectedArrivalTime) {
       newErrors.expectedArrivalTime = "Vui lòng chọn ngày dự kiến đến";
-    } else {
-      // Check if the date is in the future
-      const selectedDate = new Date(formState.expectedArrivalTime);
-      const now = new Date();
-      if (selectedDate <= now) {
-        newErrors.expectedArrivalTime = "Ngày dự kiến đến phải sau thời điểm hiện tại";
-      }
     }
 
     if (!formState.priority) {
       newErrors.priority = "Vui lòng chọn độ ưu tiên";
+    }
+
+    // Customer validation
+    if (!formState.existingCustomerID && !formState.newCustomerPayload) {
+      newErrors.customer = "Vui lòng chọn hoặc tạo khách hàng";
     }
 
     setErrors(newErrors);
@@ -156,6 +216,7 @@ const OrderCreatePage = () => {
 
     try {
       console.log('Form state before submit:', formState);
+      
       const orderData = {
         totalAmount: parseFloat(formState.totalAmount),
         assignedEmployeeID: formState.assignedEmployeeID,
@@ -164,18 +225,28 @@ const OrderCreatePage = () => {
         priority: formState.priority,
         isCustomDecal: formState.isCustomDecal,
         description: formState.description,
+        // Customer data
+        existingCustomerID: formState.existingCustomerID || undefined,
+        newCustomerPayload: formState.newCustomerPayload || undefined,
       };
+      
       console.log('Order data to submit:', orderData);
 
-      const createdOrder = await createOrderMutation.mutateAsync(orderData);
+      const createdOrder = await createOrderWithCustomerMutation.mutateAsync(orderData);
       
-      // Sử dụng thông tin đầy đủ từ response để hiển thị thông báo chi tiết
+      // Success message based on response
       let successMessage = "Đã tạo đơn hàng thành công";
+      
+      if (createdOrder.customerFullName) {
+        successMessage += ` cho khách hàng ${createdOrder.customerFullName}`;
+      }
+      
       if (createdOrder.vehicleBrandName && createdOrder.vehicleModelName) {
-        successMessage += ` cho xe ${createdOrder.vehicleBrandName} ${createdOrder.vehicleModelName}`;
-        if (createdOrder.chassisNumber) {
-          successMessage += ` (${createdOrder.chassisNumber})`;
-        }
+        successMessage += ` - xe ${createdOrder.vehicleBrandName} ${createdOrder.vehicleModelName}`;
+      }
+      
+      if (createdOrder.accountCreated) {
+        successMessage += ` (Đã tạo tài khoản cho khách hàng)`;
       }
       
       toast.success(successMessage);
@@ -239,6 +310,80 @@ const OrderCreatePage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Information */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Customer Information */}
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg className="h-4 w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">Thông Tin Khách Hàng</h2>
+              </div>
+
+              <div className="space-y-4">
+                {selectedCustomer ? (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium text-green-900">
+                          {selectedCustomer.firstName} {selectedCustomer.lastName}
+                        </h3>
+                        <p className="text-sm text-green-700">
+                          {selectedCustomer.phoneNumber} • {selectedCustomer.email || 'Không có email'}
+                        </p>
+                        {selectedCustomer.address && (
+                          <p className="text-sm text-green-600 mt-1">{selectedCustomer.address}</p>
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCustomer(null);
+                          handleInputChange("existingCustomerID", "");
+                          handleInputChange("newCustomerPayload", null);
+                        }}
+                      >
+                        Thay đổi
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        label="Tìm kiếm khách hàng"
+                        placeholder="Nhập số điện thoại hoặc email..."
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleCustomerSearch(e.target.value);
+                          }
+                        }}
+                        helper="Nhấn Enter để tìm kiếm khách hàng hiện có"
+                      />
+                      <div className="flex items-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowCreateCustomerModal(true)}
+                          className="whitespace-nowrap"
+                        >
+                          Tạo mới
+                        </Button>
+                      </div>
+                    </div>
+                    {errors.customer && (
+                      <p className="text-sm text-red-600">{errors.customer}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Order Information */}
             <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -246,7 +391,7 @@ const OrderCreatePage = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">Thông Tin Cơ Bản</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Thông Tin Đơn Hàng</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -358,6 +503,40 @@ const OrderCreatePage = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Selected Customer Info */}
+            {selectedCustomer && (
+              <Card className="p-4">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <svg className="h-4 w-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Khách Hàng
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Tên:</span>
+                    <span className="font-medium">{selectedCustomer.firstName} {selectedCustomer.lastName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">SĐT:</span>
+                    <span className="font-medium">{selectedCustomer.phoneNumber}</span>
+                  </div>
+                  {selectedCustomer.email && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Email:</span>
+                      <span className="font-medium">{selectedCustomer.email}</span>
+                    </div>
+                  )}
+                  {selectedCustomer.address && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Địa chỉ:</span>
+                      <span className="font-medium text-right">{selectedCustomer.address}</span>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
             {/* Selected Vehicle Info */}
             {selectedVehicle && (
               <Card className="p-4">
@@ -400,9 +579,9 @@ const OrderCreatePage = () => {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={createOrderMutation.isPending}
+                  disabled={createOrderWithCustomerMutation.isPending}
                 >
-                  {createOrderMutation.isPending ? (
+                  {createOrderWithCustomerMutation.isPending ? (
                     <div className="flex items-center gap-2">
                       <LoadingSpinner size="sm" />
                       Đang tạo đơn hàng...
@@ -422,7 +601,7 @@ const OrderCreatePage = () => {
                   variant="outline"
                   className="w-full"
                   onClick={() => navigate("/orders")}
-                  disabled={createOrderMutation.isPending}
+                  disabled={createOrderWithCustomerMutation.isPending}
                 >
                   Hủy bỏ
                 </Button>
@@ -439,30 +618,47 @@ const OrderCreatePage = () => {
                   <p className="font-medium mb-1">Lưu ý:</p>
                   <ul className="space-y-1 text-blue-700">
                     <li>• Tất cả trường có dấu (*) là bắt buộc</li>
+                    <li>• Có thể tìm kiếm khách hàng theo SĐT hoặc email</li>
+                    <li>• Có thể tạo khách hàng mới nếu chưa có</li>
                     <li>• Ngày dự kiến đến phải sau thời điểm hiện tại</li>
-                    <li>• Có thể tìm kiếm phương tiện bằng biển số hoặc số khung</li>
                   </ul>
                 </div>
               </div>
             </Card>
           </div>
-                  </div>
-        </form>
+        </div>
+      </form>
 
-        {/* Create Vehicle Modal */}
-        <CreateVehicleModal
-          isOpen={showCreateVehicleModal}
-          onClose={() => {
-            setShowCreateVehicleModal(false);
-            setCreateVehicleSearchTerm('');
-          }}
-          onSave={handleSaveNewVehicle}
-          initialSearchTerm={createVehicleSearchTerm}
-          vehicleModels={vehicleModels}
-          isLoading={createVehicleMutation.isPending}
-        />
-      </div>
-    );
-  };
-  
-  export default OrderCreatePage;
+      {/* Modals */}
+      <CreateVehicleModal
+        isOpen={showCreateVehicleModal}
+        onClose={() => {
+          setShowCreateVehicleModal(false);
+          setCreateVehicleSearchTerm('');
+        }}
+        onSave={handleSaveNewVehicle}
+        initialSearchTerm={createVehicleSearchTerm}
+        vehicleModels={vehicleModels}
+        isLoading={createVehicleMutation.isPending}
+      />
+
+      <CustomerSearchModal
+        isOpen={showCustomerSearchModal}
+        onClose={() => setShowCustomerSearchModal(false)}
+        onSelect={handleCustomerSelect}
+        onCreateNew={handleCreateNewCustomer}
+        customers={searchCustomersMutation.data || []}
+        isLoading={searchCustomersMutation.isPending}
+      />
+
+      <CreateCustomerModal
+        isOpen={showCreateCustomerModal}
+        onClose={() => setShowCreateCustomerModal(false)}
+        onSave={handleSaveNewCustomer}
+        isLoading={createCustomerMutation.isPending}
+      />
+    </div>
+  );
+};
+
+export default OrderCreatePage;
