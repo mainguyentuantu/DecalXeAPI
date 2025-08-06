@@ -22,6 +22,11 @@ namespace DecalXeAPI.Models
         [MaxLength(50)]
         public string OrderStatus { get; set; } = string.Empty; // Trạng thái đơn hàng (ví dụ: "New", "Pending", "Completed", "Cancelled")
 
+        // Khóa ngoại (Foreign Key): Khách hàng đặt đơn hàng này
+        [ForeignKey("Customer")]
+        public string CustomerID { get; set; } = string.Empty; // FK_CustomerID
+        public Customer? Customer { get; set; }
+
         // Khóa ngoại (Foreign Key): Nhân viên được giao phụ trách đơn hàng này (ví dụ: sales staff)
         [ForeignKey("Employee")]
         public string? AssignedEmployeeID { get; set; } // FK_AssignedEmployeeID (có thể null ban đầu)
@@ -43,6 +48,9 @@ namespace DecalXeAPI.Models
         public string? Priority { get; set; } // Độ ưu tiên (ví dụ: "Low", "Medium", "High")
 
         public bool IsCustomDecal { get; set; } = false; // <-- MỚI: Đánh dấu đây có phải đơn hàng decal tùy chỉnh không
+
+        [MaxLength(1000)]
+        public string? Description { get; set; } // Mô tả chi tiết đơn hàng
 
         // --- NAVIGATION PROPERTIES HIỆN CÓ (Giữ nguyên) ---
         [JsonIgnore] // Để tránh lỗi vòng lặp JSON
