@@ -12,7 +12,8 @@ const CreateVehicleModal = ({
   initialSearchTerm = '',
   vehicleBrands = [],
   vehicleModels = [],
-  isLoading = false
+  isLoading = false,
+  customerID = null
 }) => {
   const [formData, setFormData] = useState({
     licensePlate: '',
@@ -54,6 +55,11 @@ const CreateVehicleModal = ({
     }
   }, [isOpen, initialSearchTerm]);
 
+  // Nếu có customerID, luôn set createNewCustomer = false
+  useEffect(() => {
+    if (customerID) setCreateNewCustomer(false);
+  }, [customerID]);
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -85,20 +91,16 @@ const CreateVehicleModal = ({
       newErrors.year = 'Năm sản xuất không hợp lệ';
     }
 
-    // Customer validation (if creating new customer)
-    if (createNewCustomer) {
-      if (!formData.customerFirstName) {
-        newErrors.customerFirstName = 'Vui lòng nhập tên khách hàng';
-      }
-      if (!formData.customerLastName) {
-        newErrors.customerLastName = 'Vui lòng nhập họ khách hàng';
-      }
+    // Nếu không có customerID và createNewCustomer, validate thông tin khách hàng
+    if (!customerID && createNewCustomer) {
+      if (!formData.customerFirstName) newErrors.customerFirstName = 'Vui lòng nhập tên khách hàng';
+      if (!formData.customerLastName) newErrors.customerLastName = 'Vui lòng nhập họ khách hàng';
       if (!formData.customerPhone) {
         newErrors.customerPhone = 'Vui lòng nhập số điện thoại';
       } else if (!/^[0-9]{10,11}$/.test(formData.customerPhone)) {
         newErrors.customerPhone = 'Số điện thoại không hợp lệ';
       }
-    } else if (!formData.customerID) {
+    } else if (!customerID && !createNewCustomer && !formData.customerID) {
       newErrors.customerID = 'Vui lòng chọn khách hàng';
     }
 
@@ -110,6 +112,21 @@ const CreateVehicleModal = ({
     e.preventDefault();
     
     if (!validateForm()) {
+      return;
+    }
+
+    // Nếu có customerID, chỉ trả về thông tin xe + customerID
+    if (customerID) {
+      const vehicleData = {
+        licensePlate: formData.licensePlate,
+        chassisNumber: formData.chassisNumber,
+        color: formData.color,
+        year: formData.year ? parseInt(formData.year) : null,
+        initialKM: formData.initialKM ? parseFloat(formData.initialKM) : null,
+        modelID: formData.modelID,
+        customerID: customerID,
+      };
+      onSave(vehicleData);
       return;
     }
 
@@ -237,78 +254,80 @@ const CreateVehicleModal = ({
           </div>
 
           {/* Customer Information */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                Thông Tin Khách Hàng
-              </h3>
-              
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={createNewCustomer}
-                  onChange={(e) => setCreateNewCustomer(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">Tạo khách hàng mới</span>
-              </label>
-            </div>
-
-            {createNewCustomer ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Tên"
-                  value={formData.customerFirstName}
-                  onChange={(e) => handleInputChange('customerFirstName', e.target.value)}
-                  error={errors.customerFirstName}
-                  required
-                  placeholder="Nguyễn"
-                />
-
-                <Input
-                  label="Họ"
-                  value={formData.customerLastName}
-                  onChange={(e) => handleInputChange('customerLastName', e.target.value)}
-                  error={errors.customerLastName}
-                  required
-                  placeholder="Văn A"
-                />
-
-                <Input
-                  label="Số điện thoại"
-                  value={formData.customerPhone}
-                  onChange={(e) => handleInputChange('customerPhone', e.target.value)}
-                  error={errors.customerPhone}
-                  required
-                  placeholder="0901234567"
-                />
-
-                <Input
-                  label="Email"
-                  type="email"
-                  value={formData.customerEmail}
-                  onChange={(e) => handleInputChange('customerEmail', e.target.value)}
-                  placeholder="example@email.com"
-                />
-
-                <div className="md:col-span-2">
-                  <Input
-                    label="Địa chỉ"
-                    value={formData.customerAddress}
-                    onChange={(e) => handleInputChange('customerAddress', e.target.value)}
-                    placeholder="Số nhà, đường, phường, quận, thành phố"
+          {!customerID && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                  <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Thông Tin Khách Hàng
+                </h3>
+                
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={createNewCustomer}
+                    onChange={(e) => setCreateNewCustomer(e.target.checked)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
+                  <span className="text-sm text-gray-700">Tạo khách hàng mới</span>
+                </label>
+              </div>
+
+              {createNewCustomer ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Tên"
+                    value={formData.customerFirstName}
+                    onChange={(e) => handleInputChange('customerFirstName', e.target.value)}
+                    error={errors.customerFirstName}
+                    required
+                    placeholder="Nguyễn"
+                  />
+
+                  <Input
+                    label="Họ"
+                    value={formData.customerLastName}
+                    onChange={(e) => handleInputChange('customerLastName', e.target.value)}
+                    error={errors.customerLastName}
+                    required
+                    placeholder="Văn A"
+                  />
+
+                  <Input
+                    label="Số điện thoại"
+                    value={formData.customerPhone}
+                    onChange={(e) => handleInputChange('customerPhone', e.target.value)}
+                    error={errors.customerPhone}
+                    required
+                    placeholder="0901234567"
+                  />
+
+                  <Input
+                    label="Email"
+                    type="email"
+                    value={formData.customerEmail}
+                    onChange={(e) => handleInputChange('customerEmail', e.target.value)}
+                    placeholder="example@email.com"
+                  />
+
+                  <div className="md:col-span-2">
+                    <Input
+                      label="Địa chỉ"
+                      value={formData.customerAddress}
+                      onChange={(e) => handleInputChange('customerAddress', e.target.value)}
+                      placeholder="Số nhà, đường, phường, quận, thành phố"
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="text-sm text-gray-500 p-4 bg-gray-50 rounded-md">
-                Tính năng chọn khách hàng có sẵn sẽ được phát triển sau
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="text-sm text-gray-500 p-4 bg-gray-50 rounded-md">
+                  Tính năng chọn khách hàng có sẵn sẽ được phát triển sau
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">

@@ -97,12 +97,19 @@ const OrderCreatePage = () => {
   // Handle save new vehicle
   const handleSaveNewVehicle = async (vehicleData) => {
     try {
-      const newVehicle = await createVehicleMutation.mutateAsync(vehicleData);
-      
-      // Select the newly created vehicle
+      // Nếu đã chọn khách hàng, chỉ truyền thông tin xe + customerID
+      const payload = {
+        licensePlate: vehicleData.licensePlate,
+        chassisNumber: vehicleData.chassisNumber,
+        color: vehicleData.color,
+        year: vehicleData.year,
+        initialKM: vehicleData.initialKM,
+        modelID: vehicleData.modelID,
+        customerID: selectedCustomer?.customerID || formState.existingCustomerID,
+      };
+      const newVehicle = await createVehicleMutation.mutateAsync(payload);
       setSelectedVehicle(newVehicle);
       handleInputChange("vehicleID", newVehicle.vehicleID);
-      
       setShowCreateVehicleModal(false);
       setCreateVehicleSearchTerm('');
       toast.success("Đã tạo phương tiện mới thành công");
@@ -681,6 +688,7 @@ const OrderCreatePage = () => {
         initialSearchTerm={createVehicleSearchTerm}
         vehicleModels={vehicleModels}
         isLoading={createVehicleMutation.isPending}
+        customerID={selectedCustomer?.customerID || formState.existingCustomerID}
       />
 
       <CustomerSearchModal
