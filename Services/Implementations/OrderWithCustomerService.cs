@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
+using BCrypt.Net;
 
 namespace DecalXeAPI.Services.Implementations
 {
@@ -263,8 +264,8 @@ namespace DecalXeAPI.Services.Implementations
             // Tạo mật khẩu ngẫu nhiên
             var password = GenerateSecurePassword();
 
-            // Hash mật khẩu
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+                // Hash mật khẩu
+    var passwordHash = BCrypt.HashPassword(password);
 
             var account = new Account
             {
@@ -309,7 +310,7 @@ namespace DecalXeAPI.Services.Implementations
                 .LoadAsync();
 
             await _context.Entry(order)
-                .Reference(o => o.Vehicle)
+                .Reference(o => o.CustomerVehicle)
                 .LoadAsync();
 
             var response = new OrderWithCustomerResponseDto
@@ -321,11 +322,12 @@ namespace DecalXeAPI.Services.Implementations
                 CurrentStage = order.CurrentStage,
                 TotalAmount = order.TotalAmount,
                 AssignedEmployeeID = order.AssignedEmployeeID,
-                AssignedEmployeeFullName = order.AssignedEmployee?.FullName,
+                AssignedEmployeeFullName = order.AssignedEmployee != null ? 
+                    $"{order.AssignedEmployee.FirstName} {order.AssignedEmployee.LastName}" : null,
                 VehicleID = order.VehicleID,
-                VehicleModelName = order.Vehicle?.VehicleModelName,
-                VehicleBrandName = order.Vehicle?.VehicleBrandName,
-                ChassisNumber = order.Vehicle?.ChassisNumber,
+                VehicleModelName = order.CustomerVehicle?.VehicleModel?.ModelName,
+                VehicleBrandName = order.CustomerVehicle?.VehicleModel?.VehicleBrand?.BrandName,
+                ChassisNumber = order.CustomerVehicle?.ChassisNumber,
                 ExpectedArrivalTime = order.ExpectedArrivalTime,
                 Priority = order.Priority,
                 IsCustomDecal = order.IsCustomDecal,
