@@ -688,7 +688,7 @@ const OrderCreatePage = () => {
         initialSearchTerm={createVehicleSearchTerm}
         vehicleModels={vehicleModels}
         isLoading={createVehicleMutation.isPending}
-        customerID={selectedCustomer?.customerID || formState.existingCustomerID}
+        customerInfo={selectedCustomer || null}
       />
 
       <CustomerSearchModal
