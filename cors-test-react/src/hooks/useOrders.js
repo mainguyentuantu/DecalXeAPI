@@ -26,7 +26,7 @@ export const useCreateOrder = () => {
     mutationFn: orderService.createOrder,
     onSuccess: () => {
       queryClient.invalidateQueries(['orders']);
-      toast.success('Tạo đơn hàng thành công!');
+      // Toast message will be handled in the component for better UX
     },
     onError: (error) => {
       toast.error(error.message || 'Tạo đơn hàng thất bại');
