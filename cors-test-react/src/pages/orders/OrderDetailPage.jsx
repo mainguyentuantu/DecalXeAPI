@@ -54,16 +54,25 @@ const OrderDetailPage = () => {
   };
 
   // Khi xác nhận chuyển trạng thái
-  const handleConfirmStage = async (notes) => {
+  const handleConfirmStage = async (notes, stageOverride, completionOverride) => {
     setShowStageModal(false);
     if (!selectedStage || !order) return;
-    // Chỉ gọi API tạo tiến độ mới (POST)
+    // Lấy employeeID từ localStorage (giả lập đăng nhập)
+    const changedByEmployeeID = localStorage.getItem('employeeID') || 'EMP001';
+    // Nếu là In Progress, nhận stage và completionPercentage từ modal
+    let stage = selectedStage.stage;
+    let completionPercentage = undefined;
+    if (selectedStage.value === 'In Progress' && stageOverride && completionOverride !== undefined) {
+      stage = stageOverride;
+      completionPercentage = completionOverride;
+    }
     await createStageMutation.mutateAsync({
       stageName: selectedStage.value,
       orderID: order.orderID,
-      changedByEmployeeID: 'EMP001', // TODO: Lấy từ context đăng nhập
+      changedByEmployeeID,
       notes,
-      stage: selectedStage.stage
+      stage,
+      ...(completionPercentage !== undefined ? { completionPercentage } : {})
     });
   };
 
