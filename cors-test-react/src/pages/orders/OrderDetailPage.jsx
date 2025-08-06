@@ -17,11 +17,19 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useOrder, useDeleteOrder, useUpdateOrderStatus } from '../../hooks/useOrders';
-import { useOrderStageHistories } from '../../hooks/useOrderStageHistories';
+import { useOrderStageHistories, useCreateOrderStageHistory, useUpdateOrderCurrentStage } from '../../hooks/useOrderStageHistories';
+import OrderStageChangeModal from '../../components/ui/OrderStageChangeModal';
 import { Button, Card, Badge, LoadingSpinner } from '../../components/common';
 import { ORDER_STAGES, ORDER_PRIORITIES } from '../../constants/ui';
 import { format } from 'date-fns';
 import OrderStageTimeline from '../../components/ui/OrderStageTimeline';
+
+const ORDER_STAGES_LIST = [
+  { value: 'New', label: 'Mới', stage: 1 },
+  { value: 'In Progress', label: 'Đang xử lý', stage: 2 },
+  { value: 'Completed', label: 'Hoàn thành', stage: 3 },
+  { value: 'Cancel', label: 'Đã hủy', stage: 4 },
+];
 
 const OrderDetailPage = () => {
   const { id } = useParams();
@@ -31,6 +39,35 @@ const OrderDetailPage = () => {
   const deleteOrderMutation = useDeleteOrder();
   const updateStatusMutation = useUpdateOrderStatus();
   const { data: stageHistories = [], isLoading: isStagesLoading } = useOrderStageHistories(id);
+  const createStageMutation = useCreateOrderStageHistory();
+  const updateCurrentStageMutation = useUpdateOrderCurrentStage();
+  const [showStageModal, setShowStageModal] = React.useState(false);
+  const [selectedStage, setSelectedStage] = React.useState(null);
+
+  // Lấy trạng thái hiện tại từ order hoặc stageHistories
+  const currentStage = order?.currentStage || (stageHistories.length ? stageHistories[stageHistories.length-1].stageName : '');
+
+  // Khi click vào trạng thái
+  const handleStageClick = (stage) => {
+    setSelectedStage(stage);
+    setShowStageModal(true);
+  };
+
+  // Khi xác nhận chuyển trạng thái
+  const handleConfirmStage = async (notes) => {
+    setShowStageModal(false);
+    if (!selectedStage || !order) return;
+    // Gọi API cập nhật currentStage
+    await updateCurrentStageMutation.mutateAsync({ orderId: order.orderID, currentStage: selectedStage.value });
+    // Gọi API tạo tiến độ mới
+    await createStageMutation.mutateAsync({
+      stageName: selectedStage.value,
+      orderID: order.orderID,
+      changedByEmployeeID: 'EMP001', // TODO: Lấy từ context đăng nhập
+      notes,
+      stage: selectedStage.stage
+    });
+  };
 
   const handleDeleteOrder = () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
@@ -154,6 +191,34 @@ const OrderDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Stepper trạng thái */}
+          <Card>
+            <Card.Header>
+              <Card.Title>Trạng thái đơn hàng</Card.Title>
+            </Card.Header>
+            <Card.Content>
+              <div className="flex gap-4 items-center">
+                {ORDER_STAGES_LIST.map((stage, idx) => (
+                  <button
+                    key={stage.value}
+                    className={`flex flex-col items-center px-3 py-2 rounded transition border-2 ${currentStage === stage.value ? 'border-blue-600 bg-blue-50' : 'border-gray-200 bg-white'} ${createStageMutation.isPending || updateCurrentStageMutation.isPending ? 'opacity-50 pointer-events-none' : ''}`}
+                    onClick={() => handleStageClick(stage)}
+                  >
+                    <span className={`font-semibold ${currentStage === stage.value ? 'text-blue-700' : 'text-gray-700'}`}>{stage.label}</span>
+                    <span className="text-xs text-gray-400">{stage.value}</span>
+                  </button>
+                ))}
+              </div>
+            </Card.Content>
+          </Card>
+          {/* Modal nhập notes khi chuyển trạng thái */}
+          <OrderStageChangeModal
+            isOpen={showStageModal}
+            onClose={() => setShowStageModal(false)}
+            onSubmit={handleConfirmStage}
+            stageName={selectedStage?.label || ''}
+          />
+
           {/* Customer Info */}
           {order.customerFullName && (
             <Card>

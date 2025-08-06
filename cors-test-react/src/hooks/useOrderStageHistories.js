@@ -26,3 +26,31 @@ export const useCurrentOrderStage = (orderId) => {
     staleTime: 1000 * 60 * 5,
   });
 };
+
+export const useCreateOrderStageHistory = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload) => {
+      const res = await apiClient.post('/api/OrderStageHistories', payload);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['orderStageHistories']);
+    },
+  });
+};
+
+export const useUpdateOrderCurrentStage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ orderId, currentStage }) => {
+      // PATCH /api/Orders/{id} (giả sử backend hỗ trợ)
+      const res = await apiClient.patch(`/api/Orders/${orderId}`, { currentStage });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['orders']);
+      queryClient.invalidateQueries(['order', orderId]);
+    },
+  });
+};
