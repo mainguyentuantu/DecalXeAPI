@@ -122,13 +122,24 @@ namespace DecalXeAPI.MappingProfiles
             CreateMap<Design, DesignDto>()
                 .ForMember(dest => dest.DesignerFullName, opt => opt.MapFrom(src => src.Designer != null ? src.Designer.FirstName + " " + src.Designer.LastName : null));
 
-            // UPDATED: Order mapping without Customer relationship
+            // UPDATED: Order mapping with Customer relationship
             CreateMap<Order, OrderDto>()
                 .ForMember(dest => dest.AssignedEmployeeFullName, opt => opt.MapFrom(src => src.AssignedEmployee != null ? src.AssignedEmployee.FirstName + " " + src.AssignedEmployee.LastName : null))
                 .ForMember(dest => dest.ChassisNumber, opt => opt.MapFrom(src => src.CustomerVehicle != null ? src.CustomerVehicle.ChassisNumber : null))
                 .ForMember(dest => dest.VehicleModelName, opt => opt.MapFrom(src => src.CustomerVehicle != null && src.CustomerVehicle.VehicleModel != null ? src.CustomerVehicle.VehicleModel.ModelName : null))
                 .ForMember(dest => dest.VehicleBrandName, opt => opt.MapFrom(src => src.CustomerVehicle != null && src.CustomerVehicle.VehicleModel != null && src.CustomerVehicle.VehicleModel.VehicleBrand != null ? src.CustomerVehicle.VehicleModel.VehicleBrand.BrandName : null))
-                .ForMember(dest => dest.IsCustomDecal, opt => opt.MapFrom(src => src.IsCustomDecal));
+                .ForMember(dest => dest.IsCustomDecal, opt => opt.MapFrom(src => src.IsCustomDecal))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                // Customer information mapping
+                .ForMember(dest => dest.CustomerID, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.CustomerID : null))
+                .ForMember(dest => dest.CustomerFullName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.FirstName + " " + src.Customer.LastName : null))
+                .ForMember(dest => dest.CustomerPhoneNumber, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.PhoneNumber : null))
+                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Email : null))
+                .ForMember(dest => dest.CustomerAddress, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Address : null))
+                // Account information mapping
+                .ForMember(dest => dest.AccountID, opt => opt.MapFrom(src => src.Customer != null && src.Customer.Account != null ? src.Customer.Account.AccountID : null))
+                .ForMember(dest => dest.AccountUsername, opt => opt.MapFrom(src => src.Customer != null && src.Customer.Account != null ? src.Customer.Account.Username : null))
+                .ForMember(dest => dest.AccountCreated, opt => opt.MapFrom(src => src.Customer != null && src.Customer.Account != null));
 
             CreateMap<OrderDetail, OrderDetailDto>()
                 .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.Order != null ? src.Order.OrderStatus : null))
