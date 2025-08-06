@@ -115,18 +115,28 @@ namespace DecalXeAPI.Services.Implementations
         {
             _logger.LogInformation("Yêu cầu tạo đơn hàng mới");
 
-
-
-
-           
-
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
             _logger.LogInformation("Đã tạo Order mới với ID: {OrderID}", order.OrderID);
 
-            // Tải lại các thực thể liên quan để AutoMapper có thể ánh xạ đầy đủ
+            // Tải lại toàn bộ thông tin liên quan để AutoMapper có thể ánh xạ đầy đủ
             await _context.Entry(order).Reference(o => o.AssignedEmployee).LoadAsync();
             await _context.Entry(order).Reference(o => o.CustomerVehicle).LoadAsync();
+            
+            // Tải thông tin chi tiết về VehicleModel và VehicleBrand nếu có CustomerVehicle
+            if (order.CustomerVehicle != null)
+            {
+                await _context.Entry(order.CustomerVehicle)
+                    .Reference(cv => cv.VehicleModel)
+                    .LoadAsync();
+                
+                if (order.CustomerVehicle.VehicleModel != null)
+                {
+                    await _context.Entry(order.CustomerVehicle.VehicleModel)
+                        .Reference(vm => vm.VehicleBrand)
+                        .LoadAsync();
+                }
+            }
 
             var orderDto = _mapper.Map<OrderDto>(order);
             return orderDto;

@@ -94,10 +94,22 @@ const OrderCreatePage = () => {
     };
 
     try {
-      await createOrderMutation.mutateAsync(orderData);
+      const createdOrder = await createOrderMutation.mutateAsync(orderData);
+      
+      // Sử dụng thông tin đầy đủ từ response để hiển thị thông báo chi tiết
+      let successMessage = "Đã tạo đơn hàng thành công";
+      if (createdOrder.vehicleBrandName && createdOrder.vehicleModelName) {
+        successMessage += ` cho xe ${createdOrder.vehicleBrandName} ${createdOrder.vehicleModelName}`;
+        if (createdOrder.chassisNumber) {
+          successMessage += ` (${createdOrder.chassisNumber})`;
+        }
+      }
+      
+      toast.success(successMessage);
       navigate("/orders");
     } catch (error) {
       console.error("Error creating order:", error);
+      toast.error("Có lỗi xảy ra khi tạo đơn hàng");
     }
   };
 
