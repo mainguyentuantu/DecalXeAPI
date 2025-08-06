@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOrderCreateFormData, useCreateOrder } from "../../hooks/useOrders";
 import { useCustomerVehicles, useVehicleModels, useCreateCustomerVehicle } from "../../hooks/useVehicles";
+import { useTechnicians } from "../../hooks/useEmployees";
 import { toast } from "react-hot-toast";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -18,6 +19,7 @@ const OrderCreatePage = () => {
   const { data: formData, isLoading: isFormDataLoading, error: formDataError } = useOrderCreateFormData();
   const { data: vehicles = [], isLoading: isVehiclesLoading } = useCustomerVehicles();
   const { data: vehicleModels = [], isLoading: isVehicleModelsLoading } = useVehicleModels();
+  const { data: technicians = [], isLoading: isTechniciansLoading } = useTechnicians();
   const createOrderMutation = useCreateOrder();
   const createVehicleMutation = useCreateCustomerVehicle();
 
@@ -181,7 +183,7 @@ const OrderCreatePage = () => {
   };
 
   // Loading state
-  if (isFormDataLoading || isVehiclesLoading || isVehicleModelsLoading) {
+  if (isFormDataLoading || isVehiclesLoading || isVehicleModelsLoading || isTechniciansLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner />
@@ -325,14 +327,14 @@ const OrderCreatePage = () => {
                   label="Nhân viên thực hiện"
                   value={formState.assignedEmployeeID}
                   onChange={(value) => handleInputChange("assignedEmployeeID", value)}
-                  options={formData?.employees || []}
+                  options={technicians || []}
                   getOptionLabel={(emp) => `${emp.firstName} ${emp.lastName} - ${emp.storeName || 'N/A'}`}
                   getOptionValue={(emp) => emp.employeeID}
-                  placeholder="Chọn nhân viên..."
-                  searchPlaceholder="Tìm kiếm nhân viên..."
+                  placeholder="Chọn kỹ thuật viên..."
+                  searchPlaceholder="Tìm kiếm kỹ thuật viên..."
                   error={errors.assignedEmployeeID}
                   required
-                  helper="Chọn nhân viên sẽ thực hiện đơn hàng này"
+                  helper="Chọn kỹ thuật viên sẽ thực hiện đơn hàng này"
                 />
 
                 <VehicleSearchInput

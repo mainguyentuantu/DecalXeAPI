@@ -7,7 +7,7 @@ namespace DecalXeAPI.Services.Interfaces
 {
     public interface IEmployeeService
     {
-        Task<IEnumerable<EmployeeDto>> GetEmployeesAsync();
+        Task<IEnumerable<EmployeeDto>> GetEmployeesAsync(string? role = null);
         Task<EmployeeDto?> GetEmployeeByIdAsync(string id);
         Task<EmployeeDto> CreateEmployeeAsync(Employee employee);
         Task<bool> UpdateEmployeeAsync(string id, Employee employee);
