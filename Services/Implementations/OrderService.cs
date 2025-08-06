@@ -34,6 +34,8 @@ namespace DecalXeAPI.Services.Implementations
 
             var query = _context.Orders
                                 .Include(o => o.AssignedEmployee)
+                                .Include(o => o.Customer) // NEW: Include Customer information
+                                    .ThenInclude(c => c.Account) // NEW: Include Customer's Account
                                 .Include(o => o.CustomerVehicle) // <-- BƯỚC 1: NẠP DỮ LIỆU XE
                                 .ThenInclude(cv => cv.VehicleModel) 
                                 .ThenInclude(vm => vm.VehicleBrand) 
@@ -48,10 +50,12 @@ namespace DecalXeAPI.Services.Implementations
             if (!string.IsNullOrEmpty(queryParams.SearchTerm))
             {
                 var searchTermLower = queryParams.SearchTerm.ToLower();
-                // BƯỚC 2: CẬP NHẬT LẠI TOÀN BỘ LOGIC TÌM KIẾM (REMOVED CUSTOMER SEARCH)
+                // BƯỚC 2: CẬP NHẬT LẠI TOÀN BỘ LOGIC TÌM KIẾM (ADDED CUSTOMER SEARCH BACK)
                 query = query.Where(o =>
                     (o.AssignedEmployee != null && (o.AssignedEmployee.FirstName + " " + o.AssignedEmployee.LastName).ToLower().Contains(searchTermLower)) ||
-                    (o.CustomerVehicle != null && o.CustomerVehicle.ChassisNumber.ToLower().Contains(searchTermLower)) // <-- Sửa từ LicensePlate thành ChassisNumber
+                    (o.CustomerVehicle != null && o.CustomerVehicle.ChassisNumber.ToLower().Contains(searchTermLower)) ||
+                    (o.Customer != null && (o.Customer.FirstName + " " + o.Customer.LastName).ToLower().Contains(searchTermLower)) ||
+                    (o.Customer != null && o.Customer.PhoneNumber.ToLower().Contains(searchTermLower))
                 );
             }
 
@@ -65,7 +69,11 @@ namespace DecalXeAPI.Services.Implementations
                     case "totalamount":
                         query = queryParams.SortOrder.ToLower() == "desc" ? query.OrderByDescending(o => o.TotalAmount) : query.OrderBy(o => o.TotalAmount);
                         break;
-                    // Removed customername sorting as Customer is disconnected
+                    case "customername":
+                        query = queryParams.SortOrder.ToLower() == "desc" ? 
+                            query.OrderByDescending(o => o.Customer != null ? o.Customer.FirstName + " " + o.Customer.LastName : "") : 
+                            query.OrderBy(o => o.Customer != null ? o.Customer.FirstName + " " + o.Customer.LastName : "");
+                        break;
                     case "orderstatus":
                         query = queryParams.SortOrder.ToLower() == "desc" ? query.OrderByDescending(o => o.OrderStatus) : query.OrderBy(o => o.OrderStatus);
                         break;
@@ -94,9 +102,11 @@ namespace DecalXeAPI.Services.Implementations
             _logger.LogInformation("Yêu cầu lấy thông tin đơn hàng với ID: {OrderID}", id);
             var order = await _context.Orders
                 .Include(o => o.AssignedEmployee)
+                .Include(o => o.Customer) // NEW: Include Customer information
+                    .ThenInclude(c => c.Account) // NEW: Include Customer's Account
                 .Include(o => o.CustomerVehicle)
                     .ThenInclude(cv => cv.VehicleModel)
-                        .ThenInclude(vm => vm.VehicleBrand)
+                    .ThenInclude(vm => vm.VehicleBrand)
                 .FirstOrDefaultAsync(o => o.OrderID == id);
 
             if (order == null)
@@ -106,6 +116,7 @@ namespace DecalXeAPI.Services.Implementations
             }
 
             var orderDto = _mapper.Map<OrderDto>(order);
+            _logger.LogInformation("Đã trả về thông tin đơn hàng: {OrderID}", id);
             return orderDto;
         }
 
@@ -119,7 +130,14 @@ namespace DecalXeAPI.Services.Implementations
 
             // Tải lại toàn bộ thông tin liên quan để AutoMapper có thể ánh xạ đầy đủ
             await _context.Entry(order).Reference(o => o.AssignedEmployee).LoadAsync();
+            await _context.Entry(order).Reference(o => o.Customer).LoadAsync(); // NEW: Load Customer
             await _context.Entry(order).Reference(o => o.CustomerVehicle).LoadAsync();
+            
+            // Load Customer's Account if exists
+            if (order.Customer != null)
+            {
+                await _context.Entry(order.Customer).Reference(c => c.Account).LoadAsync();
+            }
             
             // Tải thông tin chi tiết về VehicleModel và VehicleBrand nếu có CustomerVehicle
             if (order.CustomerVehicle != null)
