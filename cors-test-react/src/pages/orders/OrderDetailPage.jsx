@@ -57,9 +57,7 @@ const OrderDetailPage = () => {
   const handleConfirmStage = async (notes) => {
     setShowStageModal(false);
     if (!selectedStage || !order) return;
-    // Gọi API cập nhật currentStage
-    await updateCurrentStageMutation.mutateAsync({ orderId: order.orderID, currentStage: selectedStage.value });
-    // Gọi API tạo tiến độ mới
+    // Chỉ gọi API tạo tiến độ mới (POST)
     await createStageMutation.mutateAsync({
       stageName: selectedStage.value,
       orderID: order.orderID,
