@@ -17,6 +17,10 @@ namespace DecalXeAPI.MappingProfiles
             CreateMap<CreateDesignCommentDto, DesignComment>();
             CreateMap<CreateCustomerDto, Customer>();
             CreateMap<UpdateCustomerDto, Customer>();
+            
+            // NEW: Add mapping for CreateCustomerWithAccountDto
+            CreateMap<CreateCustomerWithAccountDto, Customer>();
+            
             CreateMap<CreateDecalServiceDto, DecalService>();
             CreateMap<UpdateDecalServiceDto, DecalService>();
             CreateMap<CreateDecalTemplateDto, DecalTemplate>();
@@ -38,6 +42,12 @@ namespace DecalXeAPI.MappingProfiles
 
             CreateMap<CreateOrderDto, Order>()
                 .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.TotalAmount));
+
+            // NEW: Add mapping for CreateOrderWithCustomerDto
+            CreateMap<CreateOrderWithCustomerDto, Order>()
+                .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.TotalAmount))
+                .ForMember(dest => dest.CustomerID, opt => opt.Ignore()) // Will be set manually in service
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
 
             CreateMap<UpdateOrderDto, Order>();
             CreateMap<CreatePaymentDto, Payment>();
