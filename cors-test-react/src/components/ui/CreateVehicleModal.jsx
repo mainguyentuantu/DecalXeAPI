@@ -13,7 +13,7 @@ const CreateVehicleModal = ({
   vehicleBrands = [],
   vehicleModels = [],
   isLoading = false,
-  customerID = null
+  customerInfo = null
 }) => {
   const [formData, setFormData] = useState({
     licensePlate: '',
@@ -55,10 +55,10 @@ const CreateVehicleModal = ({
     }
   }, [isOpen, initialSearchTerm]);
 
-  // Nếu có customerID, luôn set createNewCustomer = false
+  // Nếu có customerInfo, luôn set createNewCustomer = false
   useEffect(() => {
-    if (customerID) setCreateNewCustomer(false);
-  }, [customerID]);
+    if (customerInfo) setCreateNewCustomer(false);
+  }, [customerInfo]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -91,17 +91,19 @@ const CreateVehicleModal = ({
       newErrors.year = 'Năm sản xuất không hợp lệ';
     }
 
-    // Nếu không có customerID và createNewCustomer, validate thông tin khách hàng
-    if (!customerID && createNewCustomer) {
-      if (!formData.customerFirstName) newErrors.customerFirstName = 'Vui lòng nhập tên khách hàng';
-      if (!formData.customerLastName) newErrors.customerLastName = 'Vui lòng nhập họ khách hàng';
-      if (!formData.customerPhone) {
-        newErrors.customerPhone = 'Vui lòng nhập số điện thoại';
-      } else if (!/^[0-9]{10,11}$/.test(formData.customerPhone)) {
-        newErrors.customerPhone = 'Số điện thoại không hợp lệ';
+    // Nếu KHÔNG có customerInfo thì mới validate thông tin khách hàng
+    if (!customerInfo) {
+      if (createNewCustomer) {
+        if (!formData.customerFirstName) newErrors.customerFirstName = 'Vui lòng nhập tên khách hàng';
+        if (!formData.customerLastName) newErrors.customerLastName = 'Vui lòng nhập họ khách hàng';
+        if (!formData.customerPhone) {
+          newErrors.customerPhone = 'Vui lòng nhập số điện thoại';
+        } else if (!/^[0-9]{10,11}$/.test(formData.customerPhone)) {
+          newErrors.customerPhone = 'Số điện thoại không hợp lệ';
+        }
+      } else if (!formData.customerID) {
+        newErrors.customerID = 'Vui lòng chọn khách hàng';
       }
-    } else if (!customerID && !createNewCustomer && !formData.customerID) {
-      newErrors.customerID = 'Vui lòng chọn khách hàng';
     }
 
     setErrors(newErrors);
@@ -115,8 +117,8 @@ const CreateVehicleModal = ({
       return;
     }
 
-    // Nếu có customerID, chỉ trả về thông tin xe + customerID
-    if (customerID) {
+    // Nếu có customerInfo, chỉ trả về thông tin xe + customerID
+    if (customerInfo) {
       const vehicleData = {
         licensePlate: formData.licensePlate,
         chassisNumber: formData.chassisNumber,
@@ -124,7 +126,7 @@ const CreateVehicleModal = ({
         year: formData.year ? parseInt(formData.year) : null,
         initialKM: formData.initialKM ? parseFloat(formData.initialKM) : null,
         modelID: formData.modelID,
-        customerID: customerID,
+        customerID: customerInfo.customerID,
       };
       onSave(vehicleData);
       return;
@@ -254,7 +256,16 @@ const CreateVehicleModal = ({
           </div>
 
           {/* Customer Information */}
-          {!customerID && (
+          {customerInfo && (
+            <div className="mb-4 p-3 bg-blue-50 rounded border border-blue-200">
+              <div className="font-medium">{customerInfo.firstName} {customerInfo.lastName}</div>
+              <div className="text-sm text-gray-600">{customerInfo.phoneNumber}</div>
+              {customerInfo.email && <div className="text-sm text-gray-600">{customerInfo.email}</div>}
+              {customerInfo.address && <div className="text-sm text-gray-600">{customerInfo.address}</div>}
+            </div>
+          )}
+
+          {!customerInfo && (
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
@@ -282,7 +293,7 @@ const CreateVehicleModal = ({
                     value={formData.customerFirstName}
                     onChange={(e) => handleInputChange('customerFirstName', e.target.value)}
                     error={errors.customerFirstName}
-                    required={!customerID && createNewCustomer}
+                    required={!customerInfo && createNewCustomer}
                     placeholder="Nguyễn"
                   />
 
@@ -291,7 +302,7 @@ const CreateVehicleModal = ({
                     value={formData.customerLastName}
                     onChange={(e) => handleInputChange('customerLastName', e.target.value)}
                     error={errors.customerLastName}
-                    required={!customerID && createNewCustomer}
+                    required={!customerInfo && createNewCustomer}
                     placeholder="Văn A"
                   />
 
@@ -300,7 +311,7 @@ const CreateVehicleModal = ({
                     value={formData.customerPhone}
                     onChange={(e) => handleInputChange('customerPhone', e.target.value)}
                     error={errors.customerPhone}
-                    required={!customerID && createNewCustomer}
+                    required={!customerInfo && createNewCustomer}
                     placeholder="0901234567"
                   />
 
