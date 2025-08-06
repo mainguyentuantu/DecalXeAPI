@@ -1,0 +1,218 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { cn } from '../../utils/cn';
+
+const VehicleSearchInput = ({
+  className,
+  label,
+  error,
+  helper,
+  required = false,
+  disabled = false,
+  value,
+  onChange,
+  onSelect,
+  vehicles = [],
+  placeholder = "Tìm kiếm theo biển số hoặc số khung xe...",
+  ...props
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const inputRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const inputId = React.useId();
+
+  // Filter vehicles based on search term
+  const filteredVehicles = vehicles.filter(vehicle => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      vehicle.licensePlate?.toLowerCase().includes(searchLower) ||
+      vehicle.chassisNumber?.toLowerCase().includes(searchLower) ||
+      vehicle.vehicleModelName?.toLowerCase().includes(searchLower) ||
+      vehicle.vehicleBrandName?.toLowerCase().includes(searchLower) ||
+      vehicle.customerFullName?.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Handle input change
+  const handleInputChange = (e) => {
+    const newValue = e.target.value;
+    setSearchTerm(newValue);
+    setIsOpen(true);
+    
+    if (onChange) {
+      onChange(newValue);
+    }
+  };
+
+  // Handle vehicle selection
+  const handleVehicleSelect = (vehicle) => {
+    setSelectedVehicle(vehicle);
+    setSearchTerm(`${vehicle.licensePlate || vehicle.chassisNumber} - ${vehicle.vehicleBrandName} ${vehicle.vehicleModelName}`);
+    setIsOpen(false);
+    
+    if (onSelect) {
+      onSelect(vehicle);
+    }
+    if (onChange) {
+      onChange(vehicle.vehicleID);
+    }
+  };
+
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target) &&
+        !inputRef.current.contains(event.target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Clear selection
+  const handleClear = () => {
+    setSelectedVehicle(null);
+    setSearchTerm('');
+    setIsOpen(false);
+    if (onChange) {
+      onChange('');
+    }
+    if (onSelect) {
+      onSelect(null);
+    }
+  };
+
+  return (
+    <div className="space-y-1 relative">
+      {label && (
+        <label
+          htmlFor={inputId}
+          className={cn(
+            'block text-sm font-medium text-gray-700',
+            required && 'after:content-["*"] after:ml-0.5 after:text-red-500'
+          )}
+        >
+          {label}
+        </label>
+      )}
+      
+      <div className="relative">
+        <input
+          ref={inputRef}
+          id={inputId}
+          type="text"
+          value={searchTerm}
+          onChange={handleInputChange}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+          className={cn(
+            // Base styles
+            'block w-full rounded-md border-gray-300 shadow-sm',
+            'focus:border-primary-500 focus:ring-primary-500',
+            'placeholder-gray-400 text-gray-900',
+            'transition-colors duration-200',
+            
+            // Size
+            'px-3 py-2 pr-10 text-sm',
+            
+            // States
+            error && 'border-red-300 focus:border-red-500 focus:ring-red-500',
+            disabled && 'bg-gray-50 text-gray-500 cursor-not-allowed',
+            
+            className
+          )}
+          disabled={disabled}
+          {...props}
+        />
+        
+        {/* Search/Clear icon */}
+        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+          {searchTerm ? (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          ) : (
+            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          )}
+        </div>
+        
+        {/* Dropdown */}
+        {isOpen && searchTerm && (
+          <div
+            ref={dropdownRef}
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+          >
+            {filteredVehicles.length > 0 ? (
+              filteredVehicles.map((vehicle) => (
+                <div
+                  key={vehicle.vehicleID}
+                  onClick={() => handleVehicleSelect(vehicle)}
+                  className="px-3 py-2 cursor-pointer hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium text-sm text-gray-900">
+                        {vehicle.licensePlate || vehicle.chassisNumber}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {vehicle.vehicleBrandName} {vehicle.vehicleModelName}
+                      </div>
+                      {vehicle.customerFullName && (
+                        <div className="text-xs text-gray-400">
+                          Khách hàng: {vehicle.customerFullName}
+                        </div>
+                      )}
+                    </div>
+                    <div className="ml-2">
+                      <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="px-3 py-2 text-sm text-gray-500">
+                Không tìm thấy phương tiện nào
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      
+      {error && (
+        <p className="text-sm text-red-600 flex items-center gap-1">
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+          </svg>
+          {error}
+        </p>
+      )}
+      
+      {helper && !error && (
+        <p className="text-sm text-gray-500 flex items-center gap-1">
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          {helper}
+        </p>
+      )}
+    </div>
+  );
+};
+
+export default VehicleSearchInput;
