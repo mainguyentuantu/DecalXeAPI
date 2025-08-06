@@ -7,7 +7,7 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
 using System.Text;
-using BCrypt.Net;
+using System.Security.Cryptography;
 
 namespace DecalXeAPI.Services.Implementations
 {
@@ -264,8 +264,10 @@ namespace DecalXeAPI.Services.Implementations
             // Tạo mật khẩu ngẫu nhiên
             var password = GenerateSecurePassword();
 
-                // Hash mật khẩu
-    var passwordHash = BCrypt.HashPassword(password);
+                // Hash mật khẩu với SHA256 (tạm thời thay thế BCrypt)
+    var passwordHash = Convert.ToBase64String(
+        SHA256.HashData(Encoding.UTF8.GetBytes(password))
+    );
 
             var account = new Account
             {
