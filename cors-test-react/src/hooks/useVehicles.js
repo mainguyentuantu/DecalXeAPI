@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../services/apiClient';
+import { toast } from 'react-hot-toast';
 
 // Service functions
 const vehicleService = {
@@ -23,6 +24,24 @@ const vehicleService = {
         pageSize: 50 // Limit results for search
       }
     });
+    return response.data;
+  },
+
+  // Create new customer vehicle
+  createCustomerVehicle: async (vehicleData) => {
+    const response = await apiClient.post('/api/CustomerVehicles', vehicleData);
+    return response.data;
+  },
+
+  // Get vehicle models
+  getVehicleModels: async () => {
+    const response = await apiClient.get('/api/VehicleModels');
+    return response.data;
+  },
+
+  // Get vehicle brands
+  getVehicleBrands: async () => {
+    const response = await apiClient.get('/api/VehicleBrands');
     return response.data;
   }
 };
@@ -59,5 +78,44 @@ export const useVehicleSearch = (searchTerm) => {
       // Transform data for easier use in components
       return Array.isArray(data) ? data : data?.items || [];
     }
+  });
+};
+
+export const useVehicleModels = () => {
+  return useQuery({
+    queryKey: ['vehicleModels'],
+    queryFn: vehicleService.getVehicleModels,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    select: (data) => {
+      return Array.isArray(data) ? data : data?.items || [];
+    }
+  });
+};
+
+export const useVehicleBrands = () => {
+  return useQuery({
+    queryKey: ['vehicleBrands'],
+    queryFn: vehicleService.getVehicleBrands,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    select: (data) => {
+      return Array.isArray(data) ? data : data?.items || [];
+    }
+  });
+};
+
+export const useCreateCustomerVehicle = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: vehicleService.createCustomerVehicle,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['customerVehicles']);
+      toast.success('Tạo phương tiện thành công!');
+      return data;
+    },
+    onError: (error) => {
+      console.error('Error creating vehicle:', error);
+      toast.error(error.response?.data?.message || 'Tạo phương tiện thất bại');
+    },
   });
 };

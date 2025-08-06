@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOrderCreateFormData, useCreateOrder } from "../../hooks/useOrders";
-import { useCustomerVehicles } from "../../hooks/useVehicles";
+import { useCustomerVehicles, useVehicleModels, useCreateCustomerVehicle } from "../../hooks/useVehicles";
 import { toast } from "react-hot-toast";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -11,12 +11,23 @@ import LoadingSpinner from "../../components/common/LoadingSpinner";
 import DateTimePicker from "../../components/ui/DateTimePicker";
 import VehicleSearchInput from "../../components/ui/VehicleSearchInput";
 import SearchableSelect from "../../components/ui/SearchableSelect";
+import CreateVehicleModal from "../../components/ui/CreateVehicleModal";
 
 const OrderCreatePage = () => {
   const navigate = useNavigate();
   const { data: formData, isLoading: isFormDataLoading, error: formDataError } = useOrderCreateFormData();
   const { data: vehicles = [], isLoading: isVehiclesLoading } = useCustomerVehicles();
+  const { data: vehicleModels = [], isLoading: isVehicleModelsLoading } = useVehicleModels();
   const createOrderMutation = useCreateOrder();
+  const createVehicleMutation = useCreateCustomerVehicle();
+
+  // Debug logging
+  useEffect(() => {
+    if (formData?.employees) {
+      console.log('Employees data:', formData.employees);
+      console.log('First employee:', formData.employees[0]);
+    }
+  }, [formData]);
 
   // Form state
   const [formState, setFormState] = useState({
@@ -34,6 +45,10 @@ const OrderCreatePage = () => {
 
   // Selected vehicle info for display
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+
+  // Create vehicle modal state
+  const [showCreateVehicleModal, setShowCreateVehicleModal] = useState(false);
+  const [createVehicleSearchTerm, setCreateVehicleSearchTerm] = useState('');
 
   // Priority options
   const priorityOptions = [
@@ -62,6 +77,32 @@ const OrderCreatePage = () => {
   const handleVehicleSelect = (vehicle) => {
     setSelectedVehicle(vehicle);
     handleInputChange("vehicleID", vehicle?.vehicleID || "");
+  };
+
+  // Handle create new vehicle
+  const handleCreateNewVehicle = (searchTerm) => {
+    setCreateVehicleSearchTerm(searchTerm);
+    setShowCreateVehicleModal(true);
+  };
+
+  // Handle save new vehicle
+  const handleSaveNewVehicle = async (vehicleData) => {
+    try {
+      const newVehicle = await createVehicleMutation.mutateAsync(vehicleData);
+      
+      // Select the newly created vehicle
+      setSelectedVehicle(newVehicle);
+      handleInputChange("vehicleID", newVehicle.vehicleID);
+      
+      // Close modal
+      setShowCreateVehicleModal(false);
+      setCreateVehicleSearchTerm('');
+      
+      toast.success(`Đã tạo phương tiện cho ${newVehicle.vehicleBrandName} ${newVehicle.vehicleModelName}`);
+    } catch (error) {
+      console.error('Error creating vehicle:', error);
+      // Error is handled by the mutation
+    }
   };
 
   // Validation function
@@ -140,7 +181,7 @@ const OrderCreatePage = () => {
   };
 
   // Loading state
-  if (isFormDataLoading || isVehiclesLoading) {
+  if (isFormDataLoading || isVehiclesLoading || isVehicleModelsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner />
@@ -299,6 +340,7 @@ const OrderCreatePage = () => {
                   value={formState.vehicleID}
                   onChange={(value) => handleInputChange("vehicleID", value)}
                   onSelect={handleVehicleSelect}
+                  onCreateNew={handleCreateNewVehicle}
                   vehicles={vehicles}
                   error={errors.vehicleID}
                   required
@@ -398,10 +440,23 @@ const OrderCreatePage = () => {
               </div>
             </Card>
           </div>
-        </div>
-      </form>
-    </div>
-  );
-};
+                  </div>
+        </form>
 
-export default OrderCreatePage;
+        {/* Create Vehicle Modal */}
+        <CreateVehicleModal
+          isOpen={showCreateVehicleModal}
+          onClose={() => {
+            setShowCreateVehicleModal(false);
+            setCreateVehicleSearchTerm('');
+          }}
+          onSave={handleSaveNewVehicle}
+          initialSearchTerm={createVehicleSearchTerm}
+          vehicleModels={vehicleModels}
+          isLoading={createVehicleMutation.isPending}
+        />
+      </div>
+    );
+  };
+  
+  export default OrderCreatePage;

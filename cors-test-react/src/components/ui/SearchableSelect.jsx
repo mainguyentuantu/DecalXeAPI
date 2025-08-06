@@ -13,8 +13,24 @@ const SearchableSelect = ({
   options = [],
   placeholder = "Chọn một tùy chọn...",
   searchPlaceholder = "Tìm kiếm...",
-  getOptionLabel = (option) => option.label || option.name || option.toString(),
-  getOptionValue = (option) => option.value || option.id || option,
+  getOptionLabel = (option) => {
+    try {
+      if (!option) return '';
+      return option.label || option.name || String(option);
+    } catch (error) {
+      console.warn('Error getting option label:', option, error);
+      return '';
+    }
+  },
+  getOptionValue = (option) => {
+    try {
+      if (!option) return '';
+      return option.value || option.id || option;
+    } catch (error) {
+      console.warn('Error getting option value:', option, error);
+      return '';
+    }
+  },
   emptyMessage = "Không có tùy chọn nào",
   ...props
 }) => {
@@ -37,9 +53,21 @@ const SearchableSelect = ({
 
   // Filter options based on search term
   const filteredOptions = options.filter(option => {
-    const searchLower = searchTerm.toLowerCase();
-    const label = getOptionLabel(option).toLowerCase();
-    return label.includes(searchLower);
+    if (!searchTerm) return true;
+    
+    try {
+      const searchLower = searchTerm.toLowerCase().trim();
+      if (!searchLower) return true;
+      
+      const label = getOptionLabel(option);
+      if (!label) return false;
+      
+      const labelLower = label.toLowerCase();
+      return labelLower.includes(searchLower);
+    } catch (error) {
+      console.warn('Error filtering option:', option, error);
+      return false;
+    }
   });
 
   // Handle search input change
