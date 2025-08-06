@@ -20,12 +20,14 @@ namespace DecalXeAPI.Controllers
     {
         private readonly ApplicationDbContext _context; // Vẫn giữ để dùng các hàm Exists đơn giản
         private readonly IOrderService _orderService; // <-- KHAI BÁO BIẾN CHO SERVICE
+        private readonly IOrderWithCustomerService _orderWithCustomerService; // <-- KHAI BÁO BIẾN CHO SERVICE MỚI
         private readonly IMapper _mapper; // Vẫn giữ để ánh xạ DTOs nếu có
 
-        public OrdersController(ApplicationDbContext context, IOrderService orderService, IMapper mapper) // <-- TIÊM IOrderService
+        public OrdersController(ApplicationDbContext context, IOrderService orderService, IOrderWithCustomerService orderWithCustomerService, IMapper mapper) // <-- TIÊM IOrderWithCustomerService
         {
             _context = context; // Để dùng các hàm hỗ trợ
             _orderService = orderService; // Gán Service
+            _orderWithCustomerService = orderWithCustomerService; // Gán Service mới
             _mapper = mapper;
         }
 
@@ -70,6 +72,81 @@ namespace DecalXeAPI.Controllers
 
             var orderDto = await _orderService.CreateOrderAsync(order);
             return CreatedAtAction(nameof(GetOrder), new { id = orderDto.OrderID }, orderDto);
+        }
+
+        /// <summary>
+        /// Tạo đơn hàng với khả năng liên kết hoặc tạo khách hàng mới
+        /// </summary>
+        [HttpPost("with-customer")]
+        [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
+        public async Task<ActionResult<OrderWithCustomerResponseDto>> PostOrderWithCustomer(CreateOrderWithCustomerDto createDto)
+        {
+            try
+            {
+                // Validate vehicle nếu có
+                if (!string.IsNullOrEmpty(createDto.VehicleID) && !VehicleExists(createDto.VehicleID))
+                {
+                    return BadRequest("VehicleID không tồn tại.");
+                }
+
+                // Validate employee nếu có
+                if (!string.IsNullOrEmpty(createDto.AssignedEmployeeID) && !EmployeeExists(createDto.AssignedEmployeeID))
+                {
+                    return BadRequest("AssignedEmployeeID không tồn tại.");
+                }
+
+                var response = await _orderWithCustomerService.CreateOrderWithCustomerAsync(createDto);
+                return CreatedAtAction(nameof(GetOrder), new { id = response.OrderID }, response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Có lỗi xảy ra khi tạo đơn hàng: " + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Tìm kiếm khách hàng theo số điện thoại hoặc email
+        /// </summary>
+        [HttpGet("search-customers")]
+        [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
+        public async Task<ActionResult<IEnumerable<CustomerDto>>> SearchCustomers([FromQuery] string searchTerm)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return BadRequest("SearchTerm không được để trống.");
+            }
+
+            var customers = await _orderWithCustomerService.SearchCustomersAsync(searchTerm);
+            return Ok(customers);
+        }
+
+        /// <summary>
+        /// Tạo khách hàng mới với tùy chọn tạo tài khoản
+        /// </summary>
+        [HttpPost("customers")]
+        [Authorize(Roles = "Admin,Manager,Sales")]
+        [AllowAnonymous] 
+        public async Task<ActionResult<CustomerDto>> CreateCustomerWithAccount(CreateCustomerWithAccountDto customerDto)
+        {
+            try
+            {
+                var customer = await _orderWithCustomerService.CreateCustomerWithAccountAsync(customerDto);
+                return CreatedAtAction(nameof(SearchCustomers), new { searchTerm = customer.PhoneNumber }, customer);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Có lỗi xảy ra khi tạo khách hàng: " + ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
@@ -215,6 +292,7 @@ namespace DecalXeAPI.Controllers
 
         // Removed CustomerExists method as Customer table is disconnected
         private bool VehicleExists(string id) { return _context.CustomerVehicles.Any(e => e.VehicleID == id); }
+        private bool EmployeeExists(string id) { return _context.Employees.Any(e => e.EmployeeID == id); }
 
     }
 }

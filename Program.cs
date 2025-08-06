@@ -80,6 +80,7 @@ builder.Services.AddScoped<IDecalTypeService, DecalTypeService>();
 builder.Services.AddScoped<IDecalTemplateService, DecalTemplateService>();
 
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderWithCustomerService, OrderWithCustomerService>();
 builder.Services.AddScoped<IOrderDetailService, OrderDetailService>();
 builder.Services.AddScoped<IOrderStageHistoryService, OrderStageHistoryService>();
 builder.Services.AddScoped<IDesignService, DesignService>();
