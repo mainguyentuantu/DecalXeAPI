@@ -151,6 +151,66 @@ const OrderDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Customer Info */}
+          {order.customerFullName && (
+            <Card>
+              <Card.Header>
+                <Card.Title className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-blue-600" />
+                  Thông tin khách hàng
+                </Card.Title>
+              </Card.Header>
+              <Card.Content>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Tên khách hàng:</span>
+                      <span className="font-medium">{order.customerFullName}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Số điện thoại:</span>
+                      <span className="font-mono">{order.customerPhoneNumber}</span>
+                    </div>
+                    {order.customerEmail && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Email:</span>
+                        <span>{order.customerEmail}</span>
+                      </div>
+                    )}
+                    {order.customerAddress && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Địa chỉ:</span>
+                        <span className="text-right">{order.customerAddress}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {order.accountCreated && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Tài khoản:</span>
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          <span className="text-green-600 font-medium">Đã tạo</span>
+                        </div>
+                      </div>
+                    )}
+                    {order.accountUsername && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600">Username:</span>
+                        <span className="font-mono">{order.accountUsername}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Mã khách hàng:</span>
+                      <span className="font-mono">{order.customerID}</span>
+                    </div>
+                  </div>
+                </div>
+              </Card.Content>
+            </Card>
+          )}
+
           {/* Order Info */}
           <Card>
             <Card.Header>
@@ -187,6 +247,12 @@ const OrderDetailPage = () => {
                         {formatCurrency(order.totalAmount)}
                       </span>
                     </div>
+                    {order.description && (
+                      <div className="flex items-start justify-between">
+                        <span className="text-gray-600">Mô tả:</span>
+                        <span className="text-right max-w-xs">{order.description}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
