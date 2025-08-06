@@ -17,9 +17,11 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useOrder, useDeleteOrder, useUpdateOrderStatus } from '../../hooks/useOrders';
+import { useOrderStageHistories } from '../../hooks/useOrderStageHistories';
 import { Button, Card, Badge, LoadingSpinner } from '../../components/common';
 import { ORDER_STAGES, ORDER_PRIORITIES } from '../../constants/ui';
 import { format } from 'date-fns';
+import OrderStageTimeline from '../../components/ui/OrderStageTimeline';
 
 const OrderDetailPage = () => {
   const { id } = useParams();
@@ -28,6 +30,7 @@ const OrderDetailPage = () => {
   const { data: order, isLoading, error } = useOrder(id);
   const deleteOrderMutation = useDeleteOrder();
   const updateStatusMutation = useUpdateOrderStatus();
+  const { data: stageHistories = [], isLoading: isStagesLoading } = useOrderStageHistories(id);
 
   const handleDeleteOrder = () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa đơn hàng này?')) {
@@ -330,41 +333,11 @@ const OrderDetailPage = () => {
               <Card.Title>Tiến độ thực hiện</Card.Title>
             </Card.Header>
             <Card.Content>
-              <div className="space-y-4">
-                {stageHistory.map((stage, index) => (
-                  <div key={index} className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      {stage.status === 'completed' && (
-                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                        </div>
-                      )}
-                      {stage.status === 'current' && (
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Clock className="h-5 w-5 text-blue-600" />
-                        </div>
-                      )}
-                      {stage.status === 'pending' && (
-                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                          <div className="w-3 h-3 bg-gray-400 rounded-full" />
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-gray-900">{stage.stage}</h4>
-                        {stage.date && (
-                          <span className="text-sm text-gray-500">
-                            {format(new Date(stage.date), 'dd/MM HH:mm')}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600">{stage.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {isStagesLoading ? (
+                <div className="flex items-center gap-2 text-gray-500"><Clock className="animate-spin h-4 w-4" /> Đang tải tiến độ...</div>
+              ) : (
+                <OrderStageTimeline histories={stageHistories} />
+              )}
             </Card.Content>
           </Card>
         </div>
