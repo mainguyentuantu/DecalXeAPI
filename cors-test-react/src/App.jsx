@@ -168,7 +168,6 @@ function App() {
               />
 
               {/* Employee Management Module Routes dasdasd */}
-              {/* Employee Management Module Routes dasdasd */}
               <Route path="employees" element={<EmployeeListPage />} />
               <Route
                 path="employees/:id"
