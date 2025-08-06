@@ -24,6 +24,27 @@ const VehicleSearchInput = ({
   const dropdownRef = useRef(null);
   const inputId = React.useId();
 
+  // Sync searchTerm with value prop when value changes
+  useEffect(() => {
+    if (value && selectedVehicle) {
+      setSearchTerm(`${selectedVehicle.licensePlate || selectedVehicle.chassisNumber} - ${selectedVehicle.vehicleBrandName} ${selectedVehicle.vehicleModelName}`);
+    } else if (!value) {
+      setSearchTerm('');
+      setSelectedVehicle(null);
+    }
+  }, [value, selectedVehicle]);
+
+  // Find and set selectedVehicle when value changes
+  useEffect(() => {
+    if (value && vehicles.length > 0) {
+      const vehicle = vehicles.find(v => v.vehicleID === value);
+      if (vehicle) {
+        setSelectedVehicle(vehicle);
+        setSearchTerm(`${vehicle.licensePlate || vehicle.chassisNumber} - ${vehicle.vehicleBrandName} ${vehicle.vehicleModelName}`);
+      }
+    }
+  }, [value, vehicles]);
+
   // Filter vehicles based on search term
   const filteredVehicles = vehicles.filter(vehicle => {
     if (!searchTerm) return true;
@@ -54,13 +75,14 @@ const VehicleSearchInput = ({
     setSearchTerm(newValue);
     setIsOpen(true);
     
-    if (onChange) {
-      onChange(newValue);
-    }
+    // Don't call onChange here as it should only be called when a vehicle is selected
+    // onChange should only receive vehicleID, not search term
   };
 
   // Handle vehicle selection
   const handleVehicleSelect = (vehicle) => {
+    console.log('VehicleSearchInput - Vehicle selected:', vehicle);
+    console.log('VehicleSearchInput - Vehicle ID:', vehicle.vehicleID);
     setSelectedVehicle(vehicle);
     setSearchTerm(`${vehicle.licensePlate || vehicle.chassisNumber} - ${vehicle.vehicleBrandName} ${vehicle.vehicleModelName}`);
     setIsOpen(false);
@@ -69,6 +91,7 @@ const VehicleSearchInput = ({
       onSelect(vehicle);
     }
     if (onChange) {
+      console.log('VehicleSearchInput - Calling onChange with vehicleID:', vehicle.vehicleID);
       onChange(vehicle.vehicleID);
     }
   };

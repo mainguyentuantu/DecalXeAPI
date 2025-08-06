@@ -77,6 +77,8 @@ const OrderCreatePage = () => {
 
   // Handle vehicle selection
   const handleVehicleSelect = (vehicle) => {
+    console.log('Vehicle selected:', vehicle);
+    console.log('Vehicle ID:', vehicle?.vehicleID);
     setSelectedVehicle(vehicle);
     handleInputChange("vehicleID", vehicle?.vehicleID || "");
   };
@@ -153,6 +155,7 @@ const OrderCreatePage = () => {
     }
 
     try {
+      console.log('Form state before submit:', formState);
       const orderData = {
         totalAmount: parseFloat(formState.totalAmount),
         assignedEmployeeID: formState.assignedEmployeeID,
@@ -162,6 +165,7 @@ const OrderCreatePage = () => {
         isCustomDecal: formState.isCustomDecal,
         description: formState.description,
       };
+      console.log('Order data to submit:', orderData);
 
       const createdOrder = await createOrderMutation.mutateAsync(orderData);
       
