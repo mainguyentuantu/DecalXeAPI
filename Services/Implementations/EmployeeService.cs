@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace DecalXeAPI.Services.Implementations
 {
@@ -25,14 +26,25 @@ namespace DecalXeAPI.Services.Implementations
             _logger = logger;
         }
 
-        public async Task<IEnumerable<EmployeeDto>> GetEmployeesAsync()
+        public async Task<IEnumerable<EmployeeDto>> GetEmployeesAsync(string? role = null)
         {
-            _logger.LogInformation("Lấy danh sách nhân viên.");
-            var employees = await _context.Employees
-                                            .Include(e => e.Account)
-                                                .ThenInclude(a => a.Role)
-                                            .Include(e => e.Store)
-                                            .ToListAsync();
+            _logger.LogInformation("Lấy danh sách nhân viên với role filter: {Role}", role ?? "All");
+            
+            var query = _context.Employees
+                .Include(e => e.Account)
+                    .ThenInclude(a => a.Role)
+                .Include(e => e.Store)
+                .AsQueryable();
+
+            // Lọc theo vai trò nếu có
+            if (!string.IsNullOrEmpty(role))
+            {
+                _logger.LogInformation("Filtering employees by role: {Role}", role);
+                query = query.Where(e => e.Account != null && e.Account.Role != null && e.Account.Role.RoleName == role);
+                _logger.LogInformation("Query after role filter: {Query}", query.ToQueryString());
+            }
+
+            var employees = await query.ToListAsync();
             var employeeDtos = _mapper.Map<List<EmployeeDto>>(employees);
             return employeeDtos;
         }

@@ -1,4 +1,5 @@
 import apiClient from './apiClient';
+import { API_ENDPOINTS } from '../constants/api';
 
 export const employeeService = {
   // Get all employees with optional filters
@@ -12,67 +13,67 @@ export const employeeService = {
     if (params.page) queryParams.append('page', params.page);
     if (params.limit) queryParams.append('limit', params.limit);
 
-    const response = await apiClient.get(`/employees?${queryParams}`);
+    const response = await apiClient.get(`${API_ENDPOINTS.EMPLOYEES.BASE}?${queryParams}`);
     return response.data;
   },
 
   // Get employee by ID
   getEmployeeById: async (id) => {
-    const response = await apiClient.get(`/employees/${id}`);
+    const response = await apiClient.get(API_ENDPOINTS.EMPLOYEES.BY_ID(id));
     return response.data;
   },
 
   // Create new employee
   createEmployee: async (employeeData) => {
-    const response = await apiClient.post('/employees', employeeData);
+    const response = await apiClient.post(API_ENDPOINTS.EMPLOYEES.BASE, employeeData);
     return response.data;
   },
 
   // Update employee
   updateEmployee: async (id, employeeData) => {
-    const response = await apiClient.put(`/employees/${id}`, employeeData);
+    const response = await apiClient.put(API_ENDPOINTS.EMPLOYEES.BY_ID(id), employeeData);
     return response.data;
   },
 
   // Update employee status (activate/deactivate)
   updateEmployeeStatus: async (id, isActive) => {
-    const response = await apiClient.patch(`/employees/${id}/status`, { isActive });
+    const response = await apiClient.patch(`${API_ENDPOINTS.EMPLOYEES.BY_ID(id)}/status`, { isActive });
     return response.data;
   },
 
   // Delete employee
   deleteEmployee: async (id) => {
-    const response = await apiClient.delete(`/employees/${id}`);
+    const response = await apiClient.delete(API_ENDPOINTS.EMPLOYEES.BY_ID(id));
     return response.data;
   },
 
   // Get all roles
   getRoles: async () => {
-    const response = await apiClient.get('/roles');
+    const response = await apiClient.get(API_ENDPOINTS.ROLES.BASE);
     return response.data;
   },
 
   // Get all stores
   getStores: async () => {
-    const response = await apiClient.get('/stores');
+    const response = await apiClient.get(API_ENDPOINTS.STORES.BASE);
     return response.data;
   },
 
   // Assign role to employee
   assignRole: async (employeeId, roleId) => {
-    const response = await apiClient.post(`/employees/${employeeId}/roles`, { roleId });
+    const response = await apiClient.post(`${API_ENDPOINTS.EMPLOYEES.BY_ID(employeeId)}/roles`, { roleId });
     return response.data;
   },
 
   // Remove role from employee
   removeRole: async (employeeId, roleId) => {
-    const response = await apiClient.delete(`/employees/${employeeId}/roles/${roleId}`);
+    const response = await apiClient.delete(`${API_ENDPOINTS.EMPLOYEES.BY_ID(employeeId)}/roles/${roleId}`);
     return response.data;
   },
 
   // Update employee roles
   updateEmployeeRoles: async (employeeId, roleIds) => {
-    const response = await apiClient.put(`/employees/${employeeId}/roles`, { roleIds });
+    const response = await apiClient.put(`${API_ENDPOINTS.EMPLOYEES.BY_ID(employeeId)}/roles`, { roleIds });
     return response.data;
   },
 
@@ -84,7 +85,7 @@ export const employeeService = {
     if (params.endDate) queryParams.append('endDate', params.endDate);
     if (params.period) queryParams.append('period', params.period);
 
-    const response = await apiClient.get(`/employees/${employeeId}/performance?${queryParams}`);
+    const response = await apiClient.get(`${API_ENDPOINTS.EMPLOYEES.BY_ID(employeeId)}/performance?${queryParams}`);
     return response.data;
   },
 
@@ -96,7 +97,7 @@ export const employeeService = {
     if (params.startDate) queryParams.append('startDate', params.startDate);
     if (params.endDate) queryParams.append('endDate', params.endDate);
 
-    const response = await apiClient.get(`/employees/${employeeId}/assignments?${queryParams}`);
+    const response = await apiClient.get(`${API_ENDPOINTS.EMPLOYEES.BY_ID(employeeId)}/assignments?${queryParams}`);
     return response.data;
   },
 
@@ -119,7 +120,7 @@ export const employeeService = {
     if (params.month) queryParams.append('month', params.month);
     if (params.year) queryParams.append('year', params.year);
 
-    const response = await apiClient.get(`/employees/${employeeId}/attendance?${queryParams}`);
+    const response = await apiClient.get(`${API_ENDPOINTS.EMPLOYEES.BY_ID(employeeId)}/attendance?${queryParams}`);
     return response.data;
   },
 
@@ -136,7 +137,7 @@ export const employeeService = {
     if (params.storeId) queryParams.append('storeId', params.storeId);
     if (params.period) queryParams.append('period', params.period);
 
-    const response = await apiClient.get(`/employees/statistics?${queryParams}`);
+    const response = await apiClient.get(`${API_ENDPOINTS.EMPLOYEES.BASE}/statistics?${queryParams}`);
     return response.data;
   },
 
@@ -151,7 +152,7 @@ export const employeeService = {
     
     queryParams.append('format', format);
 
-    const response = await apiClient.get(`/employees/export?${queryParams}`, {
+    const response = await apiClient.get(`${API_ENDPOINTS.EMPLOYEES.BASE}/export?${queryParams}`, {
       responseType: 'blob',
     });
     return response.data;
@@ -159,7 +160,7 @@ export const employeeService = {
 
   // Bulk update employees
   bulkUpdateEmployees: async (employeeIds, updateData) => {
-    const response = await apiClient.patch('/employees/bulk-update', {
+    const response = await apiClient.patch(`${API_ENDPOINTS.EMPLOYEES.BASE}/bulk-update`, {
       employeeIds,
       updateData
     });
@@ -168,37 +169,37 @@ export const employeeService = {
 
   // Get employee hierarchy
   getEmployeeHierarchy: async (storeId) => {
-    const response = await apiClient.get(`/employees/hierarchy${storeId ? `?storeId=${storeId}` : ''}`);
+    const response = await apiClient.get(`${API_ENDPOINTS.EMPLOYEES.BASE}/hierarchy${storeId ? `?storeId=${storeId}` : ''}`);
     return response.data;
   },
 
   // Get role permissions
   getRolePermissions: async (roleId) => {
-    const response = await apiClient.get(`/roles/${roleId}/permissions`);
+    const response = await apiClient.get(`${API_ENDPOINTS.ROLES.BY_ID(roleId)}/permissions`);
     return response.data;
   },
 
   // Update role permissions
   updateRolePermissions: async (roleId, permissions) => {
-    const response = await apiClient.put(`/roles/${roleId}/permissions`, { permissions });
+    const response = await apiClient.put(`${API_ENDPOINTS.ROLES.BY_ID(roleId)}/permissions`, { permissions });
     return response.data;
   },
 
   // Create new role
   createRole: async (roleData) => {
-    const response = await apiClient.post('/roles', roleData);
+    const response = await apiClient.post(API_ENDPOINTS.ROLES.BASE, roleData);
     return response.data;
   },
 
   // Update role
   updateRole: async (roleId, roleData) => {
-    const response = await apiClient.put(`/roles/${roleId}`, roleData);
+    const response = await apiClient.put(API_ENDPOINTS.ROLES.BY_ID(roleId), roleData);
     return response.data;
   },
 
   // Delete role
   deleteRole: async (roleId) => {
-    const response = await apiClient.delete(`/roles/${roleId}`);
+    const response = await apiClient.delete(API_ENDPOINTS.ROLES.BY_ID(roleId));
     return response.data;
   },
 };

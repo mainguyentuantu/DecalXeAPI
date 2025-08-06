@@ -34,10 +34,10 @@ namespace DecalXeAPI.Controllers
         [HttpGet]
         [Authorize(Roles = "Admin,Manager,Sales,Technician,Customer")] // Nới lỏng quyền cho GET
         [AllowAnonymous] 
-        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees()
+        public async Task<ActionResult<IEnumerable<EmployeeDto>>> GetEmployees([FromQuery] string? role)
         {
-            _logger.LogInformation("Yêu cầu lấy danh sách nhân viên.");
-            var employees = await _employeeService.GetEmployeesAsync();
+            _logger.LogInformation("Yêu cầu lấy danh sách nhân viên với role filter: {Role}", role ?? "All");
+            var employees = await _employeeService.GetEmployeesAsync(role);
             return Ok(employees);
         }
 
