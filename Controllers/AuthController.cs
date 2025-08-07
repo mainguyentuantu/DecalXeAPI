@@ -58,26 +58,17 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous] // Ai cũng có thể xem danh sách hãng xe
         public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginDto loginDto)
         {
-            var account = await _context.Accounts
-                                        .Include(a => a.Role)
-                                        .FirstOrDefaultAsync(a => a.Username == loginDto.Username);
+            var loginResponse = await _accountService.LoginAsync(loginDto);
 
-            if (account == null)
+            if (loginResponse == null)
             {
                 return Unauthorized("Sai Username hoặc mật khẩu.");
             }
 
-            if (account.PasswordHash != loginDto.Password) // Tạm thời so sánh chuỗi trực tiếp
-            {
-                return Unauthorized("Sai Username hoặc mật khẩu.");
-            }
-
-            if (!account.IsActive)
+            if (!loginResponse.User.IsActive)
             {
                 return Unauthorized("Tài khoản của bạn đã bị khóa.");
             }
-
-            var loginResponse = _tokenService.CreateLoginResponse(account);
 
             return Ok(loginResponse);
         }

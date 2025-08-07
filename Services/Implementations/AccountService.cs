@@ -115,6 +115,41 @@ namespace DecalXeAPI.Services.Implementations
             }
         }       
 
+        public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
+        {
+            _logger.LogInformation("Attempting login for username: {Username}", loginDto.Username);
+
+            // 1. Find the Account by username, including Role and Employee
+            var account = await _context.Accounts
+                .Include(a => a.Role)
+                .Include(a => a.Employee) // Include Employee information
+                .FirstOrDefaultAsync(a => a.Username == loginDto.Username);
+
+            // 2. If no account is found or the password doesn't match, return null
+            if (account == null || account.PasswordHash != loginDto.Password) // NOTE: Replace with proper password verification later
+            {
+                _logger.LogWarning("Login failed for username: {Username} (Account not found or password mismatch)", loginDto.Username);
+                return null;
+            }
+
+            // 3. If the account is found and password matches:
+            // a. Create a UserDataDto object.
+            var userData = new UserDataDto
+            {
+                AccountID = account.AccountID,
+                Username = account.Username,
+                Email = account.Email,
+                IsActive = account.IsActive,
+                // c. Map Role information
+                Role = account.Role?.RoleName ?? "Unknown", // Provide a default if role is null
+                AccountRoleName = account.Role?.RoleName ?? "Unknown"
+            };
+            // d. If account.Employee is not null, set userData.EmployeeID
+            userData.EmployeeID = account.Employee?.EmployeeID; // Nullable assignment
+
+            // e. Skip token generation logic for now.
+            return new LoginResponseDto { AccessToken = "", RefreshToken = "", User = userData };
+        }
         // Trong file: DecalXeAPI/Services/Implementations/AccountService.cs
         public async Task<bool> DeleteAccountAsync(string id)
         {

@@ -11,7 +11,7 @@ namespace DecalXeAPI.Services.Interfaces
         Task<IEnumerable<AccountDto>> GetAccountsAsync();
         Task<AccountDto?> GetAccountByIdAsync(string id);
         Task<AccountDto> CreateAccountAsync(Account account);
-        
+
         Task<bool> DeleteAccountAsync(string id);
 
         // --- PHƯƠNG THỨC MỚI CHO TÍNH NĂNG ĐỔI MẬT KHẨU (CÓ XÁC MINH MẬT KHẨU CŨ) ---
@@ -25,6 +25,8 @@ namespace DecalXeAPI.Services.Interfaces
         Task<bool> RoleExistsAsync(string id);
 
         Task<(bool Success, string? ErrorMessage)> UpdateAccountAsync(string id, UpdateAccountDto updateDto);
+
+        Task<LoginResponseDto?> LoginAsync(LoginDto loginDto);
 
     }
 }

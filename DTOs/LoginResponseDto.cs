@@ -17,5 +17,6 @@ namespace DecalXeAPI.DTOs
         public string Role { get; set; } = string.Empty;
         public string AccountRoleName { get; set; } = string.Empty;
         public bool IsActive { get; set; }
+        public string? EmployeeID { get; set; }
     }
 }
