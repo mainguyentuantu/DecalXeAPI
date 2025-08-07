@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "amTEUsSp3Uk=",
+  "dgSpecHash": "knMQ5qW2b4c=",
   "success": true,
   "projectFilePath": "C:\\Users\\WIN10\\Desktop\\backend\\DecalXeAPI\\DecalXeAPI.csproj",
   "expectedPackageFiles": [
@@ -106,18 +106,5 @@
     "C:\\Users\\WIN10\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\8.0.16\\microsoft.aspnetcore.app.ref.8.0.16.nupkg.sha512",
     "C:\\Users\\WIN10\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\8.0.16\\microsoft.netcore.app.host.win-x64.8.0.16.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "message": "DecalXeAPI depends on Swashbuckle.AspNetCore.Filters (>= 6.5.0) but Swashbuckle.AspNetCore.Filters 6.5.0 was not found. Swashbuckle.AspNetCore.Filters 7.0.0 was resolved instead.",
-      "projectPath": "C:\\Users\\WIN10\\Desktop\\backend\\DecalXeAPI\\DecalXeAPI.csproj",
-      "warningLevel": 1,
-      "filePath": "C:\\Users\\WIN10\\Desktop\\backend\\DecalXeAPI\\DecalXeAPI.csproj",
-      "libraryId": "Swashbuckle.AspNetCore.Filters",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    }
-  ]
+  "logs": []
 }

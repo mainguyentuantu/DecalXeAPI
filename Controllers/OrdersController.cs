@@ -19,13 +19,16 @@ namespace DecalXeAPI.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly ApplicationDbContext _context; // Vẫn giữ để dùng các hàm Exists đơn giản
-        private readonly IOrderService _orderService; // <-- KHAI BÁO BIẾN CHO SERVICE
-        private readonly IOrderWithCustomerService _orderWithCustomerService; // <-- KHAI BÁO BIẾN CHO SERVICE MỚI
+        private readonly IOrderService _orderService;
+        private readonly IOrderWithCustomerService _orderWithCustomerService;
+        private readonly IOrderStageHistoryService _orderStageHistoryService; // Inject the new service
         private readonly IMapper _mapper; // Vẫn giữ để ánh xạ DTOs nếu có
 
-        public OrdersController(ApplicationDbContext context, IOrderService orderService, IOrderWithCustomerService orderWithCustomerService, IMapper mapper) // <-- TIÊM IOrderWithCustomerService
+        public OrdersController(ApplicationDbContext context, IOrderService orderService, IOrderWithCustomerService orderWithCustomerService, IOrderStageHistoryService orderStageHistoryService, IMapper mapper)
+ // Inject the new service
         {
             _context = context; // Để dùng các hàm hỗ trợ
+            _orderStageHistoryService = orderStageHistoryService; // Assign the new service
             _orderService = orderService; // Gán Service
             _orderWithCustomerService = orderWithCustomerService; // Gán Service mới
             _mapper = mapper;
@@ -97,11 +100,19 @@ namespace DecalXeAPI.Controllers
                 }
 
                 var response = await _orderWithCustomerService.CreateOrderWithCustomerAsync(createDto);
-                return CreatedAtAction(nameof(GetOrder), new { id = response.OrderID }, response);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
+
+                // Create the initial order stage history
+                var initialStage = new CreateOrderStageHistoryDto
+                {
+                    StageName = "Đã tạo đơn hàng",
+                    OrderID = response.OrderID,
+                    ChangedByEmployeeID = createDto.AssignedEmployeeID,
+ // Use AssignedEmployeeID from DTO
+                    Notes = "Khởi tạo đơn hàng (Khảo sát)",
+                    Stage = OrderStage.Survey // Use the correct enum value
+                };
+                await _orderStageHistoryService.CreateAsync(initialStage);
+ return CreatedAtAction(nameof(GetOrder), new { id = response.OrderID }, response);
             }
             catch (Exception ex)
             {
