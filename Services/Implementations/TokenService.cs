@@ -68,7 +68,8 @@ namespace DecalXeAPI.Services.Implementations
                     Email = account.Email,
                     Role = account.Role?.RoleName ?? "Unknown",
                     AccountRoleName = account.Role?.RoleName ?? "Unknown",
-                    IsActive = account.IsActive
+                    IsActive = account.IsActive,
+                    EmployeeID = account.Employee?.EmployeeID // <-- Dòng mới
                 }
             };
         }
