@@ -36,7 +36,7 @@ const ORDER_STAGES_LIST = [
   { value: "New", label: "Mới", stage: 1 },
   { value: "In Progress", label: "Đang xử lý", stage: 2 },
   { value: "Completed", label: "Hoàn thành", stage: 4 },
-  { value: "Cancel", label: "Đã hủy", stage: 4 },
+  { value: "Cancel", label: "Đã hủy" },
 ];
 
 const OrderDetailPage = () => {

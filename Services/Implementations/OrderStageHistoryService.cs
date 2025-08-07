@@ -113,6 +113,17 @@ namespace DecalXeAPI.Services.Implementations
             _context.OrderStageHistories.Add(history);
             await _context.SaveChangesAsync();
 
+            // Cập nhật trạng thái hiện tại (CurrentStage) và OrderStatus của đơn hàng
+            var order = await _context.Orders.FindAsync(history.OrderID);
+            if (order != null)
+            {
+                order.CurrentStage = history.Stage.ToString(); // Cập nhật CurrentStage
+                order.OrderStatus = OrderStageHelper.GetDescription(history.Stage); // Cập nhật OrderStatus
+                await _context.SaveChangesAsync(); // Lưu thay đổi của đơn hàng
+                _logger.LogInformation("Đã cập nhật CurrentStage và OrderStatus cho đơn hàng {OrderID} sang '{Stage}'.", history.OrderID, order.CurrentStage);
+            }
+
+
             // Lấy lại với thông tin đầy đủ
             var createdHistory = await _context.OrderStageHistories
                 .Include(osh => osh.Order)
