@@ -19,13 +19,15 @@ namespace DecalXeAPI.Services.Implementations
         private readonly IMapper _mapper;
         private readonly ILogger<AccountService> _logger;
         // private readonly IEmailService _emailService; // <-- ĐÃ XÓA DÒNG NÀY VÌ KHÔNG DÙNG EMAIL NỮA
+        private readonly ITokenService _tokenService;
 
-        public AccountService(ApplicationDbContext context, IMapper mapper, ILogger<AccountService> logger /*, IEmailService emailService */) // <-- BỎ TIÊM IEmailService
+        public AccountService(ApplicationDbContext context, IMapper mapper, ILogger<AccountService> logger /*, IEmailService emailService */ , ITokenService tokenService) // <-- BỎ TIÊM IEmailService
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
             // _emailService = emailService;
+            _tokenService = tokenService;
         }
 
         public async Task<IEnumerable<AccountDto>> GetAccountsAsync()
@@ -115,7 +117,7 @@ namespace DecalXeAPI.Services.Implementations
             }
         }       
 
-        public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
+         public async Task<LoginResponseDto?> LoginAsync(LoginDto loginDto)
         {
             _logger.LogInformation("Attempting login for username: {Username}", loginDto.Username);
 
@@ -132,24 +134,10 @@ namespace DecalXeAPI.Services.Implementations
                 return null;
             }
 
-            // 3. If the account is found and password matches:
-            // a. Create a UserDataDto object.
-            var userData = new UserDataDto
-            {
-                AccountID = account.AccountID,
-                Username = account.Username,
-                Email = account.Email,
-                IsActive = account.IsActive,
-                // c. Map Role information
-                Role = account.Role?.RoleName ?? "Unknown", // Provide a default if role is null
-                AccountRoleName = account.Role?.RoleName ?? "Unknown"
-            };
-            // d. If account.Employee is not null, set userData.EmployeeID
-            userData.EmployeeID = account.Employee?.EmployeeID; // Nullable assignment
-
-            // e. Skip token generation logic for now.
-            return new LoginResponseDto { AccessToken = "", RefreshToken = "", User = userData };
+            var loginResponse = _tokenService.CreateLoginResponse(account); // Use Token Service to create the response
+            return loginResponse;
         }
+        
         // Trong file: DecalXeAPI/Services/Implementations/AccountService.cs
         public async Task<bool> DeleteAccountAsync(string id)
         {
@@ -189,7 +177,7 @@ namespace DecalXeAPI.Services.Implementations
                 }
             }
             // --- KẾT THÚC LOGIC MỚI ---
-            
+
             // Logic cũ kiểm tra ràng buộc khóa ngoại vẫn cần thiết cho các trường hợp khác
             if (await _context.Customers.AnyAsync(c => c.AccountID == id) || await _context.Employees.AnyAsync(e => e.AccountID == id) || await _context.DesignComments.AnyAsync(dc => dc.SenderAccountID == id))
             {

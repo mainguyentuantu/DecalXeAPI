@@ -67,15 +67,48 @@ const OrderDetailPage = () => {
   };
 
   // Khi xác nhận chuyển trạng thái
-  const handleConfirmStage = async (notes, stageOverride, completionOverride) => {
+  const handleConfirmStage = async (
+    notes,
+    stageOverride,
+    completionOverride
+  ) => {
     setShowStageModal(false);
     if (!selectedStage || !order) return;
-    // Lấy employeeID từ localStorage (giả lập đăng nhập)
-    const changedByEmployeeID = localStorage.getItem('employeeID') || 'EMP001';
+    const userDataString = localStorage.getItem("userData");
+    let changedByEmployeeID = "SYSTEM"; // Giá trị mặc định nếu không tìm thấy employeeID
+
+    if (userDataString) {
+      try {
+        const userData = JSON.parse(userDataString);
+        // Lấy employeeID từ userData nếu tồn tại
+        if (userData.employeeID) {
+          changedByEmployeeID = userData.employeeID;
+        } else {
+          // Tùy chọn: Xử lý trường hợp userData có nhưng không có employeeID
+          console.warn(
+            "userData found but no employeeID. This might be a customer account."
+          );
+          // Bạn có thể log thêm thông tin userData.accountID nếu muốn
+          // changedByEmployeeID = userData.accountID || 'SYSTEM'; // Sử dụng accountID hoặc giá trị mặc định khác
+        }
+      } catch (e) {
+        console.error("Failed to parse userData from localStorage:", e);
+        // Xử lý lỗi khi phân tích JSON nếu cần
+      }
+    } else {
+      console.warn(
+        "userData not found in localStorage. Using default 'SYSTEM'."
+      );
+    }
+
     // Nếu là In Progress, nhận stage và completionPercentage từ modal
     let stage = selectedStage.stage;
     let completionPercentage = undefined;
-    if (selectedStage.value === 'In Progress' && stageOverride && completionOverride !== undefined) {
+    if (
+      selectedStage.value === "In Progress" &&
+      stageOverride &&
+      completionOverride !== undefined
+    ) {
       stage = stageOverride;
       completionPercentage = completionOverride;
     }
@@ -86,10 +119,7 @@ const OrderDetailPage = () => {
       changedByEmployeeID,
       notes,
       stage,
-      ...(completionPercentage !== undefined ? { completionPercentage } : {})
-
-   
-
+      ...(completionPercentage !== undefined ? { completionPercentage } : {}),
     });
   };
 
