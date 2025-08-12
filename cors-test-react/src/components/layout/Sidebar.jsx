@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  ShoppingCart, 
-  Users, 
-  Car, 
-  Palette, 
-  DollarSign, 
+import {
+  Home,
+  ShoppingCart,
+  Users,
+  Car,
+  Palette,
+  DollarSign,
   FileText,
   Settings,
   ChevronDown,
@@ -20,7 +20,8 @@ import {
   BarChart3,
   TrendingUp,
   PieChart,
-  Activity
+  Activity,
+  Building
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../hooks/useAuth';
@@ -79,9 +80,24 @@ const navigation = [
     roles: ['Admin', 'Manager'],
     children: [
       { name: 'Danh sách nhân viên', href: '/employees' },
-      { name: 'Thêm nhân viên', href: '/employees/create' },
-      { name: 'Phân quyền', href: '/roles' },
       { name: 'Theo dõi hiệu suất', href: '/performance' },
+    ],
+  },
+  {
+    name: 'Cửa hàng',
+    icon: Building,
+    roles: ['Admin', 'Manager'],
+    children: [
+      { name: 'Danh sách cửa hàng', href: '/stores' },
+      { name: 'Thêm cửa hàng', href: '/stores/add' },
+    ],
+  },
+  {
+    name: 'Quản lý tài khoản',
+    icon: Shield,
+    roles: ['Admin', 'Manager'],
+    children: [
+      { name: 'Danh sách tài khoản', href: '/accounts' },
     ],
   },
   {
@@ -150,7 +166,7 @@ const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const { getUserRole, hasPermission } = useAuth();
   const [expandedItems, setExpandedItems] = useState({});
-  
+
   const userRole = getUserRole();
 
   const toggleExpanded = (itemName) => {
@@ -168,7 +184,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     return children?.some(child => isActive(child.href));
   };
 
-  const filteredNavigation = navigation.filter(item => 
+  const filteredNavigation = navigation.filter(item =>
     item.roles.includes(userRole) || hasPermission('Admin')
   );
 
@@ -176,7 +192,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-gray-600 bg-opacity-75 lg:hidden z-40"
           onClick={onClose}
         />
@@ -207,7 +223,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             </div>
             <span className="ml-2 text-xl font-semibold text-gray-900">DecalXe</span>
           </div>
-          
+
           {/* Close button for mobile */}
           <button
             onClick={onClose}

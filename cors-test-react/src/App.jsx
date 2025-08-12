@@ -14,6 +14,9 @@ import Layout from "./components/layout/Layout";
 // Pages
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
+import PublicDashboardPage from "./pages/PublicDashboardPage";
+import ContactPage from "./pages/ContactPage";
+import ServicesPage from "./pages/ServicesPage";
 import OrderListPage from "./pages/orders/OrderListPage";
 import OrderDetailPage from "./pages/orders/OrderDetailPage";
 import OrderCreatePage from "./pages/orders/OrderCreatePage";
@@ -38,8 +41,17 @@ import DesignTestPage from "./pages/designs/DesignTestPage";
 // Employee Management Module Pages
 import EmployeeListPage from "./pages/employees/EmployeeListPage";
 import AddEmployeePage from "./pages/employees/AddEmployeePage";
-import RolePermissionPage from "./pages/employees/RolePermissionPage";
 import PerformanceTrackingPage from "./pages/employees/PerformanceTrackingPage";
+
+// Store Management Module Pages
+import StoreListPage from "./pages/stores/StoreListPage";
+import AddStorePage from "./pages/stores/AddStorePage";
+import StoreDetailPage from "./pages/stores/StoreDetailPage";
+import EditStorePage from "./pages/stores/EditStorePage";
+
+// Account Management Module Pages
+import AccountListPage from "./pages/accounts/AccountListPage";
+import AddAccountPage from "./pages/accounts/AddAccountPage";
 
 // Services & Inventory Module Pages
 import ServiceListPage from "./pages/services/ServiceListPage";
@@ -107,6 +119,9 @@ function App() {
         <div className="App">
           <Routes>
             {/* Public routes */}
+            <Route path="/" element={<PublicDashboardPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/services" element={<ServicesPage />} />
             <Route
               path="/login"
               element={
@@ -125,7 +140,6 @@ function App() {
                 </ProtectedRoute>
               }>
               {/* Dashboard */}
-              <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
 
               {/* Order Management Routes */}
@@ -187,9 +201,18 @@ function App() {
                   </div>
                 }
               />
-              <Route path="employees/create" element={<AddEmployeePage />} />
-              <Route path="roles" element={<RolePermissionPage />} />
+              <Route path="employees/add" element={<AddEmployeePage />} />
               <Route path="performance" element={<PerformanceTrackingPage />} />
+
+              {/* Store Management Module Routes */}
+              <Route path="stores" element={<StoreListPage />} />
+              <Route path="stores/add" element={<AddStorePage />} />
+              <Route path="stores/:storeId" element={<StoreDetailPage />} />
+              <Route path="stores/:storeId/edit" element={<EditStorePage />} />
+
+              {/* Account Management Module Routes */}
+              <Route path="accounts" element={<AccountListPage />} />
+              <Route path="accounts/add" element={<AddAccountPage />} />
 
               {/* Services & Inventory Module Routes */}
               <Route path="services" element={<ServiceListPage />} />

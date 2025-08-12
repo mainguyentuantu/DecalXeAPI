@@ -9,19 +9,26 @@ export const API_ENDPOINTS = {
     LOGOUT: '/Auth/logout',
     RESET_PASSWORD: '/Auth/reset-password',
   },
-  
+
   // Employees
   EMPLOYEES: {
     BASE: '/Employees',
     BY_ID: (id) => `/Employees/${id}`,
+    WITH_ACCOUNT: '/Employees/with-account',
   },
-  
+
+  // Accounts
+  ACCOUNTS: {
+    BASE: '/Accounts',
+    BY_ID: (id) => `/Accounts/${id}`
+  },
+
   // Customers
   CUSTOMERS: {
     BASE: '/Customers',
     BY_ID: (id) => `/Customers/${id}`,
   },
-  
+
   // Orders
   ORDERS: {
     BASE: '/Orders',
@@ -38,7 +45,7 @@ export const API_ENDPOINTS = {
     SEARCH_CUSTOMERS: '/Orders/search-customers',
     CREATE_CUSTOMER: '/Orders/customers',
   },
-  
+
   // Customer Vehicles
   CUSTOMER_VEHICLES: {
     BASE: '/CustomerVehicles',
@@ -49,43 +56,43 @@ export const API_ENDPOINTS = {
     LICENSE_PLATE_EXISTS: (licensePlate) => `/CustomerVehicles/license-plate/${licensePlate}/exists`,
     CHASSIS_EXISTS: (chassisNumber) => `/CustomerVehicles/chassis/${chassisNumber}/exists`,
   },
-  
+
   // Designs
   DESIGNS: {
     BASE: '/Designs',
     BY_ID: (id) => `/Designs/${id}`,
   },
-  
+
   // Payments
   PAYMENTS: {
     BASE: '/Payments',
     BY_ID: (id) => `/Payments/${id}`,
   },
-  
+
   // Warranties
   WARRANTIES: {
     BASE: '/Warranties',
     BY_ID: (id) => `/Warranties/${id}`,
   },
-  
+
   // Stores
   STORES: {
     BASE: '/Stores',
     BY_ID: (id) => `/Stores/${id}`,
   },
-  
+
   // Roles
   ROLES: {
     BASE: '/Roles',
     BY_ID: (id) => `/Roles/${id}`,
   },
-  
+
   // Vehicle Brands
   VEHICLE_BRANDS: {
     BASE: '/VehicleBrands',
     BY_ID: (id) => `/VehicleBrands/${id}`,
   },
-  
+
   // Vehicle Models
   VEHICLE_MODELS: {
     BASE: '/VehicleModels',

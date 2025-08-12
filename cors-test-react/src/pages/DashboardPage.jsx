@@ -1,18 +1,20 @@
 import React from 'react';
 import { Card, Badge, LoadingSpinner } from '../components/common';
-import { 
-  ShoppingCart, 
-  Users, 
-  Car, 
+import {
+  ShoppingCart,
+  Users,
+  Car,
   DollarSign,
   TrendingUp,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Shield
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { orderService } from '../services/orders';
 import { customerService } from '../services/customers';
+import { Link } from 'react-router-dom';
 
 const DashboardPage = () => {
   // Fetch real data from API
@@ -28,7 +30,13 @@ const DashboardPage = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const isLoading = ordersLoading || customersLoading;
+  const { data: accounts, isLoading: accountsLoading } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: () => import('../services/accountService').then(module => module.accountService.getAccounts()),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const isLoading = ordersLoading || customersLoading || accountsLoading;
 
   // Calculate stats from real data
   const stats = [
@@ -47,6 +55,14 @@ const DashboardPage = () => {
       changeType: 'increase',
       icon: Users,
       color: 'bg-green-500',
+    },
+    {
+      title: 'Tài khoản',
+      value: accounts?.length?.toString() || '0',
+      change: '+5%',
+      changeType: 'increase',
+      icon: Shield,
+      color: 'bg-red-500',
     },
     {
       title: 'Phương tiện',
@@ -112,7 +128,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {stats.map((stat, index) => (
           <Card key={index} className="p-6">
             <div className="flex items-center justify-between">
@@ -134,7 +150,7 @@ const DashboardPage = () => {
       </div>
 
       {/* Recent orders */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Orders table */}
         <Card>
           <Card.Header>
@@ -166,6 +182,34 @@ const DashboardPage = () => {
           </Card.Content>
         </Card>
 
+        {/* Recent accounts */}
+        <Card>
+          <Card.Header>
+            <Card.Title>Tài khoản gần đây</Card.Title>
+          </Card.Header>
+          <Card.Content>
+            <div className="space-y-4">
+              {accounts?.slice(0, 3).map((account) => (
+                <div key={account.accountID} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium text-gray-900">{account.username}</span>
+                      <Badge variant={account.isActive ? 'success' : 'danger'} size="sm">
+                        {account.isActive ? 'Hoạt động' : 'Khóa'}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{account.email || 'Không có email'}</p>
+                    <p className="text-xs text-gray-500">{account.roleName || 'Không có vai trò'}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500 mt-1">ID: {account.accountID}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card.Content>
+        </Card>
+
         {/* Quick actions */}
         <Card>
           <Card.Header>
@@ -177,21 +221,28 @@ const DashboardPage = () => {
                 <ShoppingCart className="h-8 w-8 text-blue-500 mx-auto mb-2" />
                 <p className="text-sm font-medium text-gray-900">Tạo đơn hàng</p>
               </button>
-              
+
               <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
                 <p className="text-sm font-medium text-gray-900">Thêm khách hàng</p>
               </button>
-              
+
               <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <Car className="h-8 w-8 text-purple-500 mx-auto mb-2" />
                 <p className="text-sm font-medium text-gray-900">Đăng ký xe</p>
               </button>
-              
+
               <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <DollarSign className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
                 <p className="text-sm font-medium text-gray-900">Xem báo cáo</p>
               </button>
+
+              <Link to="/accounts" className="col-span-2">
+                <button className="w-full p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <Shield className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                  <p className="text-sm font-medium text-gray-900">Quản lý tài khoản</p>
+                </button>
+              </Link>
             </div>
           </Card.Content>
         </Card>

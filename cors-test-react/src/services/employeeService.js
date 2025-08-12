@@ -5,7 +5,7 @@ export const employeeService = {
   // Get all employees with optional filters
   getEmployees: async (params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.search) queryParams.append('search', params.search);
     if (params.role) queryParams.append('role', params.role);
     if (params.isActive !== undefined) queryParams.append('isActive', params.isActive);
@@ -26,6 +26,18 @@ export const employeeService = {
   // Create new employee
   createEmployee: async (employeeData) => {
     const response = await apiClient.post(API_ENDPOINTS.EMPLOYEES.BASE, employeeData);
+    return response.data;
+  },
+
+  // Create new employee with account
+  createEmployeeWithAccount: async (employeeData) => {
+    const response = await apiClient.post(API_ENDPOINTS.EMPLOYEES.WITH_ACCOUNT, employeeData);
+    return response.data;
+  },
+
+  // Create new account
+  createAccount: async (accountData) => {
+    const response = await apiClient.post(API_ENDPOINTS.ACCOUNTS.BASE, accountData);
     return response.data;
   },
 
@@ -80,7 +92,7 @@ export const employeeService = {
   // Get employee performance metrics
   getEmployeePerformance: async (employeeId, params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.startDate) queryParams.append('startDate', params.startDate);
     if (params.endDate) queryParams.append('endDate', params.endDate);
     if (params.period) queryParams.append('period', params.period);
@@ -92,7 +104,7 @@ export const employeeService = {
   // Get employee work assignments
   getEmployeeAssignments: async (employeeId, params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.status) queryParams.append('status', params.status);
     if (params.startDate) queryParams.append('startDate', params.startDate);
     if (params.endDate) queryParams.append('endDate', params.endDate);
@@ -116,7 +128,7 @@ export const employeeService = {
   // Get employee attendance
   getEmployeeAttendance: async (employeeId, params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.month) queryParams.append('month', params.month);
     if (params.year) queryParams.append('year', params.year);
 
@@ -133,7 +145,7 @@ export const employeeService = {
   // Get employee statistics
   getEmployeeStats: async (params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.storeId) queryParams.append('storeId', params.storeId);
     if (params.period) queryParams.append('period', params.period);
 
@@ -144,12 +156,12 @@ export const employeeService = {
   // Export employees data
   exportEmployees: async (format = 'excel', params = {}) => {
     const queryParams = new URLSearchParams();
-    
+
     if (params.search) queryParams.append('search', params.search);
     if (params.role) queryParams.append('role', params.role);
     if (params.isActive !== undefined) queryParams.append('isActive', params.isActive);
     if (params.storeId) queryParams.append('storeId', params.storeId);
-    
+
     queryParams.append('format', format);
 
     const response = await apiClient.get(`${API_ENDPOINTS.EMPLOYEES.BASE}/export?${queryParams}`, {
