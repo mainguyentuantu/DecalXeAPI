@@ -125,6 +125,7 @@ namespace DecalXeAPI.MappingProfiles
             // UPDATED: Order mapping with Customer relationship
             CreateMap<Order, OrderDto>()
                 .ForMember(dest => dest.AssignedEmployeeFullName, opt => opt.MapFrom(src => src.AssignedEmployee != null ? src.AssignedEmployee.FirstName + " " + src.AssignedEmployee.LastName : null))
+                .ForMember(dest => dest.StoreID, opt => opt.MapFrom(src => src.StoreID)) // Ánh xạ StoreID
                 .ForMember(dest => dest.ChassisNumber, opt => opt.MapFrom(src => src.CustomerVehicle != null ? src.CustomerVehicle.ChassisNumber : null))
                 .ForMember(dest => dest.VehicleModelName, opt => opt.MapFrom(src => src.CustomerVehicle != null && src.CustomerVehicle.VehicleModel != null ? src.CustomerVehicle.VehicleModel.ModelName : null))
                 .ForMember(dest => dest.VehicleBrandName, opt => opt.MapFrom(src => src.CustomerVehicle != null && src.CustomerVehicle.VehicleModel != null && src.CustomerVehicle.VehicleModel.VehicleBrand != null ? src.CustomerVehicle.VehicleModel.VehicleBrand.BrandName : null))
@@ -142,6 +143,8 @@ namespace DecalXeAPI.MappingProfiles
                 .ForMember(dest => dest.AccountCreated, opt => opt.MapFrom(src => src.Customer != null && src.Customer.Account != null));
 
             CreateMap<OrderDetail, OrderDetailDto>()
+                .ForMember(dest => dest.StoreID, opt => opt.MapFrom(src => src.Order != null ? src.Order.StoreID : null)) // Lấy StoreID từ Order liên quan
+                .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.Order != null && src.Order.Store != null ? src.Order.Store.StoreName : null)) // Lấy StoreName từ Order liên quan
                 .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.Order != null ? src.Order.OrderStatus : null))
                 .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.DecalService != null ? src.DecalService.ServiceName : string.Empty));
             

@@ -32,6 +32,7 @@ namespace DecalXeAPI.Services.Implementations
             _logger.LogInformation("Lấy danh sách chi tiết đơn hàng.");
             var orderDetails = await _context.OrderDetails
                                             .Include(od => od.Order)
+                                                .ThenInclude(o => o.Store) // Include Store from Order
                                             .Include(od => od.DecalService)
                                             .ToListAsync();
             return _mapper.Map<List<OrderDetailDto>>(orderDetails);
@@ -42,6 +43,7 @@ namespace DecalXeAPI.Services.Implementations
             _logger.LogInformation("Yêu cầu lấy chi tiết đơn hàng với ID: {OrderDetailID}", id);
             var orderDetail = await _context.OrderDetails
                                             .Include(od => od.Order)
+                                                .ThenInclude(o => o.Store) // Include Store from Order
                                             .Include(od => od.DecalService)
                                             .FirstOrDefaultAsync(od => od.OrderDetailID == id);
             return _mapper.Map<OrderDetailDto>(orderDetail);

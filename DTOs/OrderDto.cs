@@ -20,6 +20,7 @@ namespace DecalXeAPI.DTOs
         public string CurrentStage { get; set; } = string.Empty;
         public string? Priority { get; set; }
         public bool IsCustomDecal { get; set; }
+ public string? StoreID { get; set; } // Thêm StoreID vào DTO
         public string? Description { get; set; }
 
         // === CUSTOMER INFORMATION ===

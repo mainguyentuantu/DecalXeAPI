@@ -32,6 +32,11 @@ namespace DecalXeAPI.Models
         public string? AssignedEmployeeID { get; set; } // FK_AssignedEmployeeID (có thể null ban đầu)
         public Employee? AssignedEmployee { get; set; }
 
+        // Khóa ngoại (Foreign Key): Đơn hàng này thuộc về cửa hàng nào
+        [ForeignKey("Store")]
+        public string? StoreID { get; set; } // FK_StoreID (có thể null nếu không có cửa hàng liên quan)
+        public Store? Store { get; set; }
+
 
         // --- CỘT VÀ NAVIGATION PROPERTIES MỚI TỪ YÊU CẦU REVIEW (đã có từ bước 2.1.5) ---
         [ForeignKey("CustomerVehicle")] // Khóa ngoại tới xe của khách hàng

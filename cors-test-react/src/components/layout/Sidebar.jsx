@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  ShoppingCart, 
-  Users, 
-  Car, 
-  Palette, 
-  DollarSign, 
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  Home,
+  ShoppingCart,
+  Users,
+  Car,
+  Palette,
+  DollarSign,
   FileText,
   Settings,
   ChevronDown,
@@ -20,129 +20,144 @@ import {
   BarChart3,
   TrendingUp,
   PieChart,
-  Activity
-} from 'lucide-react';
-import { cn } from '../../utils/cn';
-import { useAuth } from '../../hooks/useAuth';
-import { USER_ROLES } from '../../constants/ui';
+  Activity,
+} from "lucide-react";
+import { cn } from "../../utils/cn";
+import { useAuth } from "../../hooks/useAuth";
+import { USER_ROLES } from "../../constants/ui";
 
 const navigation = [
   {
-    name: 'Tổng quan',
-    href: '/dashboard',
+    name: "Tổng quan",
+    href: "/dashboard",
     icon: Home,
-    roles: ['Admin', 'Manager', 'Sales', 'Technician', 'Customer'],
+    roles: ["Admin", "Manager", "Sales", "Technician", "Customer"],
   },
   {
-    name: 'Đơn hàng',
+    name: "Đơn hàng",
     icon: ShoppingCart,
-    roles: ['Admin', 'Manager', 'Sales', 'Technician'],
+    roles: ["Admin", "Manager", "Sales", "Technician"],
     children: [
-      { name: 'Danh sách đơn hàng', href: '/orders' },
-      { name: 'Tạo đơn hàng mới', href: '/orders/create' },
-      { name: 'Theo dõi tiến độ', href: '/orders/tracking' },
+      { name: "Danh sách đơn hàng", href: "/orders" },
+      { name: "Tạo đơn hàng mới", href: "/orders/create" },
     ],
   },
   {
-    name: 'Khách hàng',
+    name: "Khách hàng",
     icon: Users,
-    roles: ['Admin', 'Manager', 'Sales'],
+    roles: ["Admin", "Manager", "Sales"],
     children: [
-      { name: 'Danh sách khách hàng', href: '/customers' },
-      { name: 'Thêm khách hàng', href: '/customers/create' },
+      { name: "Danh sách khách hàng", href: "/customers" },
+      { name: "Thêm khách hàng", href: "/customers/create" },
     ],
   },
   {
-    name: 'Phương tiện',
+    name: "Phương tiện",
     icon: Car,
-    roles: ['Admin', 'Manager', 'Sales', 'Technician'],
+    roles: ["Admin", "Manager", "Sales", "Technician"],
     children: [
-      { name: 'Danh sách xe', href: '/vehicles' },
-      { name: 'Thêm thương hiệu', href: '/vehicles/brands/create' },
-      { name: 'Thêm mẫu xe', href: '/vehicles/models/create' },
+      { name: "Danh sách xe", href: "/vehicles" },
+      { name: "Thêm thương hiệu", href: "/vehicles/brands/create" },
+      { name: "Thêm mẫu xe", href: "/vehicles/models/create" },
     ],
   },
   {
-    name: 'Thiết kế',
+    name: "Thiết kế",
     icon: Palette,
-    roles: ['Admin', 'Manager', 'Designer', 'Technician'],
+    roles: ["Admin", "Manager", "Designer", "Technician"],
     children: [
-      { name: 'Thư viện thiết kế', href: '/designs' },
-      { name: 'Soạn thảo thiết kế', href: '/designs/editor' },
-      { name: 'Thư viện mẫu', href: '/templates' },
-      { name: 'Duyệt thiết kế', href: '/designs/approval' },
+      { name: "Thư viện thiết kế", href: "/designs" },
+      { name: "Soạn thảo thiết kế", href: "/designs/editor" },
+      { name: "Thư viện mẫu", href: "/templates" },
+      { name: "Duyệt thiết kế", href: "/designs/approval" },
     ],
   },
   {
-    name: 'Nhân viên',
+    name: "Nhân viên",
     icon: Users,
-    roles: ['Admin', 'Manager'],
+    roles: ["Admin", "Manager"],
     children: [
-      { name: 'Danh sách nhân viên', href: '/employees' },
-      { name: 'Thêm nhân viên', href: '/employees/create' },
-      { name: 'Phân quyền', href: '/roles' },
-      { name: 'Theo dõi hiệu suất', href: '/performance' },
+      { name: "Danh sách nhân viên", href: "/employees" },
+      { name: "Thêm nhân viên", href: "/employees/create" },
+      { name: "Phân quyền", href: "/roles" },
+      { name: "Theo dõi hiệu suất", href: "/performance" },
     ],
   },
   {
-    name: 'Dịch vụ & Kho',
+    name: "Dịch vụ & Kho",
     icon: Package,
-    roles: ['Admin', 'Manager', 'Sales'],
+    roles: ["Admin", "Manager", "Sales"],
     children: [
-      { name: 'Danh sách dịch vụ', href: '/services' },
-      { name: 'Quản lý loại decal', href: '/decal-types' },
-      { name: 'Quản lý giá', href: '/pricing' },
-      { name: 'Theo dõi kho', href: '/inventory' },
+      { name: "Danh sách dịch vụ", href: "/services" },
+      { name: "Quản lý loại decal", href: "/decal-types" },
+      { name: "Quản lý giá", href: "/pricing" },
+      { name: "Theo dõi kho", href: "/inventory" },
     ],
   },
   {
-    name: 'Tài chính',
+    name: "Tài chính",
     icon: DollarSign,
-    roles: ['Admin', 'Manager', 'Accountant'],
+    roles: ["Admin", "Manager", "Accountant"],
     children: [
-      { name: 'Xử lý thanh toán', href: '/payments/processing' },
-      { name: 'Quản lý hóa đơn', href: '/payments/invoices' },
-      { name: 'Báo cáo tài chính', href: '/payments/reports' },
-      { name: 'Theo dõi đặt cọc', href: '/payments/deposits' },
+      { name: "Xử lý thanh toán", href: "/payments/processing" },
+      { name: "Quản lý hóa đơn", href: "/payments/invoices" },
+      { name: "Báo cáo tài chính", href: "/payments/reports" },
+      { name: "Theo dõi đặt cọc", href: "/payments/deposits" },
     ],
   },
   {
-    name: 'Bảo hành & Hỗ trợ',
+    name: "Bảo hành & Hỗ trợ",
     icon: Shield,
-    roles: ['Admin', 'Manager', 'Sales', 'Technician'],
+    roles: ["Admin", "Manager", "Sales", "Technician"],
     children: [
-      { name: 'Quản lý bảo hành', href: '/warranty/management' },
-      { name: 'Hệ thống phản hồi', href: '/feedback' },
-      { name: 'Ticket hỗ trợ', href: '/support/tickets' },
+      { name: "Quản lý bảo hành", href: "/warranty/management" },
+      { name: "Hệ thống phản hồi", href: "/feedback" },
+      { name: "Ticket hỗ trợ", href: "/support/tickets" },
     ],
   },
   {
-    name: 'Phân tích & Báo cáo',
+    name: "Phân tích & Báo cáo",
     icon: BarChart3,
-    roles: ['Admin', 'Manager'],
+    roles: ["Admin", "Manager"],
     children: [
-      { name: 'Phân tích bán hàng', href: '/analytics/sales', icon: TrendingUp },
-      { name: 'Hiệu suất nhân viên', href: '/analytics/performance', icon: Activity },
-      { name: 'Thông tin khách hàng', href: '/analytics/customers', icon: Users },
-      { name: 'Báo cáo vận hành', href: '/analytics/operations', icon: PieChart },
+      {
+        name: "Phân tích bán hàng",
+        href: "/analytics/sales",
+        icon: TrendingUp,
+      },
+      {
+        name: "Hiệu suất nhân viên",
+        href: "/analytics/performance",
+        icon: Activity,
+      },
+      {
+        name: "Thông tin khách hàng",
+        href: "/analytics/customers",
+        icon: Users,
+      },
+      {
+        name: "Báo cáo vận hành",
+        href: "/analytics/operations",
+        icon: PieChart,
+      },
     ],
   },
   {
-    name: 'Báo cáo',
+    name: "Báo cáo",
     icon: FileText,
-    roles: ['Admin', 'Manager'],
+    roles: ["Admin", "Manager"],
     children: [
-      { name: 'Báo cáo bán hàng', href: '/reports/sales' },
-      { name: 'Báo cáo hiệu suất', href: '/reports/performance' },
-      { name: 'Báo cáo khách hàng', href: '/reports/customers' },
-      { name: 'Báo cáo vận hành', href: '/reports/operations' },
+      { name: "Báo cáo bán hàng", href: "/reports/sales" },
+      { name: "Báo cáo hiệu suất", href: "/reports/performance" },
+      { name: "Báo cáo khách hàng", href: "/reports/customers" },
+      { name: "Báo cáo vận hành", href: "/reports/operations" },
     ],
   },
   {
-    name: 'Cài đặt',
-    href: '/settings',
+    name: "Cài đặt",
+    href: "/settings",
     icon: Settings,
-    roles: ['Admin', 'Manager'],
+    roles: ["Admin", "Manager"],
   },
 ];
 
@@ -150,44 +165,47 @@ const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const { getUserRole, hasPermission } = useAuth();
   const [expandedItems, setExpandedItems] = useState({});
-  
+
   const userRole = getUserRole();
 
   const toggleExpanded = (itemName) => {
-    setExpandedItems(prev => ({
+    setExpandedItems((prev) => ({
       ...prev,
-      [itemName]: !prev[itemName]
+      [itemName]: !prev[itemName],
     }));
   };
 
   const isActive = (href) => {
-    return location.pathname === href || location.pathname.startsWith(href + '/');
+    return (
+      location.pathname === href || location.pathname.startsWith(href + "/")
+    );
   };
 
   const isParentActive = (children) => {
-    return children?.some(child => isActive(child.href));
+    return children?.some((child) => isActive(child.href));
   };
 
-  const filteredNavigation = navigation.filter(item => 
-    item.roles.includes(userRole) || hasPermission('Admin')
+  const filteredNavigation = navigation.filter(
+    (item) => item.roles.includes(userRole) || hasPermission("Admin")
   );
 
   return (
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-gray-600 bg-opacity-75 lg:hidden z-40"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
-      <div className={cn(
-        'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform lg:translate-x-0 lg:static lg:inset-0',
-        'transition-transform duration-300 ease-in-out',
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      )}>
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform lg:translate-x-0 lg:static lg:inset-0",
+          "transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        )}>
         {/* Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
           <div className="flex items-center">
@@ -197,22 +215,23 @@ const Sidebar = ({ isOpen, onClose }) => {
                 src="/logo.svg"
                 alt="DecalXe"
                 onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "flex";
                 }}
               />
               <div className="hidden items-center justify-center h-8 w-8 bg-primary-600 rounded text-white font-bold text-sm">
                 DX
               </div>
             </div>
-            <span className="ml-2 text-xl font-semibold text-gray-900">DecalXe</span>
+            <span className="ml-2 text-xl font-semibold text-gray-900">
+              DecalXe
+            </span>
           </div>
-          
+
           {/* Close button for mobile */}
           <button
             onClick={onClose}
-            className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
-          >
+            className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -222,7 +241,9 @@ const Sidebar = ({ isOpen, onClose }) => {
           {filteredNavigation.map((item) => {
             const hasChildren = item.children && item.children.length > 0;
             const isExpanded = expandedItems[item.name];
-            const isItemActive = item.href ? isActive(item.href) : isParentActive(item.children);
+            const isItemActive = item.href
+              ? isActive(item.href)
+              : isParentActive(item.children);
 
             if (!hasChildren) {
               return (
@@ -230,15 +251,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                   key={item.name}
                   to={item.href}
                   className={cn(
-                    'group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200',
+                    "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200",
                     isItemActive
-                      ? 'bg-primary-100 text-primary-700 border-r-2 border-primary-500'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      ? "bg-primary-100 text-primary-700 border-r-2 border-primary-500"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                   )}
                   onClick={() => {
                     if (window.innerWidth < 1024) onClose();
-                  }}
-                >
+                  }}>
                   <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
                   {item.name}
                 </Link>
@@ -250,12 +270,11 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <button
                   onClick={() => toggleExpanded(item.name)}
                   className={cn(
-                    'group w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200',
+                    "group w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200",
                     isItemActive
-                      ? 'bg-primary-100 text-primary-700'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  )}
-                >
+                      ? "bg-primary-100 text-primary-700"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  )}>
                   <div className="flex items-center">
                     <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
                     {item.name}
@@ -274,16 +293,17 @@ const Sidebar = ({ isOpen, onClose }) => {
                         key={child.name}
                         to={child.href}
                         className={cn(
-                          'group flex items-center pl-11 pr-3 py-2 text-sm font-medium rounded-md transition-colors duration-200',
+                          "group flex items-center pl-11 pr-3 py-2 text-sm font-medium rounded-md transition-colors duration-200",
                           isActive(child.href)
-                            ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-500'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            ? "bg-primary-50 text-primary-700 border-r-2 border-primary-500"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                         )}
                         onClick={() => {
                           if (window.innerWidth < 1024) onClose();
-                        }}
-                      >
-                        {child.icon && <child.icon className="mr-2 h-4 w-4 flex-shrink-0" />}
+                        }}>
+                        {child.icon && (
+                          <child.icon className="mr-2 h-4 w-4 flex-shrink-0" />
+                        )}
                         {child.name}
                       </Link>
                     ))}
