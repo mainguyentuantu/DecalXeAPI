@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { 
-  Shield, 
-  Users, 
-  Plus, 
-  Edit3, 
-  Trash2, 
+import {
+  Shield,
+  Users,
+  Plus,
+  Edit3,
+  Trash2,
   Settings,
   UserCheck,
   UserX,
@@ -128,12 +128,12 @@ const RolePermissionPage = () => {
 
   // Filter employees
   const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       `${employee.firstName} ${employee.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesStore = filterStore === '' || employee.storeID === filterStore;
-    
+
     return matchesSearch && matchesStore;
   });
 
@@ -144,6 +144,10 @@ const RolePermissionPage = () => {
       toast.error('Vui lòng nhập tên vai trò!');
       return;
     }
+    if (newRoleData.roleName.trim().toLowerCase() === 'admin') {
+      toast.error('Không được phép tạo vai trò Admin!');
+      return;
+    }
     createRoleMutation.mutate(newRoleData);
   };
 
@@ -151,14 +155,22 @@ const RolePermissionPage = () => {
   const handleUpdateRole = (e) => {
     e.preventDefault();
     if (!selectedRole) return;
-    updateRoleMutation.mutate({ 
-      roleId: selectedRole.roleID, 
-      data: selectedRole 
+    if (selectedRole.roleName.trim().toLowerCase() === 'admin') {
+      toast.error('Không được phép đổi tên vai trò thành Admin!');
+      return;
+    }
+    updateRoleMutation.mutate({
+      roleId: selectedRole.roleID,
+      data: selectedRole
     });
   };
 
   // Handle role deletion
   const handleDeleteRole = (role) => {
+    if (role.roleName === 'Admin') {
+      toast.error('Không được phép xóa vai trò Admin!');
+      return;
+    }
     if (window.confirm(`Bạn có chắc chắn muốn xóa vai trò "${role.roleName}"?`)) {
       deleteRoleMutation.mutate(role.roleID);
     }
@@ -166,10 +178,10 @@ const RolePermissionPage = () => {
 
   // Handle permission change
   const handlePermissionChange = (permissionId, isSelected, targetData, setTargetData) => {
-    const newPermissions = isSelected 
+    const newPermissions = isSelected
       ? [...targetData.permissions, permissionId]
       : targetData.permissions.filter(p => p !== permissionId);
-    
+
     setTargetData(prev => ({
       ...prev,
       permissions: newPermissions
@@ -187,11 +199,11 @@ const RolePermissionPage = () => {
 
   const handleEmployeeRoleChange = (roleId) => {
     if (!selectedEmployee) return;
-    
+
     const newRoleIds = selectedEmployee.roleIds.includes(roleId)
       ? selectedEmployee.roleIds.filter(id => id !== roleId)
       : [...selectedEmployee.roleIds, roleId];
-    
+
     setSelectedEmployee(prev => ({
       ...prev,
       roleIds: newRoleIds
@@ -235,22 +247,20 @@ const RolePermissionPage = () => {
       <div className="flex space-x-1 bg-gray-100 rounded-lg p-1 mb-6">
         <button
           onClick={() => setActiveTab('roles')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
-            activeTab === 'roles' 
-              ? 'bg-white text-gray-900 shadow-sm' 
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'roles'
+            ? 'bg-white text-gray-900 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'
+            }`}
         >
           <Shield className="w-4 h-4" />
           Quản lý vai trò
         </button>
         <button
           onClick={() => setActiveTab('assignments')}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${
-            activeTab === 'assignments' 
-              ? 'bg-white text-gray-900 shadow-sm' 
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-colors ${activeTab === 'assignments'
+            ? 'bg-white text-gray-900 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700'
+            }`}
         >
           <Users className="w-4 h-4" />
           Phân quyền nhân viên
@@ -267,38 +277,40 @@ const RolePermissionPage = () => {
                 <p className="text-gray-500 mt-2">Đang tải vai trò...</p>
               </div>
             ) : (
-              roles.map(role => (
-                <div key={role.roleID} className="bg-white p-6 rounded-lg border shadow-sm">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{role.roleName}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{role.description || 'Không có mô tả'}</p>
+              roles
+                .filter(role => role.roleName !== 'Admin') // Lọc bỏ Admin role
+                .map(role => (
+                  <div key={role.roleID} className="bg-white p-6 rounded-lg border shadow-sm">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{role.roleName}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{role.description || 'Không có mô tả'}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => {
+                            setSelectedRole(role);
+                            setShowEditRoleModal(true);
+                          }}
+                          className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRole(role)}
+                          className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => {
-                          setSelectedRole(role);
-                          setShowEditRoleModal(true);
-                        }}
-                        className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteRole(role)}
-                        className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+
+                    <div className="text-sm text-gray-500">
+                      <p>Quyền hạn: {role.permissions?.length || 0} quyền</p>
+                      <p>Được sử dụng: {employees.filter(emp => emp.roles?.some(r => r.roleID === role.roleID)).length} nhân viên</p>
                     </div>
                   </div>
-                  
-                  <div className="text-sm text-gray-500">
-                    <p>Quyền hạn: {role.permissions?.length || 0} quyền</p>
-                    <p>Được sử dụng: {employees.filter(emp => emp.roles?.some(r => r.roleID === role.roleID)).length} nhân viên</p>
-                  </div>
-                </div>
-              ))
+                ))
             )}
           </div>
         </div>
@@ -402,26 +414,27 @@ const RolePermissionPage = () => {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-1">
-                            {employee.roles?.length > 0 ? (
-                              employee.roles.map(role => (
-                                <span 
-                                  key={role.roleID}
-                                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                                >
-                                  {role.roleName}
-                                </span>
-                              ))
+                            {employee.roles?.filter(role => role.roleName !== 'Admin').length > 0 ? (
+                              employee.roles
+                                .filter(role => role.roleName !== 'Admin') // Lọc bỏ Admin role
+                                .map(role => (
+                                  <span
+                                    key={role.roleID}
+                                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                  >
+                                    {role.roleName}
+                                  </span>
+                                ))
                             ) : (
                               <span className="text-sm text-gray-500">Chưa có vai trò</span>
                             )}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            employee.isActive 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${employee.isActive
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                            }`}>
                             {employee.isActive ? (
                               <>
                                 <UserCheck className="w-3 h-3 mr-1" />
@@ -511,9 +524,9 @@ const RolePermissionPage = () => {
                               type="checkbox"
                               checked={newRoleData.permissions.includes(permission.id)}
                               onChange={(e) => handlePermissionChange(
-                                permission.id, 
-                                e.target.checked, 
-                                newRoleData, 
+                                permission.id,
+                                e.target.checked,
+                                newRoleData,
                                 setNewRoleData
                               )}
                               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -608,9 +621,9 @@ const RolePermissionPage = () => {
                               type="checkbox"
                               checked={(selectedRole.permissions || []).includes(permission.id)}
                               onChange={(e) => handlePermissionChange(
-                                permission.id, 
-                                e.target.checked, 
-                                selectedRole, 
+                                permission.id,
+                                e.target.checked,
+                                selectedRole,
                                 setSelectedRole
                               )}
                               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -686,22 +699,24 @@ const RolePermissionPage = () => {
                 Chọn vai trò:
               </label>
               <div className="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-4">
-                {roles.map(role => (
-                  <label key={role.roleID} className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedEmployee.roleIds.includes(role.roleID)}
-                      onChange={() => handleEmployeeRoleChange(role.roleID)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{role.roleName}</div>
-                      {role.description && (
-                        <div className="text-xs text-gray-500">{role.description}</div>
-                      )}
-                    </div>
-                  </label>
-                ))}
+                {roles
+                  .filter(role => role.roleName !== 'Admin') // Lọc bỏ Admin role
+                  .map(role => (
+                    <label key={role.roleID} className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedEmployee.roleIds.includes(role.roleID)}
+                        onChange={() => handleEmployeeRoleChange(role.roleID)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{role.roleName}</div>
+                        {role.description && (
+                          <div className="text-xs text-gray-500">{role.description}</div>
+                        )}
+                      </div>
+                    </label>
+                  ))}
               </div>
             </div>
 

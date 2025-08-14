@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+=======
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+>>>>>>> 8eb4f5129648372e2bdfcd5f9373b11558e41831
 import {
   Home,
   ShoppingCart,
@@ -21,10 +26,18 @@ import {
   TrendingUp,
   PieChart,
   Activity,
+<<<<<<< HEAD
 } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useAuth } from "../../hooks/useAuth";
 import { USER_ROLES } from "../../constants/ui";
+=======
+  Building
+} from 'lucide-react';
+import { cn } from '../../utils/cn';
+import { useAuth } from '../../hooks/useAuth';
+import { USER_ROLES } from '../../constants/ui';
+>>>>>>> 8eb4f5129648372e2bdfcd5f9373b11558e41831
 
 const navigation = [
   {
@@ -77,6 +90,7 @@ const navigation = [
     icon: Users,
     roles: ["Admin", "Manager"],
     children: [
+<<<<<<< HEAD
       { name: "Danh sách nhân viên", href: "/employees" },
       { name: "Thêm nhân viên", href: "/employees/create" },
       { name: "Phân quyền", href: "/roles" },
@@ -85,6 +99,31 @@ const navigation = [
   },
   {
     name: "Dịch vụ & Kho",
+=======
+      { name: 'Danh sách nhân viên', href: '/employees' },
+      { name: 'Theo dõi hiệu suất', href: '/performance' },
+    ],
+  },
+  {
+    name: 'Cửa hàng',
+    icon: Building,
+    roles: ['Admin', 'Manager'],
+    children: [
+      { name: 'Danh sách cửa hàng', href: '/stores' },
+      { name: 'Thêm cửa hàng', href: '/stores/add' },
+    ],
+  },
+  {
+    name: 'Quản lý tài khoản',
+    icon: Shield,
+    roles: ['Admin', 'Manager'],
+    children: [
+      { name: 'Danh sách tài khoản', href: '/accounts' },
+    ],
+  },
+  {
+    name: 'Dịch vụ & Kho',
+>>>>>>> 8eb4f5129648372e2bdfcd5f9373b11558e41831
     icon: Package,
     roles: ["Admin", "Manager", "Sales"],
     children: [
@@ -185,8 +224,13 @@ const Sidebar = ({ isOpen, onClose }) => {
     return children?.some((child) => isActive(child.href));
   };
 
+<<<<<<< HEAD
   const filteredNavigation = navigation.filter(
     (item) => item.roles.includes(userRole) || hasPermission("Admin")
+=======
+  const filteredNavigation = navigation.filter(item =>
+    item.roles.includes(userRole) || hasPermission('Admin')
+>>>>>>> 8eb4f5129648372e2bdfcd5f9373b11558e41831
   );
 
   return (

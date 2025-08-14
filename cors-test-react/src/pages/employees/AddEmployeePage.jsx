@@ -2,23 +2,25 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Building, 
-  Shield, 
-  Eye, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building,
+  Shield,
+  Eye,
   EyeOff,
-  ArrowLeft 
+  ArrowLeft
 } from 'lucide-react';
 import { employeeService } from '../../services/employeeService';
+import { accountService } from '../../services/accountService';
 
 const AddEmployeePage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -26,10 +28,12 @@ const AddEmployeePage = () => {
     phoneNumber: '',
     address: '',
     storeID: '',
+    // Thông tin tài khoản mới
     accountData: {
       username: '',
       password: '',
-      email: ''
+      roleID: '',
+      isActive: true
     },
     roleIds: []
   });
@@ -46,84 +50,163 @@ const AddEmployeePage = () => {
     queryFn: employeeService.getStores,
   });
 
+  // Get current employees data để kiểm tra Manager
+  const { data: currentEmployees = [], isLoading: employeesLoading } = useQuery({
+    queryKey: ['employees'],
+    queryFn: () => employeeService.getEmployees(),
+  });
+
   // Create employee mutation
-  const createMutation = useMutation({
+  const createEmployeeMutation = useMutation({
     mutationFn: employeeService.createEmployee,
-    onSuccess: () => {
-      toast.success('Nhân viên đã được tạo thành công!');
-      queryClient.invalidateQueries(['employees']);
-      navigate('/employees');
-    },
     onError: (error) => {
       toast.error('Lỗi khi tạo nhân viên: ' + (error.response?.data?.message || error.message));
     },
   });
 
+  // Create account mutation
+  const createAccountMutation = useMutation({
+    mutationFn: accountService.createAccount,
+    onError: (error) => {
+      toast.error('Lỗi khi tạo tài khoản: ' + (error.response?.data?.message || error.message));
+    },
+  });
+
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
+    const { name, value, type, checked } = e.target;
+
+    // Xử lý nested accountData
     if (name.startsWith('account.')) {
       const accountField = name.split('.')[1];
       setFormData(prev => ({
         ...prev,
         accountData: {
           ...prev.accountData,
-          [accountField]: value
+          [accountField]: type === 'checkbox' ? checked : value
         }
       }));
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: value
+        [name]: type === 'checkbox' ? checked : value
       }));
     }
   };
 
+  // Kiểm tra xem cửa hàng đã có Manager chưa
+  const checkStoreHasManager = (storeId) => {
+    return currentEmployees.some(employee =>
+      employee.storeID === storeId &&
+      employee.roles?.some(role => role.roleName === 'Manager')
+    );
+  };
+
+  // Kiểm tra xem có thể chọn Manager role cho store này không
+  const canSelectManagerRole = (storeId) => {
+    if (!storeId) return true; // Chưa chọn store thì cho phép
+    return !checkStoreHasManager(storeId);
+  };
+
   const handleRoleChange = (roleId) => {
+    const selectedRole = roles.find(role => role.roleID === roleId);
+
+    // Nếu chọn Manager role, kiểm tra store đã có Manager chưa
+    if (selectedRole?.roleName === 'Manager' && formData.storeID) {
+      if (checkStoreHasManager(formData.storeID)) {
+        toast.error('Cửa hàng này đã có Manager! Mỗi cửa hàng chỉ được phép có 1 Manager.');
+        return;
+      }
+    }
+
     setFormData(prev => ({
       ...prev,
-      roleIds: prev.roleIds.includes(roleId)
-        ? prev.roleIds.filter(id => id !== roleId)
-        : [...prev.roleIds, roleId]
+      roleIds: [roleId] // Chỉ cho phép chọn 1 vai trò
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.phoneNumber) {
       toast.error('Vui lòng điền đầy đủ thông tin bắt buộc!');
       return;
     }
 
-    if (formData.accountData.username && !formData.accountData.password) {
-      toast.error('Vui lòng nhập mật khẩu cho tài khoản!');
+    // Bắt buộc phải có thông tin tài khoản
+    if (!formData.accountData.username || !formData.accountData.password) {
+      toast.error('Vui lòng nhập đầy đủ thông tin tài khoản!');
       return;
     }
 
-    // Prepare data for submission
-    const submitData = {
-      ...formData,
-      accountData: formData.accountData.username ? {
-        ...formData.accountData,
-        email: formData.accountData.email || formData.email
-      } : undefined
-    };
+    // Bắt buộc phải chọn vai trò
+    if (formData.roleIds.length === 0) {
+      toast.error('Vui lòng chọn một vai trò cho nhân viên!');
+      return;
+    }
 
-    createMutation.mutate(submitData);
-  };
+    // Bắt buộc phải chọn cửa hàng
+    if (!formData.storeID) {
+      toast.error('Vui lòng chọn cửa hàng cho nhân viên!');
+      return;
+    }
 
-  const handleGenerateUsername = () => {
-    const username = `${formData.firstName.toLowerCase()}${formData.lastName.toLowerCase()}`.replace(/\s+/g, '');
-    setFormData(prev => ({
-      ...prev,
-      accountData: {
-        ...prev.accountData,
-        username: username,
-        email: formData.email
+    // Kiểm tra stores đã load xong chưa
+    if (storesLoading) {
+      toast.error('Đang tải danh sách cửa hàng, vui lòng đợi...');
+      return;
+    }
+
+    // Kiểm tra có stores nào không
+    if (stores.length === 0) {
+      toast.error('Không có cửa hàng nào để chọn!');
+      return;
+    }
+
+    // Kiểm tra Manager role validation
+    const selectedRole = roles.find(role => role.roleID === formData.roleIds[0]);
+    if (selectedRole?.roleName === 'Manager') {
+      if (checkStoreHasManager(formData.storeID)) {
+        toast.error('Cửa hàng này đã có Manager! Mỗi cửa hàng chỉ được phép có 1 Manager.');
+        return;
       }
-    }));
+    }
+
+    try {
+      // Bước 1: Tạo Account trước
+      const accountData = {
+        Username: formData.accountData.username,
+        PasswordHash: formData.accountData.password, // Lưu password đúng như user nhập
+        Email: formData.email, // Dùng email của employee
+        RoleID: formData.roleIds[0], // Sử dụng vai trò đã chọn từ radio button
+        IsActive: formData.accountData.isActive
+      };
+
+      const createdAccount = await createAccountMutation.mutateAsync(accountData);
+      toast.success('Tài khoản đã được tạo thành công!');
+
+      // Bước 2: Tạo Employee với accountID vừa tạo
+      const employeeData = {
+        FirstName: formData.firstName,
+        LastName: formData.lastName,
+        Email: formData.email,
+        PhoneNumber: formData.phoneNumber,
+        Address: formData.address,
+        StoreID: formData.storeID,
+        AccountID: createdAccount.accountID, // Liên kết với account vừa tạo
+        IsActive: true
+      };
+
+      const createdEmployee = await createEmployeeMutation.mutateAsync(employeeData);
+      toast.success('Nhân viên đã được tạo thành công và liên kết với tài khoản!');
+
+      queryClient.invalidateQueries(['employees']);
+      queryClient.invalidateQueries(['accounts']);
+      navigate('/employees');
+
+    } catch (error) {
+      // Error đã được xử lý trong onError của mutation
+    }
   };
 
   return (
@@ -136,10 +219,11 @@ const AddEmployeePage = () => {
           <ArrowLeft className="w-5 h-5" />
           Quay lại
         </button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Thêm nhân viên mới</h1>
-          <p className="text-gray-600 mt-1">Tạo hồ sơ nhân viên và tài khoản truy cập</p>
-        </div>
+
+      </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Thêm nhân viên mới</h1>
+        <p className="text-gray-600 mt-1">Tạo hồ sơ nhân viên và tài khoản đăng nhập</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -149,7 +233,7 @@ const AddEmployeePage = () => {
             <User className="w-5 h-5 text-blue-600" />
             Thông tin cá nhân
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -242,87 +326,119 @@ const AddEmployeePage = () => {
             <Building className="w-5 h-5 text-green-600" />
             Thông tin công việc
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Cửa hàng
+                Cửa hàng <span className="text-red-500">*</span>
               </label>
-              <select
-                name="storeID"
-                value={formData.storeID}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                disabled={storesLoading}
-              >
-                <option value="">Chọn cửa hàng</option>
-                {stores.map(store => (
-                  <option key={store.storeID} value={store.storeID}>
-                    {store.storeName}
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                {storesLoading ? (
+                  <p className="text-gray-500">Đang tải cửa hàng...</p>
+                ) : (
+                  stores.map(store => {
+                    const hasManager = checkStoreHasManager(store.storeID);
+                    return (
+                      <label key={store.storeID} className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="storeID"
+                          value={store.storeID}
+                          checked={formData.storeID === store.storeID}
+                          onChange={handleInputChange}
+                          className="text-blue-600 focus:ring-blue-500"
+                          required
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-700">{store.storeName}</span>
+                          {hasManager && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                              Đã có Manager
+                            </span>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+              <p className="text-sm text-gray-500 mt-1">Chọn một cửa hàng cho nhân viên</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vai trò
+                Vai trò <span className="text-red-500">*</span>
               </label>
               <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3">
                 {rolesLoading ? (
                   <p className="text-gray-500">Đang tải vai trò...</p>
                 ) : (
-                  roles.map(role => (
-                    <label key={role.roleID} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.roleIds.includes(role.roleID)}
-                        onChange={() => handleRoleChange(role.roleID)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{role.roleName}</span>
-                    </label>
-                  ))
+                  roles
+                    .filter(role => role.roleName !== 'Admin') // Lọc bỏ Admin role
+                    .map(role => {
+                      const isManagerRole = role.roleName === 'Manager';
+                      const isDisabled = isManagerRole && formData.storeID && checkStoreHasManager(formData.storeID);
+
+                      return (
+                        <label key={role.roleID} className={`flex items-center gap-2 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                          <input
+                            type="radio"
+                            name="roleIds"
+                            value={role.roleID}
+                            checked={formData.roleIds.includes(role.roleID)}
+                            onChange={() => handleRoleChange(role.roleID)}
+                            className="text-blue-600 focus:ring-blue-500"
+                            required={formData.roleIds.length === 0}
+                            disabled={isDisabled}
+                          />
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-700">{role.roleName}</span>
+                            {isDisabled && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Store đã có Manager
+                              </span>
+                            )}
+                          </div>
+                        </label>
+                      );
+                    })
                 )}
               </div>
+              <p className="text-sm text-gray-500 mt-1">
+                Chọn một vai trò cho nhân viên (Admin không được phép).
+                <span className="text-orange-600 font-medium"> Mỗi cửa hàng chỉ được phép có 1 Manager.</span>
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Account Information */}
+        {/* Account Creation */}
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Shield className="w-5 h-5 text-purple-600" />
-            Tài khoản truy cập (tùy chọn)
+            Thông tin tài khoản <span className="text-red-500">*</span>
           </h2>
-          
+          <p className="text-sm text-gray-600 mb-4">Tạo tài khoản đăng nhập cho nhân viên</p>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tên đăng nhập
+                Tên đăng nhập <span className="text-red-500">*</span>
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  name="account.username"
-                  value={formData.accountData.username}
-                  onChange={handleInputChange}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Nhập tên đăng nhập"
-                />
-                <button
-                  type="button"
-                  onClick={handleGenerateUsername}
-                  className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                >
-                  Tự động
-                </button>
-              </div>
+              <input
+                type="text"
+                name="account.username"
+                value={formData.accountData.username}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Nhập tên đăng nhập"
+                required
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mật khẩu
+                Mật khẩu <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -332,6 +448,7 @@ const AddEmployeePage = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Nhập mật khẩu"
+                  required
                 />
                 <button
                   type="button"
@@ -343,21 +460,17 @@ const AddEmployeePage = () => {
               </div>
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email tài khoản
-              </label>
+            <div className="flex items-center">
               <input
-                type="email"
-                name="account.email"
-                value={formData.accountData.email}
+                type="checkbox"
+                name="account.isActive"
+                checked={formData.accountData.isActive}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Để trống sẽ sử dụng email cá nhân"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <p className="text-sm text-gray-500 mt-1">
-                Nếu để trống, hệ thống sẽ sử dụng email cá nhân làm email tài khoản
-              </p>
+              <label className="ml-2 block text-sm text-gray-900">
+                Tài khoản hoạt động
+              </label>
             </div>
           </div>
         </div>
@@ -373,10 +486,11 @@ const AddEmployeePage = () => {
           </button>
           <button
             type="submit"
-            disabled={createMutation.isPending}
+            disabled={createEmployeeMutation.isPending || createAccountMutation.isPending || storesLoading || rolesLoading}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {createMutation.isPending ? 'Đang tạo...' : 'Tạo nhân viên'}
+            {createEmployeeMutation.isPending || createAccountMutation.isPending ? 'Đang tạo...' :
+              storesLoading || rolesLoading ? 'Đang tải...' : 'Tạo nhân viên'}
           </button>
         </div>
       </form>

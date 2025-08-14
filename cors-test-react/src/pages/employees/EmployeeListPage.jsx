@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  UserCheck, 
+import {
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Trash2,
+  Eye,
+  UserCheck,
   UserX,
   Mail,
   Phone,
@@ -28,7 +28,6 @@ const EmployeeListPage = () => {
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedEmployees, setSelectedEmployees] = useState([]);
-  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -57,7 +56,7 @@ const EmployeeListPage = () => {
 
   // Toggle employee status mutation
   const toggleStatusMutation = useMutation({
-    mutationFn: ({ employeeId, isActive }) => 
+    mutationFn: ({ employeeId, isActive }) =>
       employeeService.updateEmployeeStatus(employeeId, isActive),
     onSuccess: () => {
       toast.success('Trạng thái nhân viên đã được cập nhật!');
@@ -80,23 +79,10 @@ const EmployeeListPage = () => {
     },
   });
 
-  // Create employee mutation
-  const createMutation = useMutation({
-    mutationFn: employeeService.createEmployee,
-    onSuccess: () => {
-      toast.success('Nhân viên đã được tạo thành công!');
-      setShowCreateModal(false);
-      queryClient.invalidateQueries(['employees']);
-    },
-    onError: (error) => {
-      toast.error('Lỗi khi tạo nhân viên: ' + error.message);
-    },
-  });
-
   const handleToggleStatus = (employeeId, currentStatus) => {
     const newStatus = !currentStatus;
     const action = newStatus ? 'kích hoạt' : 'vô hiệu hóa';
-    
+
     if (window.confirm(`Bạn có chắc chắn muốn ${action} nhân viên này?`)) {
       toggleStatusMutation.mutate({ employeeId, isActive: newStatus });
     }
@@ -114,11 +100,11 @@ const EmployeeListPage = () => {
       return;
     }
 
-    const confirmMessage = action === 'activate' 
+    const confirmMessage = action === 'activate'
       ? `Kích hoạt ${selectedEmployees.length} nhân viên đã chọn?`
       : action === 'deactivate'
-      ? `Vô hiệu hóa ${selectedEmployees.length} nhân viên đã chọn?`
-      : `Xóa ${selectedEmployees.length} nhân viên đã chọn?`;
+        ? `Vô hiệu hóa ${selectedEmployees.length} nhân viên đã chọn?`
+        : `Xóa ${selectedEmployees.length} nhân viên đã chọn?`;
 
     if (window.confirm(confirmMessage)) {
       // Handle bulk actions
@@ -126,27 +112,14 @@ const EmployeeListPage = () => {
         if (action === 'delete') {
           deleteMutation.mutate(employeeId);
         } else {
-          toggleStatusMutation.mutate({ 
-            employeeId, 
-            isActive: action === 'activate' 
+          toggleStatusMutation.mutate({
+            employeeId,
+            isActive: action === 'activate'
           });
         }
       });
       setSelectedEmployees([]);
     }
-  };
-
-  const handleCreateEmployee = (formData) => {
-    const employeeData = {
-      firstName: formData.get('firstName'),
-      lastName: formData.get('lastName'),
-      email: formData.get('email'),
-      phoneNumber: formData.get('phoneNumber'),
-      storeID: formData.get('storeID'),
-      roleIds: [formData.get('roleId')], // Convert to array
-    };
-
-    createMutation.mutate(employeeData);
   };
 
   const getRoleBadgeColor = (role) => {
@@ -160,17 +133,22 @@ const EmployeeListPage = () => {
     }
   };
 
-  const filteredEmployees = employees.filter(employee => {
-    const matchesSearch = 
+  // Lọc bỏ Admin khỏi danh sách employees
+  const nonAdminEmployees = employees.filter(employee =>
+    !employee.roles?.some(role => role.roleName === 'Admin')
+  );
+
+  const filteredEmployees = nonAdminEmployees.filter(employee => {
+    const matchesSearch =
       employee.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.phoneNumber?.includes(searchTerm);
 
-    const matchesRole = filterRole === 'all' || 
+    const matchesRole = filterRole === 'all' ||
       employee.roles?.some(role => role.roleName?.toLowerCase() === filterRole.toLowerCase());
 
-    const matchesStatus = filterStatus === 'all' || 
+    const matchesStatus = filterStatus === 'all' ||
       (filterStatus === 'active' && employee.isActive) ||
       (filterStatus === 'inactive' && !employee.isActive);
 
@@ -197,13 +175,13 @@ const EmployeeListPage = () => {
             <Download className="w-4 h-4" />
             Xuất Excel
           </Button>
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2"
+          <Link
+            to="/employees/add"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Thêm nhân viên
-          </Button>
+          </Link>
         </div>
       </div>
 
@@ -216,7 +194,7 @@ const EmployeeListPage = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Tổng nhân viên</p>
-              <p className="text-xl font-semibold">{employees.length}</p>
+              <p className="text-xl font-semibold">{nonAdminEmployees.length}</p>
             </div>
           </div>
         </Card>
@@ -228,7 +206,7 @@ const EmployeeListPage = () => {
             <div>
               <p className="text-sm text-gray-600">Đang hoạt động</p>
               <p className="text-xl font-semibold">
-                {employees.filter(emp => emp.isActive).length}
+                {nonAdminEmployees.filter(emp => emp.isActive).length}
               </p>
             </div>
           </div>
@@ -241,7 +219,7 @@ const EmployeeListPage = () => {
             <div>
               <p className="text-sm text-gray-600">Tạm dừng</p>
               <p className="text-xl font-semibold">
-                {employees.filter(emp => !emp.isActive).length}
+                {nonAdminEmployees.filter(emp => !emp.isActive).length}
               </p>
             </div>
           </div>
@@ -254,8 +232,8 @@ const EmployeeListPage = () => {
             <div>
               <p className="text-sm text-gray-600">Quản lý</p>
               <p className="text-xl font-semibold">
-                {employees.filter(emp => 
-                  emp.roles?.some(role => ['Admin', 'Manager'].includes(role.roleName))
+                {nonAdminEmployees.filter(emp =>
+                  emp.roles?.some(role => role.roleName === 'Manager')
                 ).length}
               </p>
             </div>
@@ -284,11 +262,13 @@ const EmployeeListPage = () => {
               className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">Tất cả vai trò</option>
-              {roles.map(role => (
-                <option key={role.roleID} value={role.roleName}>
-                  {role.roleName}
-                </option>
-              ))}
+              {roles
+                .filter(role => role.roleName !== 'Admin') // Lọc bỏ Admin khỏi dropdown
+                .map(role => (
+                  <option key={role.roleID} value={role.roleName}>
+                    {role.roleName}
+                  </option>
+                ))}
             </select>
             <select
               value={filterStatus}
@@ -407,7 +387,7 @@ const EmployeeListPage = () => {
                   </td>
                   <td className="p-4">
                     <span className="text-sm text-gray-600">
-                      {employee.store?.storeName || 'Chưa phân công'}
+                      {employee.storeName || 'Chưa phân công'}
                     </span>
                   </td>
                   <td className="p-4">
@@ -423,8 +403,8 @@ const EmployeeListPage = () => {
                     </div>
                   </td>
                   <td className="p-4">
-                    <Badge className={employee.isActive 
-                      ? 'bg-green-100 text-green-800' 
+                    <Badge className={employee.isActive
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                     }>
                       {employee.isActive ? 'Hoạt động' : 'Tạm dừng'}
@@ -450,8 +430,8 @@ const EmployeeListPage = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => handleToggleStatus(employee.employeeID, employee.isActive)}
-                        className={employee.isActive 
-                          ? 'text-red-600 hover:text-red-700' 
+                        className={employee.isActive
+                          ? 'text-red-600 hover:text-red-700'
                           : 'text-green-600 hover:text-green-700'
                         }
                       >
@@ -482,79 +462,7 @@ const EmployeeListPage = () => {
       </Card>
 
       {/* Create Employee Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold mb-4">Thêm nhân viên mới</h2>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              handleCreateEmployee(new FormData(e.target));
-            }}>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    name="firstName"
-                    placeholder="Tên"
-                    required
-                  />
-                  <Input
-                    name="lastName"
-                    placeholder="Họ"
-                    required
-                  />
-                </div>
-                <Input
-                  name="email"
-                  type="email"
-                  placeholder="Email"
-                  required
-                />
-                <Input
-                  name="phoneNumber"
-                  placeholder="Số điện thoại"
-                />
-                <select
-                  name="storeID"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Chọn cửa hàng</option>
-                  {stores.map(store => (
-                    <option key={store.storeID} value={store.storeID}>
-                      {store.storeName}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  name="roleId"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Chọn vai trò</option>
-                  {roles.map(role => (
-                    <option key={role.roleID} value={role.roleID}>
-                      {role.roleName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex gap-2 mt-6">
-                <Button type="submit" disabled={createMutation.isPending} className="flex-1">
-                  {createMutation.isPending ? 'Đang tạo...' : 'Tạo nhân viên'}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1"
-                >
-                  Hủy
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* The create employee modal is removed as per the edit hint. */}
     </div>
   );
 };
