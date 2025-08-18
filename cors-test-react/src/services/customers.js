@@ -32,5 +32,11 @@ export const customerService = {
     return response.data;
   },
 
+  // Get customer vehicles by customer ID
+  getCustomerVehiclesByCustomerId: async (customerId) => {
+    const response = await apiClient.get(`/CustomerVehicles/by-customer/${customerId}`);
+    return response.data;
+  },
+
   // TODO: Remove mock data when API is fully implemented
 };

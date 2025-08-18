@@ -30,6 +30,8 @@ const FinancialReportsPage = () => {
       setAnalytics(analyticsData);
     } catch (error) {
       console.error('Error loading data:', error);
+      // Fallback to mock data on error
+      generateMockData();
     } finally {
       setLoading(false);
     }
@@ -167,7 +169,7 @@ const FinancialReportsPage = () => {
               <input
                 type="date"
                 value={dateRange.startDate}
-                onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
+                onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
                 className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -176,7 +178,7 @@ const FinancialReportsPage = () => {
               <input
                 type="date"
                 value={dateRange.endDate}
-                onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
+                onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
                 className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -276,8 +278,8 @@ const FinancialReportsPage = () => {
                   <div className="w-20 text-sm text-gray-600">{report.month}</div>
                   <div className="flex-1 mx-4">
                     <div className="bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full" 
+                      <div
+                        className="bg-blue-600 h-2 rounded-full"
                         style={{ width: `${(report.revenue / Math.max(...reports.map(r => r.revenue))) * 100}%` }}
                       ></div>
                     </div>
@@ -299,8 +301,8 @@ const FinancialReportsPage = () => {
                   <div className="w-20 text-sm text-gray-600">{report.month}</div>
                   <div className="flex-1 mx-4">
                     <div className="bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-green-600 h-2 rounded-full" 
+                      <div
+                        className="bg-green-600 h-2 rounded-full"
                         style={{ width: `${(report.profit / Math.max(...reports.map(r => r.profit))) * 100}%` }}
                       ></div>
                     </div>

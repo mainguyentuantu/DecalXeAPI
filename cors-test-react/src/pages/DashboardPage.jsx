@@ -182,34 +182,6 @@ const DashboardPage = () => {
           </Card.Content>
         </Card>
 
-        {/* Recent accounts */}
-        <Card>
-          <Card.Header>
-            <Card.Title>Tài khoản gần đây</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <div className="space-y-4">
-              {accounts?.slice(0, 3).map((account) => (
-                <div key={account.accountID} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium text-gray-900">{account.username}</span>
-                      <Badge variant={account.isActive ? 'success' : 'danger'} size="sm">
-                        {account.isActive ? 'Hoạt động' : 'Khóa'}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">{account.email || 'Không có email'}</p>
-                    <p className="text-xs text-gray-500">{account.roleName || 'Không có vai trò'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500 mt-1">ID: {account.accountID}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card.Content>
-        </Card>
-
         {/* Quick actions */}
         <Card>
           <Card.Header>

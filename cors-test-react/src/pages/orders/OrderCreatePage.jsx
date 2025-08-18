@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useOrderCreateFormData, useCreateOrderWithCustomer } from "../../hooks/useOrders";
 import { useCustomerVehicles, useVehicleModels, useCreateCustomerVehicle } from "../../hooks/useVehicles";
 import { useTechnicians } from "../../hooks/useEmployees";
-import { useSearchCustomers, useCreateCustomer } from "../../hooks/useCustomers";
+import { useSearchCustomers, useCreateCustomer, useCustomers } from "../../hooks/useCustomers";
+import { useServices } from "../../hooks/useServices";
 import { toast } from "react-hot-toast";
 import Button from "../../components/common/Button";
 import Input from "../../components/common/Input";
@@ -23,7 +24,9 @@ const OrderCreatePage = () => {
   const { data: vehicles = [], isLoading: isVehiclesLoading } = useCustomerVehicles();
   const { data: vehicleModels = [], isLoading: isVehicleModelsLoading } = useVehicleModels();
   const { data: technicians = [], isLoading: isTechniciansLoading } = useTechnicians();
-  
+  const { data: customers = [], isLoading: isCustomersLoading } = useCustomers();
+  const { data: services = [], isLoading: isServicesLoading } = useServices();
+
   // New hooks for customer functionality
   const searchCustomersMutation = useSearchCustomers();
   const createCustomerMutation = useCreateCustomer();
@@ -42,6 +45,8 @@ const OrderCreatePage = () => {
     // Customer fields
     existingCustomerID: "",
     newCustomerPayload: null,
+    // Service fields
+    selectedServiceID: "",
   });
 
   // Validation errors
@@ -50,6 +55,7 @@ const OrderCreatePage = () => {
   // Selected vehicle info for display
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
 
   // Modal states
   const [showCreateVehicleModal, setShowCreateVehicleModal] = useState(false);
@@ -119,6 +125,16 @@ const OrderCreatePage = () => {
     }
   };
 
+  // Handle service selection
+  const handleServiceSelect = (serviceID) => {
+    const service = services.find(s => s.serviceID === serviceID);
+    if (service) {
+      setSelectedService(service);
+      handleInputChange("selectedServiceID", serviceID);
+      handleInputChange("totalAmount", service.price?.toString() || "");
+    }
+  };
+
   // Handle customer search
   const handleCustomerSearch = async (searchTerm) => {
     if (!searchTerm.trim()) {
@@ -136,7 +152,7 @@ const OrderCreatePage = () => {
       }
     } catch (error) {
       console.error("Error searching customers:", error);
-      
+
       // Temporary workaround: If search fails, show create customer modal
       if (error.message && error.message.includes('Missing type map configuration')) {
         toast.error("Tính năng tìm kiếm khách hàng đang được cập nhật. Vui lòng tạo khách hàng mới.");
@@ -153,6 +169,11 @@ const OrderCreatePage = () => {
     handleInputChange("existingCustomerID", customer.customerID);
     handleInputChange("newCustomerPayload", null);
     setShowCustomerSearchModal(false);
+
+    // Clear selected vehicle when customer changes
+    setSelectedVehicle(null);
+    handleInputChange("vehicleID", "");
+
     toast.success(`Đã chọn khách hàng: ${customer.firstName} ${customer.lastName}`);
   };
 
@@ -166,7 +187,7 @@ const OrderCreatePage = () => {
   const handleSaveNewCustomer = async (customerData) => {
     try {
       const newCustomer = await createCustomerMutation.mutateAsync(customerData);
-      
+
       setSelectedCustomer(newCustomer);
       handleInputChange("existingCustomerID", "");
       handleInputChange("newCustomerPayload", {
@@ -177,12 +198,16 @@ const OrderCreatePage = () => {
         address: newCustomer.address,
         createAccount: customerData.createAccount || false,
       });
-      
+
+      // Clear selected vehicle when customer changes
+      setSelectedVehicle(null);
+      handleInputChange("vehicleID", "");
+
       setShowCreateCustomerModal(false);
       toast.success("Đã tạo khách hàng mới thành công");
     } catch (error) {
       console.error("Error creating customer:", error);
-      
+
       // Temporary workaround: If create customer fails, create a mock customer
       if (error.message && error.message.includes('Missing type map configuration')) {
         const mockCustomer = {
@@ -193,7 +218,7 @@ const OrderCreatePage = () => {
           email: customerData.email,
           address: customerData.address,
         };
-        
+
         setSelectedCustomer(mockCustomer);
         handleInputChange("existingCustomerID", "");
         handleInputChange("newCustomerPayload", {
@@ -204,7 +229,11 @@ const OrderCreatePage = () => {
           address: customerData.address,
           createAccount: customerData.createAccount || false,
         });
-        
+
+        // Clear selected vehicle when customer changes
+        setSelectedVehicle(null);
+        handleInputChange("vehicleID", "");
+
         setShowCreateCustomerModal(false);
         toast.success("Đã tạo khách hàng mới thành công (chế độ demo)");
       } else {
@@ -216,6 +245,10 @@ const OrderCreatePage = () => {
   // Validate form
   const validateForm = () => {
     const newErrors = {};
+
+    if (!formState.selectedServiceID) {
+      newErrors.selectedServiceID = "Vui lòng chọn dịch vụ";
+    }
 
     if (!formState.totalAmount || parseFloat(formState.totalAmount) <= 0) {
       newErrors.totalAmount = "Tổng tiền phải lớn hơn 0";
@@ -257,7 +290,7 @@ const OrderCreatePage = () => {
 
     try {
       console.log('Form state before submit:', formState);
-      
+
       const orderData = {
         totalAmount: parseFloat(formState.totalAmount),
         assignedEmployeeID: formState.assignedEmployeeID,
@@ -269,32 +302,34 @@ const OrderCreatePage = () => {
         // Customer data
         existingCustomerID: formState.existingCustomerID || undefined,
         newCustomerPayload: formState.newCustomerPayload || undefined,
+        // Service data
+        selectedServiceID: formState.selectedServiceID || undefined,
       };
-      
+
       console.log('Order data to submit:', orderData);
 
       const createdOrder = await createOrderWithCustomerMutation.mutateAsync(orderData);
-      
+
       // Success message based on response
       let successMessage = "Đã tạo đơn hàng thành công";
-      
+
       if (createdOrder.customerFullName) {
         successMessage += ` cho khách hàng ${createdOrder.customerFullName}`;
       }
-      
+
       if (createdOrder.vehicleBrandName && createdOrder.vehicleModelName) {
         successMessage += ` - xe ${createdOrder.vehicleBrandName} ${createdOrder.vehicleModelName}`;
       }
-      
+
       if (createdOrder.accountCreated) {
         successMessage += ` (Đã tạo tài khoản cho khách hàng)`;
       }
-      
+
       toast.success(successMessage);
       navigate("/orders");
     } catch (error) {
       console.error("Error creating order:", error);
-      
+
       // Temporary workaround: If backend API is not ready, show demo message
       if (error.message && error.message.includes('Missing type map configuration')) {
         toast.success("Đã tạo đơn hàng thành công (chế độ demo - backend đang được cập nhật)");
@@ -306,7 +341,7 @@ const OrderCreatePage = () => {
   };
 
   // Loading state
-  if (isFormDataLoading || isVehiclesLoading || isVehicleModelsLoading || isTechniciansLoading) {
+  if (isFormDataLoading || isVehiclesLoading || isVehicleModelsLoading || isTechniciansLoading || isCustomersLoading || isServicesLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <LoadingSpinner />
@@ -333,6 +368,11 @@ const OrderCreatePage = () => {
       </div>
     );
   }
+
+  // Filter vehicles by selected customer
+  const filteredVehicles = selectedCustomer
+    ? vehicles.filter(vehicle => vehicle.customerID === selectedCustomer.customerID)
+    : [];
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -392,6 +432,9 @@ const OrderCreatePage = () => {
                           setSelectedCustomer(null);
                           handleInputChange("existingCustomerID", "");
                           handleInputChange("newCustomerPayload", null);
+                          // Clear selected vehicle when customer changes
+                          setSelectedVehicle(null);
+                          handleInputChange("vehicleID", "");
                         }}
                       >
                         Thay đổi
@@ -401,17 +444,28 @@ const OrderCreatePage = () => {
                 ) : (
                   <div className="space-y-3">
                     <div className="flex gap-2">
-                      <Input
-                        label="Tìm kiếm khách hàng"
-                        placeholder="Nhập số điện thoại hoặc email..."
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleCustomerSearch(e.target.value);
-                          }
-                        }}
-                        helper="Nhấn Enter để tìm kiếm khách hàng hiện có"
-                      />
+                      <div className="flex-1">
+                        <SearchableSelect
+                          label="Chọn khách hàng"
+                          value={formState.existingCustomerID}
+                          onChange={(value) => {
+                            const customer = customers.find(c => c.customerID === value);
+                            if (customer) {
+                              setSelectedCustomer(customer);
+                              handleInputChange("existingCustomerID", value);
+                              handleInputChange("newCustomerPayload", null);
+                            }
+                          }}
+                          options={customers || []}
+                          getOptionLabel={(customer) => `${customer.firstName} ${customer.lastName} - ${customer.phoneNumber}`}
+                          getOptionValue={(customer) => customer.customerID}
+                          placeholder="Chọn khách hàng từ danh sách..."
+                          searchPlaceholder="Tìm kiếm khách hàng..."
+                          error={errors.customer}
+                          required
+                          helper="Chọn khách hàng từ danh sách có sẵn"
+                        />
+                      </div>
                       <div className="flex items-end">
                         <Button
                           type="button"
@@ -419,7 +473,7 @@ const OrderCreatePage = () => {
                           onClick={() => setShowCreateCustomerModal(true)}
                           className="whitespace-nowrap"
                         >
-                          Tạo mới
+                          Thêm khách hàng
                         </Button>
                       </div>
                     </div>
@@ -442,69 +496,86 @@ const OrderCreatePage = () => {
                 <h2 className="text-lg font-semibold text-gray-900">Thông Tin Đơn Hàng</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Tổng tiền"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formState.totalAmount}
-                  onChange={(e) => handleInputChange("totalAmount", e.target.value)}
-                  error={errors.totalAmount}
-                  required
-                  placeholder="0.00"
-                  helper="Nhập tổng số tiền của đơn hàng"
-                />
-
+              <div className="space-y-4">
                 <SearchableSelect
-                  label="Độ ưu tiên"
-                  value={formState.priority}
-                  onChange={(value) => handleInputChange("priority", value)}
-                  options={priorityOptions}
-                  getOptionLabel={(option) => option.label}
-                  getOptionValue={(option) => option.value}
-                  placeholder="Chọn độ ưu tiên..."
-                  searchPlaceholder="Tìm kiếm độ ưu tiên..."
-                  error={errors.priority}
+                  label="Chọn dịch vụ"
+                  value={formState.selectedServiceID}
+                  onChange={handleServiceSelect}
+                  options={services || []}
+                  getOptionLabel={(service) => `${service.serviceName} - ${service.price?.toLocaleString('vi-VN')}đ`}
+                  getOptionValue={(service) => service.serviceID}
+                  placeholder="Chọn dịch vụ từ danh sách..."
+                  searchPlaceholder="Tìm kiếm dịch vụ..."
+                  error={errors.selectedServiceID}
                   required
+                  helper="Chọn dịch vụ để tự động điền giá tiền"
                 />
-              </div>
 
-              <div className="mt-4">
-                <DateTimePicker
-                  label="Ngày dự kiến đến"
-                  value={formState.expectedArrivalTime}
-                  onChange={(value) => handleInputChange("expectedArrivalTime", value)}
-                  error={errors.expectedArrivalTime}
-                  required
-                  minDate={new Date()}
-                  helper="Chọn ngày và giờ khách hàng dự kiến đến"
-                />
-              </div>
-
-              <div className="mt-4">
-                <Textarea
-                  label="Mô tả"
-                  value={formState.description}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
-                  placeholder="Nhập mô tả chi tiết về đơn hàng..."
-                  rows={3}
-                  helper="Mô tả chi tiết về yêu cầu dán decal"
-                />
-              </div>
-
-              <div className="mt-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={formState.isCustomDecal}
-                    onChange={(e) => handleInputChange("isCustomDecal", e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input
+                    label="Tổng tiền"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formState.totalAmount}
+                    onChange={(e) => handleInputChange("totalAmount", e.target.value)}
+                    error={errors.totalAmount}
+                    required
+                    placeholder="0.00"
+                    helper="Giá tiền sẽ tự động điền khi chọn dịch vụ"
+                    disabled={!!selectedService}
                   />
-                  <span className="text-sm font-medium text-gray-700">
-                    Đây là decal tùy chỉnh
-                  </span>
-                </label>
+
+                  <SearchableSelect
+                    label="Độ ưu tiên"
+                    value={formState.priority}
+                    onChange={(value) => handleInputChange("priority", value)}
+                    options={priorityOptions}
+                    getOptionLabel={(option) => option.label}
+                    getOptionValue={(option) => option.value}
+                    placeholder="Chọn độ ưu tiên..."
+                    searchPlaceholder="Tìm kiếm độ ưu tiên..."
+                    error={errors.priority}
+                    required
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <DateTimePicker
+                    label="Ngày dự kiến đến"
+                    value={formState.expectedArrivalTime}
+                    onChange={(value) => handleInputChange("expectedArrivalTime", value)}
+                    error={errors.expectedArrivalTime}
+                    required
+                    minDate={new Date()}
+                    helper="Chọn ngày và giờ khách hàng dự kiến đến"
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <Textarea
+                    label="Mô tả"
+                    value={formState.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    placeholder="Nhập mô tả chi tiết về đơn hàng..."
+                    rows={3}
+                    helper="Mô tả chi tiết về yêu cầu dán decal"
+                  />
+                </div>
+
+                <div className="mt-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formState.isCustomDecal}
+                      onChange={(e) => handleInputChange("isCustomDecal", e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      Đây là decal tùy chỉnh
+                    </span>
+                  </label>
+                </div>
               </div>
             </Card>
 
@@ -534,17 +605,58 @@ const OrderCreatePage = () => {
                   helper="Chọn kỹ thuật viên sẽ thực hiện đơn hàng này"
                 />
 
-                <VehicleSearchInput
-                  label="Phương tiện"
-                  value={formState.vehicleID}
-                  onChange={(value) => handleInputChange("vehicleID", value)}
-                  onSelect={handleVehicleSelect}
-                  onCreateNew={handleCreateNewVehicle}
-                  vehicles={vehicles}
-                  error={errors.vehicleID}
-                  required
-                  helper="Tìm kiếm theo biển số hoặc số khung xe"
-                />
+                {selectedCustomer ? (
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <SearchableSelect
+                          label="Phương tiện của khách hàng"
+                          value={formState.vehicleID}
+                          onChange={(value) => {
+                            const vehicle = filteredVehicles.find(v => v.vehicleID === value);
+                            if (vehicle) {
+                              handleVehicleSelect(vehicle);
+                            }
+                          }}
+                          options={filteredVehicles || []}
+                          getOptionLabel={(vehicle) => `${vehicle.licensePlate || 'N/A'} - ${vehicle.vehicleBrandName} ${vehicle.vehicleModelName}`}
+                          getOptionValue={(vehicle) => vehicle.vehicleID}
+                          placeholder="Chọn phương tiện của khách hàng..."
+                          searchPlaceholder="Tìm kiếm phương tiện..."
+                          error={errors.vehicleID}
+                          required
+                          helper={`Phương tiện của ${selectedCustomer.firstName} ${selectedCustomer.lastName}`}
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowCreateVehicleModal(true)}
+                          className="whitespace-nowrap"
+                        >
+                          Thêm xe mới
+                        </Button>
+                      </div>
+                    </div>
+                    {filteredVehicles.length === 0 && (
+                      <p className="text-sm text-gray-500">
+                        Khách hàng chưa có phương tiện nào. Vui lòng thêm phương tiện mới.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <svg className="h-5 w-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <p className="text-sm text-yellow-800">
+                        Vui lòng chọn khách hàng trước để xem danh sách phương tiện
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
@@ -620,7 +732,6 @@ const OrderCreatePage = () => {
                 </div>
               </Card>
             )}
-
             {/* Action Buttons */}
             <Card className="p-4">
               <div className="space-y-3">
@@ -643,7 +754,7 @@ const OrderCreatePage = () => {
                     </div>
                   )}
                 </Button>
-                
+
                 <Button
                   type="button"
                   variant="outline"
@@ -655,6 +766,39 @@ const OrderCreatePage = () => {
                 </Button>
               </div>
             </Card>
+            {/* Selected Service Info */}
+            {selectedService && (
+              <Card className="p-4">
+                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Dịch Vụ Đã Chọn
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Tên dịch vụ:</span>
+                    <span className="font-medium">{selectedService.serviceName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Giá:</span>
+                    <span className="font-medium text-green-600">{selectedService.price?.toLocaleString('vi-VN')}đ</span>
+                  </div>
+                  {selectedService.description && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Mô tả:</span>
+                      <span className="font-medium text-right">{selectedService.description}</span>
+                    </div>
+                  )}
+                  {selectedService.category && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Danh mục:</span>
+                      <span className="font-medium">{selectedService.category}</span>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
 
             {/* Help Card */}
             <Card className="p-4 bg-blue-50 border-blue-200">
@@ -689,6 +833,7 @@ const OrderCreatePage = () => {
         vehicleModels={vehicleModels}
         isLoading={createVehicleMutation.isPending}
         customerInfo={selectedCustomer || null}
+        prefillCustomerData={true}
       />
 
       <CustomerSearchModal

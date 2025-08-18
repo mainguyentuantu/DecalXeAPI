@@ -2,12 +2,12 @@ import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { 
-  ArrowLeft, 
-  Edit, 
-  Trash2, 
-  Car, 
-  Globe, 
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Car,
+  Globe,
   MapPin,
   ExternalLink,
   Calendar,
@@ -27,13 +27,18 @@ const BrandDetailPage = () => {
     enabled: !!id,
   });
 
-  const { data: models } = useQuery({
+  const { data: models, isLoading: modelsLoading, error: modelsError } = useQuery({
     queryKey: ['vehicle-models'],
     queryFn: () => vehicleModelService.getVehicleModels(),
     staleTime: 1000 * 60 * 5,
   });
 
-  const brandModels = models?.filter(model => model.brandID === parseInt(id)) || [];
+  const brandModels = models?.filter(model =>
+    model.brandID === id ||
+    model.brandID?.toLowerCase() === id?.toLowerCase() ||
+    model.brandID === parseInt(id) ||
+    model.brandID === id?.toString()
+  ) || [];
 
   const handleDelete = async () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa thương hiệu này?')) {
@@ -103,7 +108,7 @@ const BrandDetailPage = () => {
             <p className="text-gray-600">Thông tin chi tiết thương hiệu xe</p>
           </div>
         </div>
-        
+
         <div className="flex space-x-3">
           <Link to={`/vehicles/brands/${id}/edit`}>
             <Button variant="outline">
@@ -111,8 +116,8 @@ const BrandDetailPage = () => {
               Chỉnh sửa
             </Button>
           </Link>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="text-red-600 hover:text-red-700 hover:bg-red-50"
             onClick={handleDelete}
           >
@@ -136,18 +141,18 @@ const BrandDetailPage = () => {
                 {brand.isActive ? 'Hoạt động' : 'Không hoạt động'}
               </Badge>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-gray-500">Tên thương hiệu</label>
                 <p className="text-gray-900 font-medium">{brand.brandName}</p>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium text-gray-500">Mã thương hiệu</label>
                 <p className="text-gray-900 font-medium">{brand.brandID}</p>
               </div>
-              
+
               {brand.country && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Quốc gia</label>
@@ -157,13 +162,13 @@ const BrandDetailPage = () => {
                   </p>
                 </div>
               )}
-              
+
               {brand.website && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Website</label>
-                  <a 
-                    href={brand.website} 
-                    target="_blank" 
+                  <a
+                    href={brand.website}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 flex items-center"
                   >
@@ -189,11 +194,28 @@ const BrandDetailPage = () => {
               <Users className="h-5 w-5 mr-2" />
               Mẫu xe ({brandModels.length})
             </h3>
-            
-            {brandModels.length > 0 ? (
+
+            {modelsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <LoadingSpinner size="md" />
+                <span className="ml-2 text-gray-600">Đang tải danh sách mẫu xe...</span>
+              </div>
+            ) : modelsError ? (
+              <div className="text-center py-8">
+                <p className="text-red-500 mb-2">Lỗi khi tải danh sách mẫu xe</p>
+                <p className="text-sm text-gray-600">{modelsError.message}</p>
+                <Button
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => window.location.reload()}
+                >
+                  Thử lại
+                </Button>
+              </div>
+            ) : brandModels.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {brandModels.map((model) => (
-                  <div key={model.modelID} className="p-4 border border-gray-200 rounded-lg">
+                  <div key={model.modelID} className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-gray-900">{model.modelName}</h4>
                       <Badge variant="success" size="sm">
@@ -209,6 +231,14 @@ const BrandDetailPage = () => {
                     {model.bodyType && (
                       <p className="text-sm text-gray-600">{model.bodyType}</p>
                     )}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <Link
+                        to={`/vehicles/models/${model.modelID}`}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      >
+                        Xem chi tiết →
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -217,6 +247,14 @@ const BrandDetailPage = () => {
                 <Car className="h-12 w-12 mx-auto text-gray-300 mb-4" />
                 <p className="text-gray-500">Chưa có mẫu xe nào</p>
                 <p className="text-sm text-gray-400">Thêm mẫu xe đầu tiên cho thương hiệu này</p>
+                <div className="mt-4">
+                  <Link to="/vehicles/models/create">
+                    <Button size="sm">
+                      <Car className="h-4 w-4 mr-2" />
+                      Thêm mẫu xe
+                    </Button>
+                  </Link>
+                </div>
               </div>
             )}
           </Card>
@@ -229,8 +267,8 @@ const BrandDetailPage = () => {
             <Card className="p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Logo</h3>
               <div className="flex justify-center">
-                <img 
-                  src={brand.logoUrl} 
+                <img
+                  src={brand.logoUrl}
                   alt={`${brand.brandName} logo`}
                   className="h-32 w-32 object-contain"
                   onError={(e) => {
@@ -244,20 +282,20 @@ const BrandDetailPage = () => {
           {/* Statistics */}
           <Card className="p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Thống kê</h3>
-            
+
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Tổng mẫu xe</span>
                 <span className="font-semibold text-gray-900">{brandModels.length}</span>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Mẫu xe hoạt động</span>
                 <span className="font-semibold text-green-600">
                   {brandModels.filter(m => m.isActive).length}
                 </span>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Trạng thái</span>
                 <Badge variant={brand.isActive ? "success" : "secondary"} size="sm">
@@ -270,7 +308,7 @@ const BrandDetailPage = () => {
           {/* Quick Actions */}
           <Card className="p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Hành động nhanh</h3>
-            
+
             <div className="space-y-3">
               <Link to={`/vehicles/brands/${id}/edit`}>
                 <Button variant="outline" className="w-full">
@@ -278,7 +316,7 @@ const BrandDetailPage = () => {
                   Chỉnh sửa thương hiệu
                 </Button>
               </Link>
-              
+
               <Link to="/vehicles/models/create">
                 <Button className="w-full">
                   <Car className="h-4 w-4 mr-2" />

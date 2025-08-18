@@ -14,7 +14,9 @@ import {
     CheckCircle,
     Award,
     Users,
-    Zap
+    Zap,
+    LogIn,
+    Settings
 } from 'lucide-react';
 
 const PublicDashboardPage = () => {
@@ -118,6 +120,39 @@ const PublicDashboardPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            {/* Header with Login Button */}
+            <div className="bg-white shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <h1 className="text-2xl font-bold text-gray-900">DecalXe</h1>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Link
+                                to="/services"
+                                className="text-gray-600 hover:text-gray-900 transition-colors"
+                            >
+                                Dịch vụ
+                            </Link>
+                            <Link
+                                to="/contact"
+                                className="text-gray-600 hover:text-gray-900 transition-colors"
+                            >
+                                Liên hệ
+                            </Link>
+                            <div className="border-l border-gray-300 h-6"></div>
+                            <Link
+                                to="/login"
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                            >
+                                <LogIn className="w-4 h-4" />
+                                Đăng nhập hệ thống
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">

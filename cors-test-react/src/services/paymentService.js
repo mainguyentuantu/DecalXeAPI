@@ -46,16 +46,71 @@ export const paymentService = {
 
   // Financial Reports
   async getFinancialReports(params = {}) {
-    const queryParams = new URLSearchParams(params).toString();
-    const response = await apiClient.get(`/Payments/reports?${queryParams}`);
-    return response.data;
+    // Temporarily return mock data due to backend API not available
+    console.log('getFinancialReports called with params:', params);
+    return [
+      {
+        month: 'Tháng 1',
+        revenue: 15000000,
+        expenses: 8000000,
+        profit: 7000000,
+        orders: 45,
+        payments: 42
+      },
+      {
+        month: 'Tháng 2',
+        revenue: 18000000,
+        expenses: 9000000,
+        profit: 9000000,
+        orders: 52,
+        payments: 48
+      },
+      {
+        month: 'Tháng 3',
+        revenue: 22000000,
+        expenses: 11000000,
+        profit: 11000000,
+        orders: 65,
+        payments: 62
+      },
+      {
+        month: 'Tháng 4',
+        revenue: 19000000,
+        expenses: 9500000,
+        profit: 9500000,
+        orders: 58,
+        payments: 55
+      },
+      {
+        month: 'Tháng 5',
+        revenue: 25000000,
+        expenses: 12000000,
+        profit: 13000000,
+        orders: 72,
+        payments: 68
+      },
+      {
+        month: 'Tháng 6',
+        revenue: 28000000,
+        expenses: 14000000,
+        profit: 14000000,
+        orders: 85,
+        payments: 82
+      }
+    ];
   },
 
   async getRevenueAnalytics(period = "monthly") {
-    const response = await apiClient.get(
-      `/Payments/analytics?period=${period}`
-    );
-    return response.data;
+    // Temporarily return mock data due to backend API not available
+    console.log('getRevenueAnalytics called with period:', period);
+    return {
+      totalRevenue: 127000000,
+      totalExpenses: 63500000,
+      totalProfit: 63500000,
+      averageOrderValue: 249019,
+      paymentSuccessRate: 96.5,
+      growthRate: 15.2
+    };
   },
 
   // Deposit Management 
