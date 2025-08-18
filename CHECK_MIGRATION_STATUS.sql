@@ -1,7 +1,8 @@
 -- Script để kiểm tra trạng thái migration
--- Chạy lệnh này trong database để xem migration nào đã được apply
+-- Chạy lệnh này trong sssssddatabase để xem migration nào đã được apply
 
 -- Kiểm tra bảng __EFMigrationsHistory
+sd
 SELECT * FROM "__EFMigrationsHistory" ORDER BY "MigrationId";
 
 -- Kiểm tra cột IsActive trong bảng Employees
