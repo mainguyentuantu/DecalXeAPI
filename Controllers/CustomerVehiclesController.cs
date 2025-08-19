@@ -137,6 +137,7 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous] 
         public async Task<ActionResult<CustomerVehicleDto>> UpdateVehicle(string id, UpdateCustomerVehicleDto updateDto)
         {
+            // hi
             try
             {
                 var vehicle = await _customerVehicleService.UpdateAsync(id, updateDto);
