@@ -9,7 +9,7 @@ namespace DecalXeAPI.Models
         // Đây là khóa phức hợp, sẽ được định nghĩa trong ApplicationDbContext
 
         [ForeignKey("DecalService")]
-        public string ServiceID { get; set; } = string.Empty; // Dịch vụ nào
+        public string DecalServiceID { get; set; } = string.Empty; // Dịch vụ nào
         public DecalService? DecalService { get; set; }
 
         [ForeignKey("VehicleModel")]

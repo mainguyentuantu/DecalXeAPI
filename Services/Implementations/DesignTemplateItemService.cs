@@ -39,7 +39,7 @@ namespace DecalXeAPI.Services.Implementations
             _logger.LogInformation("Lấy design template item với ID: {ItemID}", id);
             var item = await _context.DesignTemplateItems
                 .Include(dti => dti.Design)
-                .FirstOrDefaultAsync(dti => dti.Id == id);
+                .FirstOrDefaultAsync(dti => dti.DesignTemplateItemID == id);
 
             if (item == null)
             {
@@ -86,7 +86,7 @@ namespace DecalXeAPI.Services.Implementations
             }
 
             var item = _mapper.Map<DesignTemplateItem>(createDto);
-            item.Id = Guid.NewGuid().ToString();
+            item.DesignTemplateItemID = Guid.NewGuid().ToString();
             item.CreatedAt = DateTime.UtcNow;
             item.UpdatedAt = DateTime.UtcNow;
 
@@ -102,9 +102,9 @@ namespace DecalXeAPI.Services.Implementations
             // Lấy lại với thông tin đầy đủ
             var createdItem = await _context.DesignTemplateItems
                 .Include(dti => dti.Design)
-                .FirstOrDefaultAsync(dti => dti.Id == item.Id);
+                .FirstOrDefaultAsync(dti => dti.DesignTemplateItemID == item.DesignTemplateItemID);
 
-            _logger.LogInformation("Đã tạo design template item với ID: {ItemID}", item.Id);
+            _logger.LogInformation("Đã tạo design template item với ID: {ItemID}", item.DesignTemplateItemID);
             return MapToDto(createdItem!);
         }
 
@@ -147,7 +147,7 @@ namespace DecalXeAPI.Services.Implementations
             // Lấy lại với thông tin đầy đủ
             var updatedItem = await _context.DesignTemplateItems
                 .Include(dti => dti.Design)
-                .FirstOrDefaultAsync(dti => dti.Id == id);
+                .FirstOrDefaultAsync(dti => dti.DesignTemplateItemID == id);
 
             _logger.LogInformation("Đã cập nhật design template item với ID: {ItemID}", id);
             return MapToDto(updatedItem!);
@@ -173,7 +173,7 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<bool> ExistsAsync(string id)
         {
-            return await _context.DesignTemplateItems.AnyAsync(dti => dti.Id == id);
+            return await _context.DesignTemplateItems.AnyAsync(dti => dti.DesignTemplateItemID == id);
         }
 
         public async Task<bool> DesignExistsAsync(string designId)

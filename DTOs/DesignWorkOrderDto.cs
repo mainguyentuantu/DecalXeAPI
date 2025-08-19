@@ -3,7 +3,7 @@ namespace DecalXeAPI.DTOs
 {
     public class DesignWorkOrderDto
     {
-        public string WorkOrderID { get; set; } = string.Empty;
+        public string DesignWorkOrderID { get; set; } = string.Empty;
         public string DesignID { get; set; } = string.Empty;
         public string OrderID { get; set; } = string.Empty;
         public decimal EstimatedHours { get; set; }

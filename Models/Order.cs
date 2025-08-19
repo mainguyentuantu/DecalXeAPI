@@ -9,7 +9,7 @@ namespace DecalXeAPI.Models
     public class Order
     {
         [Key]
-        public string OrderID { get; set; } = Guid.NewGuid().ToString(); // PK
+        public string OrderID { get; set; } = string.Empty; // PK
 
         [Required]
         public DateTime OrderDate { get; set; } = DateTime.UtcNow; // Ngày đặt hàng, dùng UtcNow cho chuẩn múi giờ
@@ -40,7 +40,7 @@ namespace DecalXeAPI.Models
 
         // --- CỘT VÀ NAVIGATION PROPERTIES MỚI TỪ YÊU CẦU REVIEW (đã có từ bước 2.1.5) ---
         [ForeignKey("CustomerVehicle")] // Khóa ngoại tới xe của khách hàng
-        public string? VehicleID { get; set; } // Xe được dán decal (Nullable)
+        public string? CustomerVehicleID { get; set; } // Xe được dán decal (Nullable)
         public CustomerVehicle? CustomerVehicle { get; set; } // Navigation Property
 
         public DateTime? ExpectedArrivalTime { get; set; } // Thời gian dự kiến khách hàng đến (Nullable)

@@ -7,7 +7,7 @@ namespace DecalXeAPI.Models
     public class Feedback
     {
         [Key]
-        public string FeedbackID { get; set; } = Guid.NewGuid().ToString(); // PK
+        public string FeedbackID { get; set; } = string.Empty; // PK
 
         // Khóa ngoại (Foreign Key): Feedback này cho Order nào
         public string OrderID { get; set; } = string.Empty; // FK_OrderID

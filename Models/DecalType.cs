@@ -7,7 +7,7 @@ namespace DecalXeAPI.Models
     public class DecalType
     {
         [Key]
-        public string DecalTypeID { get; set; } = Guid.NewGuid().ToString();
+        public string DecalTypeID { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]

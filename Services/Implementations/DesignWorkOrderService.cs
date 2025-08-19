@@ -52,7 +52,7 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<DesignWorkOrderDto?> UpdateWorkOrderAsync(string workOrderId, DesignWorkOrder workOrder)
         {
-            if (workOrderId != workOrder.WorkOrderID)
+            if (workOrderId != workOrder.DesignWorkOrderID)
                 throw new ArgumentException("ID không khớp.");
 
             var existingWorkOrder = await _context.DesignWorkOrders.FindAsync(workOrderId);

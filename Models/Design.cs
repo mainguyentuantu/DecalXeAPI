@@ -7,7 +7,7 @@ namespace DecalXeAPI.Models
     public class Design
     {
         [Key]
-        public string DesignID { get; set; } = Guid.NewGuid().ToString();
+        public string DesignID { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(500)]

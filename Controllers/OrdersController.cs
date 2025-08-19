@@ -64,7 +64,7 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous] 
         public async Task<ActionResult<OrderDto>> PostOrder(CreateOrderDto createDto)
         {
-            if (!string.IsNullOrEmpty(createDto.VehicleID) && !VehicleExists(createDto.VehicleID))
+            if (!string.IsNullOrEmpty(createDto.CustomerVehicleID) && !VehicleExists(createDto.CustomerVehicleID))
             {
                 return BadRequest("VehicleID không tồn tại.");
             }
@@ -88,7 +88,7 @@ namespace DecalXeAPI.Controllers
             try
             {
                 // Validate vehicle nếu có
-                if (!string.IsNullOrEmpty(createDto.VehicleID) && !VehicleExists(createDto.VehicleID))
+                if (!string.IsNullOrEmpty(createDto.CustomerVehicleID) && !VehicleExists(createDto.CustomerVehicleID))
                 {
                     return BadRequest("VehicleID không tồn tại.");
                 }
@@ -302,7 +302,7 @@ namespace DecalXeAPI.Controllers
         // Các hàm này vẫn được giữ ở Controller để kiểm tra FKs trước khi gọi Service
 
         // Removed CustomerExists method as Customer table is disconnected
-        private bool VehicleExists(string id) { return _context.CustomerVehicles.Any(e => e.VehicleID == id); }
+        private bool VehicleExists(string id) { return _context.CustomerVehicles.Any(e => e.CustomerVehicleID == id); }
         private bool EmployeeExists(string id) { return _context.Employees.Any(e => e.EmployeeID == id); }
 
     }

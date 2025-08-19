@@ -81,7 +81,7 @@ namespace DecalXeAPI.Controllers
             try
             {
                 var createdDto = await _designCommentService.CreateDesignCommentAsync(designComment);
-                return CreatedAtAction(nameof(GetDesignComment), new { id = createdDto.CommentID }, createdDto);
+                return CreatedAtAction(nameof(GetDesignComment), new { id = createdDto.DesignCommentID }, createdDto);
             }
             catch (ArgumentException ex)
             {
@@ -152,7 +152,7 @@ namespace DecalXeAPI.Controllers
         }
 
         // --- HÀM HỖ TRỢ (PRIVATE): KIỂM TRA SỰ TỒN TẠI CỦA CÁC ĐỐI TƯỢNG (Vẫn giữ ở Controller để kiểm tra FKs) ---
-        private bool DesignCommentExists(string id) { return _context.DesignComments.Any(e => e.CommentID == id); }
+        private bool DesignCommentExists(string id) { return _context.DesignComments.Any(e => e.DesignCommentID == id); }
         private bool DesignExists(string id) { return _context.Designs.Any(e => e.DesignID == id); }
         private bool AccountExists(string id) { return _context.Accounts.Any(e => e.AccountID == id); }
     }

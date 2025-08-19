@@ -120,7 +120,7 @@ namespace DecalXeAPI.Services.Implementations
                     CustomerID = customer.CustomerID,
                     TotalAmount = createDto.TotalAmount,
                     AssignedEmployeeID = createDto.AssignedEmployeeID,
-                    VehicleID = createDto.VehicleID,
+                    CustomerVehicleID = createDto.CustomerVehicleID,
                     ExpectedArrivalTime = createDto.ExpectedArrivalTime,
                     Priority = createDto.Priority ?? "Medium",
                     IsCustomDecal = createDto.IsCustomDecal,
@@ -326,7 +326,7 @@ namespace DecalXeAPI.Services.Implementations
                 AssignedEmployeeID = order.AssignedEmployeeID,
                 AssignedEmployeeFullName = order.AssignedEmployee != null ? 
                     $"{order.AssignedEmployee.FirstName} {order.AssignedEmployee.LastName}" : null,
-                VehicleID = order.VehicleID,
+                CustomerVehicleID = order.CustomerVehicleID,
                 VehicleModelName = order.CustomerVehicle?.VehicleModel?.ModelName,
                 VehicleBrandName = order.CustomerVehicle?.VehicleModel?.VehicleBrand?.BrandName,
                 ChassisNumber = order.CustomerVehicle?.ChassisNumber,

@@ -9,7 +9,7 @@ namespace DecalXeAPI.Models
         [Key] // Thuộc tính [Key] đánh dấu đây là khóa chính của bảng.
         // Đệ có thể dùng Guid.NewGuid().ToString() để tạo ID tự động,
         // hoặc nếu ID là chuỗi ngắn cố định (ví dụ: "ADMIN", "CUST") thì có thể gán thủ công sau.
-        public string RoleID { get; set; } = Guid.NewGuid().ToString(); 
+        public string RoleID { get; set; } = string.Empty; 
 
         [Required] // Thuộc tính [Required] đánh dấu trường này là bắt buộc (NOT NULL) trong database.
         [MaxLength(50)] // Giới hạn độ dài tối đa của chuỗi là 50 ký tự.

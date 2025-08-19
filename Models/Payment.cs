@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class Payment
     {
         [Key]
-        public string PaymentID { get; set; } = Guid.NewGuid().ToString();
+        public string PaymentID { get; set; } = string.Empty;
 
         [ForeignKey("Order")]
         public string OrderID { get; set; } = string.Empty;

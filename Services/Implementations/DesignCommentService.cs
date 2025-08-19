@@ -45,7 +45,7 @@ namespace DecalXeAPI.Services.Implementations
                                                 .Include(dc => dc.Design)
                                                 .Include(dc => dc.SenderAccount!)
                                                     .ThenInclude(acc => acc.Role)
-                                                .FirstOrDefaultAsync(dc => dc.CommentID == id);
+                                                .FirstOrDefaultAsync(dc => dc.DesignCommentID == id);
 
             if (designComment == null)
             {
@@ -93,7 +93,7 @@ namespace DecalXeAPI.Services.Implementations
             }
 
             var designCommentDto = _mapper.Map<DesignCommentDto>(designComment);
-            _logger.LogInformation("Đã tạo bình luận thiết kế mới với ID: {CommentID}", designComment.CommentID);
+                            _logger.LogInformation("Đã tạo bình luận thiết kế mới với ID: {CommentID}", designComment.DesignCommentID);
             return designCommentDto;
         }
 
@@ -101,9 +101,9 @@ namespace DecalXeAPI.Services.Implementations
         {
             _logger.LogInformation("Yêu cầu cập nhật bình luận thiết kế với ID: {CommentID}", id);
 
-            if (id != designComment.CommentID)
+            if (id != designComment.DesignCommentID)
             {
-                _logger.LogWarning("ID trong tham số ({Id}) không khớp với CommentID trong body ({CommentIDBody})", id, designComment.CommentID);
+                _logger.LogWarning("ID trong tham số ({Id}) không khớp với CommentID trong body ({CommentIDBody})", id, designComment.DesignCommentID);
                 return false;
             }
 
@@ -172,7 +172,7 @@ namespace DecalXeAPI.Services.Implementations
         // Hàm hỗ trợ: Kiểm tra sự tồn tại của các đối tượng (PUBLIC CHO INTERFACE)
         public async Task<bool> DesignCommentExistsAsync(string id)
         {
-            return await _context.DesignComments.AnyAsync(e => e.CommentID == id);
+            return await _context.DesignComments.AnyAsync(e => e.DesignCommentID == id);
         }
 
         public async Task<bool> DesignExistsAsync(string id)

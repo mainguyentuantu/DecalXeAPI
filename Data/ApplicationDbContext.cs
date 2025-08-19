@@ -47,6 +47,7 @@ namespace DecalXeAPI.Data
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<OrderStageHistory> OrderStageHistories { get; set; }
         public DbSet<DesignComment> DesignComments { get; set; }
+        public DbSet<Promotion> Promotions { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -74,7 +75,7 @@ namespace DecalXeAPI.Data
 
           
             modelBuilder.Entity<TechLaborPrice>()
-                .HasKey(tlp => new { tlp.ServiceID, tlp.VehicleModelID });
+                .HasKey(tlp => new { tlp.DecalServiceID, tlp.VehicleModelID });
         }
     }
 }

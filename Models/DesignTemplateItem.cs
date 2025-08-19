@@ -12,7 +12,7 @@ namespace DecalXeAPI.Models
     public class DesignTemplateItem
     {
         [Key]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string DesignTemplateItemID { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]

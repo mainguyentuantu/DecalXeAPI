@@ -10,7 +10,7 @@ namespace DecalXeAPI.Models
     public class CustomerVehicle
     {
         [Key]
-        public string VehicleID { get; set; } = Guid.NewGuid().ToString();
+        public string CustomerVehicleID { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(50)] // Tăng độ dài cho số khung
@@ -32,7 +32,7 @@ namespace DecalXeAPI.Models
         public Customer? Customer { get; set; }
 
         [ForeignKey("VehicleModel")] // Đổi từ CarModel
-        public string ModelID { get; set; } = string.Empty;
+        public string VehicleModelID { get; set; } = string.Empty;
         public VehicleModel? VehicleModel { get; set; } // Đổi từ CarModel
 
         [JsonIgnore]

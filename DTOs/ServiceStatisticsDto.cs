@@ -14,7 +14,7 @@ namespace DecalXeAPI.DTOs
 
     public class ServicePopularityDto
     {
-        public string ServiceID { get; set; } = string.Empty;
+        public string DecalServiceID { get; set; } = string.Empty;
         public string ServiceName { get; set; } = string.Empty;
         public int UsageCount { get; set; }
         public decimal Price { get; set; }

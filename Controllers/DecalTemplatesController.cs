@@ -69,8 +69,8 @@ namespace DecalXeAPI.Controllers
             try
             {
                 var createdDecalTemplateDto = await _decalTemplateService.CreateDecalTemplateAsync(decalTemplate);
-                _logger.LogInformation("Đã tạo mẫu decal mới với ID: {TemplateID}", createdDecalTemplateDto.TemplateID);
-                return CreatedAtAction(nameof(GetDecalTemplate), new { id = createdDecalTemplateDto.TemplateID }, createdDecalTemplateDto);
+                _logger.LogInformation("Đã tạo mẫu decal mới với ID: {TemplateID}", createdDecalTemplateDto.DecalTemplateID);
+                return CreatedAtAction(nameof(GetDecalTemplate), new { id = createdDecalTemplateDto.DecalTemplateID }, createdDecalTemplateDto);
             }
             catch (ArgumentException ex)
             {
@@ -153,7 +153,7 @@ namespace DecalXeAPI.Controllers
         }
 
         // --- HÀM HỖ TRỢ (PRIVATE): KIỂM TRA SỰ TỒN TẠI CỦA CÁC ĐỐI TƯỢNG (Vẫn giữ ở Controller để kiểm tra FKs) ---
-        private bool DecalTemplateExists(string id) { return _context.DecalTemplates.Any(e => e.TemplateID == id); }
+        private bool DecalTemplateExists(string id) { return _context.DecalTemplates.Any(e => e.DecalTemplateID == id); }
         private bool DecalTypeExists(string id) { return _context.DecalTypes.Any(e => e.DecalTypeID == id); }
     }
 }

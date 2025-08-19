@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class Employee
     {
         [Key]
-        public string EmployeeID { get; set; } = Guid.NewGuid().ToString(); // PK
+        public string EmployeeID { get; set; } = string.Empty; // PK
 
         [Required]
         [MaxLength(100)]

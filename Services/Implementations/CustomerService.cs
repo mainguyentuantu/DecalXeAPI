@@ -17,12 +17,14 @@ namespace DecalXeAPI.Services.Implementations
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<CustomerService> _logger;
+        private readonly IIdGenerationService _idGenerationService;
 
-        public CustomerService(ApplicationDbContext context, IMapper mapper, ILogger<CustomerService> logger)
+        public CustomerService(ApplicationDbContext context, IMapper mapper, ILogger<CustomerService> logger, IIdGenerationService idGenerationService)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _idGenerationService = idGenerationService;
         }
 
         public async Task<IEnumerable<CustomerDto>> GetCustomersAsync()
@@ -52,6 +54,9 @@ namespace DecalXeAPI.Services.Implementations
         public async Task<CustomerDto> CreateCustomerAsync(Customer customer)
         {
             _logger.LogInformation("Yêu cầu tạo khách hàng mới: {FirstName} {LastName}", customer.FirstName, customer.LastName);
+
+            // Sinh ID tự động cho khách hàng mới
+            customer.CustomerID = await _idGenerationService.GenerateIdAsync("CUS");
 
             // Kiểm tra AccountID có tồn tại không nếu được cung cấp
             if (!string.IsNullOrEmpty(customer.AccountID) && !await AccountExistsAsync(customer.AccountID))

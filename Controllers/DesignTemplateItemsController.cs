@@ -98,7 +98,7 @@ namespace DecalXeAPI.Controllers
             try
             {
                 var item = await _designTemplateItemService.CreateAsync(createDto);
-                return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);
+                return CreatedAtAction(nameof(GetItem), new { id = item.DesignTemplateItemID }, item);
             }
             catch (InvalidOperationException ex)
             {

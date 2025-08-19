@@ -21,12 +21,14 @@ namespace DecalXeAPI.Services.Implementations
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<VehicleModelService> _logger;
+        private readonly IIdGenerationService _idGenerationService;
 
-        public VehicleModelService(ApplicationDbContext context, IMapper mapper, ILogger<VehicleModelService> logger)
+        public VehicleModelService(ApplicationDbContext context, IMapper mapper, ILogger<VehicleModelService> logger, IIdGenerationService idGenerationService)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _idGenerationService = idGenerationService;
         }
 
         public async Task<IEnumerable<VehicleModelDto>> GetAllModelsAsync()
@@ -43,7 +45,7 @@ namespace DecalXeAPI.Services.Implementations
             _logger.LogInformation("Đang tìm mẫu xe với ID: {ModelID}", id);
             var model = await _context.VehicleModels
                                       .Include(m => m.VehicleBrand) // Nạp thông tin hãng xe liên quan
-                                      .FirstOrDefaultAsync(m => m.ModelID == id);
+                                      .FirstOrDefaultAsync(m => m.VehicleModelID == id);
             if (model == null)
             {
                 _logger.LogWarning("Không tìm thấy mẫu xe với ID: {ModelID}", id);
@@ -54,15 +56,19 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<(VehicleModelDto?, string?)> CreateModelAsync(VehicleModel model)
         {
-            // Kiểm tra xem BrandID có tồn tại không
-            if (!await _context.VehicleBrands.AnyAsync(b => b.BrandID == model.BrandID))
+            // Kiểm tra xem VehicleBrandID có tồn tại không
+            if (!await _context.VehicleBrands.AnyAsync(b => b.VehicleBrandID == model.VehicleBrandID))
             {
-                var errorMessage = $"Hãng xe với BrandID '{model.BrandID}' không tồn tại.";
+                var errorMessage = $"Hãng xe với VehicleBrandID '{model.VehicleBrandID}' không tồn tại.";
                 _logger.LogWarning(errorMessage);
                 return (null, errorMessage);
             }
 
             _logger.LogInformation("Đang tạo mẫu xe mới: {ModelName}", model.ModelName);
+            
+            // Sinh ID tự động cho mẫu xe mới
+            model.VehicleModelID = await _idGenerationService.GenerateIdAsync("VMD");
+            
             _context.VehicleModels.Add(model);
             await _context.SaveChangesAsync();
 
@@ -75,15 +81,15 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<(bool, string?)> UpdateModelAsync(string id, VehicleModel model)
         {
-            if (id != model.ModelID)
+            if (id != model.VehicleModelID)
             {
                 return (false, "ID không khớp.");
             }
 
-            // Kiểm tra xem BrandID có tồn tại không
-            if (!await _context.VehicleBrands.AnyAsync(b => b.BrandID == model.BrandID))
+            // Kiểm tra xem VehicleBrandID có tồn tại không
+            if (!await _context.VehicleBrands.AnyAsync(b => b.VehicleBrandID == model.VehicleBrandID))
             {
-                var errorMessage = $"Hãng xe với BrandID '{model.BrandID}' không tồn tại.";
+                var errorMessage = $"Hãng xe với VehicleBrandID '{model.VehicleBrandID}' không tồn tại.";
                 _logger.LogWarning(errorMessage);
                 return (false, errorMessage);
             }
@@ -96,7 +102,7 @@ namespace DecalXeAPI.Services.Implementations
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!await _context.VehicleModels.AnyAsync(e => e.ModelID == id))
+                if (!await _context.VehicleModels.AnyAsync(e => e.VehicleModelID == id))
                 {
                     return (false, "Không tìm thấy mẫu xe này.");
                 }
@@ -127,19 +133,19 @@ namespace DecalXeAPI.Services.Implementations
                 return (false, "Mẫu xe không tồn tại.");
             if (await _context.DecalTypes.FindAsync(decalTypeId) == null)
                 return (false, "Loại decal không tồn tại.");
-            if (await _context.VehicleModelDecalTypes.AnyAsync(l => l.ModelID == modelId && l.DecalTypeID == decalTypeId))
+            if (await _context.VehicleModelDecalTypes.AnyAsync(l => l.VehicleModelID == modelId && l.DecalTypeID == decalTypeId))
                 return (false, "Loại decal này đã được gán cho mẫu xe.");
 
             var link = new VehicleModelDecalType
             {
-                VehicleModelDecalTypeID = Guid.NewGuid().ToString(),
-                ModelID = modelId,
+                VehicleModelDecalTypeID = await _idGenerationService.GenerateIdAsync("VMDT"),
+                VehicleModelID = modelId,
                 DecalTypeID = decalTypeId
             };
 
             _context.VehicleModelDecalTypes.Add(link);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Gán thành công DecalType {DecalTypeID} cho VehicleModel {ModelID}", decalTypeId, modelId);
+            _logger.LogInformation("Gán thành công DecalType {DecalTypeID} cho VehicleModel {VehicleModelID}", decalTypeId, modelId);
             return (true, null);
         }
 
@@ -148,19 +154,19 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<(VehicleModelDecalTypeDto? CreatedLink, string? ErrorMessage)> AssignDecalTypeToVehicleAsync(string modelId, string decalTypeId, decimal price)
         {
-            _logger.LogInformation("Yêu cầu gán DecalType {DecalTypeID} cho VehicleModel {ModelID} với giá {Price}", decalTypeId, modelId, price);
+            _logger.LogInformation("Yêu cầu gán DecalType {DecalTypeID} cho VehicleModel {VehicleModelID} với giá {Price}", decalTypeId, modelId, price);
 
             if (await _context.VehicleModels.FindAsync(modelId) == null)
                 return (null, "Mẫu xe không tồn tại.");
             if (await _context.DecalTypes.FindAsync(decalTypeId) == null)
                 return (null, "Loại decal không tồn tại.");
-            if (await _context.VehicleModelDecalTypes.AnyAsync(l => l.ModelID == modelId && l.DecalTypeID == decalTypeId))
+            if (await _context.VehicleModelDecalTypes.AnyAsync(l => l.VehicleModelID == modelId && l.DecalTypeID == decalTypeId))
                 return (null, "Loại decal này đã được gán cho mẫu xe.");
 
             var link = new VehicleModelDecalType
             {
-                VehicleModelDecalTypeID = Guid.NewGuid().ToString(),
-                ModelID = modelId,
+                VehicleModelDecalTypeID = await _idGenerationService.GenerateIdAsync("VMDT"),
+                VehicleModelID = modelId,
                 DecalTypeID = decalTypeId,
                 Price = price // <-- Gán giá tiền mới vào
             };
@@ -172,37 +178,37 @@ namespace DecalXeAPI.Services.Implementations
             await _context.Entry(link).Reference(l => l.VehicleModel).LoadAsync();
             await _context.Entry(link).Reference(l => l.DecalType).LoadAsync();
 
-            _logger.LogInformation("Gán thành công DecalType {DecalTypeID} cho VehicleModel {ModelID}", decalTypeId, modelId);
+            _logger.LogInformation("Gán thành công DecalType {DecalTypeID} cho VehicleModel {VehicleModelID}", decalTypeId, modelId);
             return (_mapper.Map<VehicleModelDecalTypeDto>(link), null);
         }
 
         public async Task<(bool Success, string? ErrorMessage)> UnassignDecalTypeFromVehicleAsync(string modelId, string decalTypeId)
         {
-            _logger.LogInformation("Yêu cầu gỡ DecalType {DecalTypeID} khỏi VehicleModel {ModelID}", decalTypeId, modelId);
+            _logger.LogInformation("Yêu cầu gỡ DecalType {DecalTypeID} khỏi VehicleModel {VehicleModelID}", decalTypeId, modelId);
 
             var link = await _context.VehicleModelDecalTypes
-                .FirstOrDefaultAsync(l => l.ModelID == modelId && l.DecalTypeID == decalTypeId);
+                .FirstOrDefaultAsync(l => l.VehicleModelID == modelId && l.DecalTypeID == decalTypeId);
 
             if (link == null)
                 return (false, "Liên kết không tồn tại để xóa.");
 
             _context.VehicleModelDecalTypes.Remove(link);
             await _context.SaveChangesAsync();
-            _logger.LogInformation("Gỡ thành công DecalType {DecalTypeID} khỏi VehicleModel {ModelID}", decalTypeId, modelId);
+            _logger.LogInformation("Gỡ thành công DecalType {DecalTypeID} khỏi VehicleModel {VehicleModelID}", decalTypeId, modelId);
             return (true, null);
         }
 
         public async Task<IEnumerable<VehicleModelDecalTypeDto>> GetCompatibleDecalTypesAsync(string modelId)
         {
-            _logger.LogInformation("Yêu cầu lấy danh sách DecalType tương thích cho VehicleModel {ModelID}", modelId);
+            _logger.LogInformation("Yêu cầu lấy danh sách DecalType tương thích cho VehicleModel {VehicleModelID}", modelId);
 
-            if (!await _context.VehicleModels.AnyAsync(m => m.ModelID == modelId))
+            if (!await _context.VehicleModels.AnyAsync(m => m.VehicleModelID == modelId))
             {
                 return new List<VehicleModelDecalTypeDto>();
             }
 
             var compatibleLinks = await _context.VehicleModelDecalTypes
-                .Where(link => link.ModelID == modelId)
+                .Where(link => link.VehicleModelID == modelId)
                 .Include(link => link.DecalType) // Nạp thông tin DecalType
                 .Include(link => link.VehicleModel) // Nạp thông tin VehicleModel
                 .ToListAsync();
@@ -212,12 +218,12 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<(VehicleModelDecalTypeDto? UpdatedLink, string? ErrorMessage)> UpdateVehicleDecalTypePriceAsync(string modelId, string decalTypeId, decimal newPrice)
         {
-            _logger.LogInformation("Yêu cầu cập nhật giá cho DecalType {DecalTypeID} trên VehicleModel {ModelID} thành {NewPrice}", decalTypeId, modelId, newPrice);
+            _logger.LogInformation("Yêu cầu cập nhật giá cho DecalType {DecalTypeID} trên VehicleModel {VehicleModelID} thành {NewPrice}", decalTypeId, modelId, newPrice);
 
             var link = await _context.VehicleModelDecalTypes
                 .Include(l => l.VehicleModel)
                 .Include(l => l.DecalType)
-                .FirstOrDefaultAsync(l => l.ModelID == modelId && l.DecalTypeID == decalTypeId);
+                .FirstOrDefaultAsync(l => l.VehicleModelID == modelId && l.DecalTypeID == decalTypeId);
 
             if (link == null)
                 return (null, "Liên kết không tồn tại để cập nhật giá.");

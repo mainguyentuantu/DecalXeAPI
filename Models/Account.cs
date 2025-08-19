@@ -11,7 +11,7 @@ namespace DecalXeAPI.Models
     public class Account
     {
         [Key]
-        public string AccountID { get; set; } = Guid.NewGuid().ToString();
+        public string AccountID { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]

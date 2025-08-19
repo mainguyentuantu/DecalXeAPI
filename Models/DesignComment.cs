@@ -9,7 +9,7 @@ namespace DecalXeAPI.Models
     public class DesignComment
     {
         [Key] // Đánh dấu CommentID là Khóa Chính (Primary Key) của bảng. Mỗi bình luận có một ID duy nhất.
-        public string CommentID { get; set; } = Guid.NewGuid().ToString(); // PK, tự động sinh GUID làm ID mặc định.
+        public string DesignCommentID { get; set; } = string.Empty; // PK, tự động sinh ID theo format mới.
 
         [Required] // Đánh dấu CommentText là bắt buộc (NOT NULL).
         [MaxLength(1000)] // Giới hạn độ dài tối đa của văn bản bình luận là 1000 ký tự.

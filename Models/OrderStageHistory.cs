@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class OrderStageHistory
     {
         [Key] // Đánh dấu OrderStageHistoryID là Khóa Chính (Primary Key) của bảng. Mỗi bản ghi lịch sử có một ID duy nhất.
-        public string OrderStageHistoryID { get; set; } = Guid.NewGuid().ToString(); // PK, tự động sinh GUID làm ID mặc định.
+        public string OrderStageHistoryID { get; set; } = string.Empty; // PK, tự động sinh ID theo format mới.
 
         [Required] // Đánh dấu StageName là bắt buộc (NOT NULL).
         [MaxLength(100)] // Giới hạn độ dài tối đa của tên giai đoạn.

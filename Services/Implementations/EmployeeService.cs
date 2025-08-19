@@ -18,12 +18,14 @@ namespace DecalXeAPI.Services.Implementations
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<EmployeeService> _logger;
+        private readonly IIdGenerationService _idGenerationService;
 
-        public EmployeeService(ApplicationDbContext context, IMapper mapper, ILogger<EmployeeService> logger)
+        public EmployeeService(ApplicationDbContext context, IMapper mapper, ILogger<EmployeeService> logger, IIdGenerationService idGenerationService)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _idGenerationService = idGenerationService;
         }
 
         public async Task<IEnumerable<EmployeeDto>> GetEmployeesAsync(string? role = null)
@@ -73,6 +75,9 @@ namespace DecalXeAPI.Services.Implementations
         public async Task<EmployeeDto> CreateEmployeeAsync(Employee employee)
         {
             _logger.LogInformation("Yêu cầu tạo nhân viên mới: {FirstName} {LastName}", employee.FirstName, employee.LastName);
+
+            // Sinh ID tự động cho nhân viên mới
+            employee.EmployeeID = await _idGenerationService.GenerateIdAsync("EMP");
 
             // Kiểm tra các khóa ngoại trước
             if (!string.IsNullOrEmpty(employee.StoreID) && !await StoreExistsAsync(employee.StoreID))

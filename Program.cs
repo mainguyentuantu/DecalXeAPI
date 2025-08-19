@@ -68,7 +68,9 @@ builder.Services.AddAutoMapper(typeof(MainMappingProfile).Assembly);
 builder.Services.AddControllers();
 
 // --- Đăng ký Service Layer ---
-// --- Đăng ký Service Layer ---
+// Đăng ký IdGenerationService trước
+builder.Services.AddScoped<IIdGenerationService, IdGenerationService>();
+
 // Các Service cũ đã được xóa bỏ. Đây là danh sách các Service mới và còn lại.
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();

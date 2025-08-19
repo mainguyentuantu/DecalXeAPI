@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class Deposit
     {
         [Key]
-        public string DepositID { get; set; } = Guid.NewGuid().ToString();
+        public string DepositID { get; set; } = string.Empty;
 
         [ForeignKey("Order")]
         public string OrderID { get; set; } = string.Empty; // Cọc này cho đơn hàng nào

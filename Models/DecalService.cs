@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class DecalService
     {
         [Key]
-        public string ServiceID { get; set; } = Guid.NewGuid().ToString(); // PK
+        public string DecalServiceID { get; set; } = string.Empty; // PK
 
         [Required]
         [MaxLength(100)]

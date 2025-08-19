@@ -46,7 +46,7 @@ namespace DecalXeAPI.Controllers
             try
             {
                 var createdWorkOrder = await _workOrderService.CreateWorkOrderAsync(workOrder);
-                return CreatedAtAction(nameof(GetWorkOrder), new { id = createdWorkOrder.WorkOrderID }, createdWorkOrder);
+                return CreatedAtAction(nameof(GetWorkOrder), new { id = createdWorkOrder.DesignWorkOrderID }, createdWorkOrder);
             }
             catch (ArgumentException ex)
             {

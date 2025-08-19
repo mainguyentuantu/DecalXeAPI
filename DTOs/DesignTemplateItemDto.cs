@@ -5,7 +5,7 @@ namespace DecalXeAPI.DTOs
 {
     public class DesignTemplateItemDto
     {
-        public string Id { get; set; } = string.Empty;
+        public string DesignTemplateItemID { get; set; } = string.Empty;
         public string ItemName { get; set; } = string.Empty;
         public string? Description { get; set; }
         public VehiclePart PlacementPosition { get; set; }

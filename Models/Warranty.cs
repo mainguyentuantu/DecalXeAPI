@@ -8,12 +8,12 @@ namespace DecalXeAPI.Models
     public class Warranty
     {
         [Key]
-        public string WarrantyID { get; set; } = Guid.NewGuid().ToString();
+        public string WarrantyID { get; set; } = string.Empty;
 
         // --- THAY ĐỔI LỚN Ở ĐÂY ---
         // Khóa ngoại mới: Bảo hành này cho xe nào
         [ForeignKey("CustomerVehicle")]
-        public string VehicleID { get; set; } = string.Empty; // Thêm mới
+        public string CustomerVehicleID { get; set; } = string.Empty; // Thêm mới
         public CustomerVehicle? CustomerVehicle { get; set; } // Thêm mới
 
         // Khóa ngoại cũ đã bị xóa

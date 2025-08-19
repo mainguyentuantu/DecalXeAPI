@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class Customer
     {
         [Key]
-        public string CustomerID { get; set; } = Guid.NewGuid().ToString(); // PK
+        public string CustomerID { get; set; } = string.Empty; // PK
 
         [Required]
         [MaxLength(100)]

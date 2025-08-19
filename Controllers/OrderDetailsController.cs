@@ -67,7 +67,7 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous] 
         public async Task<ActionResult<OrderDetailDto>> PostOrderDetail(CreateOrderDetailDto createDto)
         {
-            _logger.LogInformation("Yêu cầu tạo chi tiết đơn hàng mới cho OrderID: {OrderID}, ServiceID: {ServiceID}", createDto.OrderID, createDto.ServiceID);
+            _logger.LogInformation("Yêu cầu tạo chi tiết đơn hàng mới cho OrderID: {OrderID}, ServiceID: {ServiceID}", createDto.OrderID, createDto.DecalServiceID);
 
             var orderDetail = _mapper.Map<OrderDetail>(createDto);
 
@@ -133,6 +133,6 @@ namespace DecalXeAPI.Controllers
         // --- HÀM HỖ TRỢ (PRIVATE): KIỂM TRA SỰ TỒN TẠI CỦA CÁC ĐỐI TƯỢNG ---
         // Các hàm này vẫn được giữ ở Controller để kiểm tra FKs cơ bản trước khi gọi Service
         private bool OrderExists(string id) { return _context.Orders.Any(e => e.OrderID == id); }
-        private bool DecalServiceExists(string id) { return _context.DecalServices.Any(e => e.ServiceID == id); }
+        private bool DecalServiceExists(string id) { return _context.DecalServices.Any(e => e.DecalServiceID == id); }
     }
 }

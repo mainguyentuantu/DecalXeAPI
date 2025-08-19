@@ -14,7 +14,7 @@ namespace DecalXeAPI.DTOs
         public decimal TotalAmount { get; set; }
 
         public string? AssignedEmployeeID { get; set; }
-        public string? VehicleID { get; set; }
+        public string? CustomerVehicleID { get; set; }
         public DateTime? ExpectedArrivalTime { get; set; }
         public string? Priority { get; set; } = "Medium";
         public bool IsCustomDecal { get; set; } = false;

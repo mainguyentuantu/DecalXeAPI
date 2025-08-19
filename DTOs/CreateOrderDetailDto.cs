@@ -8,7 +8,7 @@ namespace DecalXeAPI.DTOs
         [Required]
         public string OrderID { get; set; } = string.Empty;
         [Required]
-        public string ServiceID { get; set; } = string.Empty;
+        public string DecalServiceID { get; set; } = string.Empty;
         [Required]
         public int Quantity { get; set; }
         public decimal? ActualAreaUsed { get; set; }

@@ -54,9 +54,9 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<bool> UpdateBrandAsync(string id, VehicleBrand brand)
         {
-            if (id != brand.BrandID)
+            if (id != brand.VehicleBrandID)
             {
-                _logger.LogWarning("ID không khớp khi cập nhật: {UrlId} vs {BodyId}", id, brand.BrandID);
+                _logger.LogWarning("ID không khớp khi cập nhật: {UrlId} vs {BodyId}", id, brand.VehicleBrandID);
                 return false;
             }
             _context.Entry(brand).State = EntityState.Modified;
@@ -68,7 +68,7 @@ namespace DecalXeAPI.Services.Implementations
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!await _context.VehicleBrands.AnyAsync(e => e.BrandID == id))
+                if (!await _context.VehicleBrands.AnyAsync(e => e.VehicleBrandID == id))
                 {
                     _logger.LogWarning("Không tìm thấy hãng xe để cập nhật với ID: {BrandID}", id);
                     return false;

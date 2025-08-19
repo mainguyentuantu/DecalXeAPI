@@ -49,7 +49,7 @@ namespace DecalXeAPI.Controllers
         public async Task<ActionResult<VehicleBrandDto>> PostVehicleBrand(VehicleBrand brand)
         {
             var createdBrand = await _brandService.CreateBrandAsync(brand);
-            return CreatedAtAction(nameof(GetVehicleBrand), new { id = createdBrand.BrandID }, createdBrand);
+            return CreatedAtAction(nameof(GetVehicleBrand), new { id = createdBrand.VehicleBrandID }, createdBrand);
         }
 
         // PUT: api/VehicleBrands/5
@@ -58,7 +58,7 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> PutVehicleBrand(string id, VehicleBrand brand)
         {
-            if (id != brand.BrandID)
+            if (id != brand.VehicleBrandID)
             {
                 return BadRequest();
             }

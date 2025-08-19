@@ -9,7 +9,7 @@ namespace DecalXeAPI.Models
     public class VehicleModel // Đổi từ CarModel
     {
         [Key]
-        public string ModelID { get; set; } = Guid.NewGuid().ToString();
+        public string VehicleModelID { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]
@@ -29,7 +29,7 @@ namespace DecalXeAPI.Models
         // -----------------------------
 
         [ForeignKey("VehicleBrand")] // Đổi từ CarBrand
-        public string BrandID { get; set; } = string.Empty;
+        public string VehicleBrandID { get; set; } = string.Empty;
         public VehicleBrand? VehicleBrand { get; set; } // Đổi từ CarBrand
 
         [JsonIgnore]

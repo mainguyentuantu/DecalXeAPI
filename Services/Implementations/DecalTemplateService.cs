@@ -17,12 +17,14 @@ namespace DecalXeAPI.Services.Implementations
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<DecalTemplateService> _logger;
+        private readonly IIdGenerationService _idGenerationService;
 
-        public DecalTemplateService(ApplicationDbContext context, IMapper mapper, ILogger<DecalTemplateService> logger)
+        public DecalTemplateService(ApplicationDbContext context, IMapper mapper, ILogger<DecalTemplateService> logger, IIdGenerationService idGenerationService)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _idGenerationService = idGenerationService;
         }
 
         public async Task<IEnumerable<DecalTemplateDto>> GetDecalTemplatesAsync()
@@ -36,7 +38,7 @@ namespace DecalXeAPI.Services.Implementations
         public async Task<DecalTemplateDto?> GetDecalTemplateByIdAsync(string id)
         {
             _logger.LogInformation("Yêu cầu lấy mẫu decal với ID: {TemplateID}", id);
-            var decalTemplate = await _context.DecalTemplates.Include(dt => dt.DecalType).FirstOrDefaultAsync(dt => dt.TemplateID == id);
+            var decalTemplate = await _context.DecalTemplates.Include(dt => dt.DecalType).FirstOrDefaultAsync(dt => dt.DecalTemplateID == id);
 
             if (decalTemplate == null)
             {
@@ -53,6 +55,9 @@ namespace DecalXeAPI.Services.Implementations
         {
             _logger.LogInformation("Yêu cầu tạo mẫu decal mới: {TemplateName}", decalTemplate.TemplateName);
 
+            // Sinh ID tự động cho mẫu decal mới
+            decalTemplate.DecalTemplateID = await _idGenerationService.GenerateIdAsync("DTP");
+
             // Kiểm tra FKs
             if (!string.IsNullOrEmpty(decalTemplate.DecalTypeID) && !await DecalTypeExistsAsync(decalTemplate.DecalTypeID))
             {
@@ -66,7 +71,7 @@ namespace DecalXeAPI.Services.Implementations
             await _context.Entry(decalTemplate).Reference(dt => dt.DecalType).LoadAsync();
 
             var decalTemplateDto = _mapper.Map<DecalTemplateDto>(decalTemplate);
-            _logger.LogInformation("Đã tạo mẫu decal mới với ID: {TemplateID}", decalTemplate.TemplateID);
+                            _logger.LogInformation("Đã tạo mẫu decal mới với ID: {TemplateID}", decalTemplate.DecalTemplateID);
             return decalTemplateDto;
         }
 
@@ -74,9 +79,9 @@ namespace DecalXeAPI.Services.Implementations
         {
             _logger.LogInformation("Yêu cầu cập nhật mẫu decal với ID: {TemplateID}", id);
 
-            if (id != decalTemplate.TemplateID)
+            if (id != decalTemplate.DecalTemplateID)
             {
-                _logger.LogWarning("ID trong tham số ({Id}) không khớp với TemplateID trong body ({TemplateIDBody})", id, decalTemplate.TemplateID);
+                _logger.LogWarning("ID trong tham số ({Id}) không khớp với TemplateID trong body ({TemplateIDBody})", id, decalTemplate.DecalTemplateID);
                 return false;
             }
 
@@ -129,16 +134,16 @@ namespace DecalXeAPI.Services.Implementations
         {
             if (!await DecalTemplateExistsAsync(templateId))
                 return (false, "Mẫu decal không tồn tại.");
-            if (!await _context.VehicleModels.AnyAsync(m => m.ModelID == modelId))
+            if (!await _context.VehicleModels.AnyAsync(m => m.VehicleModelID == modelId))
                 return (false, "Mẫu xe không tồn tại.");
-            if (await _context.VehicleModelDecalTemplates.AnyAsync(l => l.TemplateID == templateId && l.ModelID == modelId))
+            if (await _context.VehicleModelDecalTemplates.AnyAsync(l => l.DecalTemplateID == templateId && l.VehicleModelID == modelId))
                 return (false, "Mẫu decal này đã được gán cho mẫu xe.");
 
             var link = new VehicleModelDecalTemplate
             {
                 VehicleModelDecalTemplateID = Guid.NewGuid().ToString(),
-                TemplateID = templateId,
-                ModelID = modelId
+                DecalTemplateID = templateId,
+                VehicleModelID = modelId
             };
 
             _context.VehicleModelDecalTemplates.Add(link);
@@ -149,7 +154,7 @@ namespace DecalXeAPI.Services.Implementations
         public async Task<(bool Success, string? ErrorMessage)> UnassignTemplateFromVehicleAsync(string templateId, string modelId)
         {
             var link = await _context.VehicleModelDecalTemplates
-                .FirstOrDefaultAsync(l => l.TemplateID == templateId && l.ModelID == modelId);
+                .FirstOrDefaultAsync(l => l.DecalTemplateID == templateId && l.VehicleModelID == modelId);
 
             if (link == null)
                 return (false, "Liên kết không tồn tại để xóa.");
@@ -162,7 +167,7 @@ namespace DecalXeAPI.Services.Implementations
         // --- HÀM HỖ TRỢ: KIỂM TRA SỰ TỒN TẠI CỦA CÁC ĐỐI TƯỢNG (PUBLIC CHO INTERFACE) ---
         public async Task<bool> DecalTemplateExistsAsync(string id)
         {
-            return await _context.DecalTemplates.AnyAsync(e => e.TemplateID == id);
+            return await _context.DecalTemplates.AnyAsync(e => e.DecalTemplateID == id);
         }
 
         public async Task<bool> DecalTypeExistsAsync(string id)
@@ -177,7 +182,7 @@ namespace DecalXeAPI.Services.Implementations
 
             // 1. Từ bảng liên kết, tìm tất cả những dòng có ModelID mà mình cần
             var links = await _context.VehicleModelDecalTemplates
-                                    .Where(link => link.ModelID == modelId)
+                                    .Where(link => link.VehicleModelID == modelId)
                                     // 2. Từ những dòng đó, lấy thông tin chi tiết của Mẫu Decal (DecalTemplate)
                                     .Include(link => link.DecalTemplate) 
                                         // 3. Kèm theo đó, lấy luôn thông tin về Loại Decal (DecalType)

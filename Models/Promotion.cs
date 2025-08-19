@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class Promotion
     {
         [Key]
-        public string PromotionID { get; set; } = Guid.NewGuid().ToString(); // PK
+        public string PromotionID { get; set; } = string.Empty; // PK
 
         [Required]
         [MaxLength(100)]

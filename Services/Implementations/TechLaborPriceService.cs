@@ -36,20 +36,20 @@ namespace DecalXeAPI.Services.Implementations
             var price = await _context.TechLaborPrices
                                       .Include(p => p.DecalService)
                                       .Include(p => p.VehicleModel)
-                                      .FirstOrDefaultAsync(p => p.ServiceID == serviceId && p.VehicleModelID == vehicleModelId);
+                                      .FirstOrDefaultAsync(p => p.DecalServiceID == serviceId && p.VehicleModelID == vehicleModelId);
             return _mapper.Map<TechLaborPriceDto>(price);
         }
 
         public async Task<TechLaborPriceDto> CreateAsync(TechLaborPrice techLaborPrice)
         {
-            if (!await _context.DecalServices.AnyAsync(s => s.ServiceID == techLaborPrice.ServiceID))
-                throw new ArgumentException($"Dịch vụ với ID '{techLaborPrice.ServiceID}' không tồn tại.");
-            if (!await _context.VehicleModels.AnyAsync(m => m.ModelID == techLaborPrice.VehicleModelID))
+            if (!await _context.DecalServices.AnyAsync(s => s.DecalServiceID == techLaborPrice.DecalServiceID))
+                throw new ArgumentException($"Dịch vụ với ID '{techLaborPrice.DecalServiceID}' không tồn tại.");
+            if (!await _context.VehicleModels.AnyAsync(m => m.VehicleModelID == techLaborPrice.VehicleModelID))
                 throw new ArgumentException($"Mẫu xe với ID '{techLaborPrice.VehicleModelID}' không tồn tại.");
 
             _context.TechLaborPrices.Add(techLaborPrice);
             await _context.SaveChangesAsync();
-            return await GetByIdAsync(techLaborPrice.ServiceID, techLaborPrice.VehicleModelID) ?? throw new Exception("Không thể lấy lại bản ghi vừa tạo.");
+            return await GetByIdAsync(techLaborPrice.DecalServiceID, techLaborPrice.VehicleModelID) ?? throw new Exception("Không thể lấy lại bản ghi vừa tạo.");
         }
 
         public async Task<TechLaborPriceDto?> UpdateAsync(string serviceId, string vehicleModelId, decimal newPrice)

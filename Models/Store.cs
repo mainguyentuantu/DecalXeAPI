@@ -6,7 +6,7 @@ namespace DecalXeAPI.Models
     public class Store
     {
         [Key]
-        public string StoreID { get; set; } = Guid.NewGuid().ToString();
+        public string StoreID { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]

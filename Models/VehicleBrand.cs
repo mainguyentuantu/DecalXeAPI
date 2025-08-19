@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class VehicleBrand // Đổi từ CarBrand
     {
         [Key]
-        public string BrandID { get; set; } = Guid.NewGuid().ToString();
+        public string VehicleBrandID { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(100)]

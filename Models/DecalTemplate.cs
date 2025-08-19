@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class DecalTemplate
     {
         [Key]
-        public string TemplateID { get; set; } = Guid.NewGuid().ToString(); // PK
+        public string DecalTemplateID { get; set; } = string.Empty; // PK
 
         [Required]
         [MaxLength(100)]

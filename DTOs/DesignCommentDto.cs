@@ -4,7 +4,7 @@ namespace DecalXeAPI.DTOs
 {
     public class DesignCommentDto
     {
-        public string CommentID { get; set; } = string.Empty;
+        public string DesignCommentID { get; set; } = string.Empty;
         public string CommentText { get; set; } = string.Empty;
         public DateTime CommentDate { get; set; }
         public string DesignID { get; set; } = string.Empty;

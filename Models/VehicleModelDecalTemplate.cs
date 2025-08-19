@@ -8,15 +8,15 @@ namespace DecalXeAPI.Models
     public class VehicleModelDecalTemplate // Đổi từ CarModelDecalTemplate
     {
         [Key]
-        public string VehicleModelDecalTemplateID { get; set; } = Guid.NewGuid().ToString();
+        public string VehicleModelDecalTemplateID { get; set; } = string.Empty;
 
         [ForeignKey("VehicleModel")] // Đổi từ CarModel
-        public string ModelID { get; set; } = string.Empty;
+        public string VehicleModelID { get; set; } = string.Empty;
         [JsonIgnore]
         public VehicleModel? VehicleModel { get; set; } // Đổi từ CarModel
 
         [ForeignKey("DecalTemplate")]
-        public string TemplateID { get; set; } = string.Empty;
+        public string DecalTemplateID { get; set; } = string.Empty;
         [JsonIgnore]
         public DecalTemplate? DecalTemplate { get; set; }
     }

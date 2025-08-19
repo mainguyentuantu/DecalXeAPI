@@ -8,7 +8,7 @@ namespace DecalXeAPI.Models
     public class DesignWorkOrder
     {
         [Key]
-        public string WorkOrderID { get; set; } = Guid.NewGuid().ToString();
+        public string DesignWorkOrderID { get; set; } = string.Empty;
 
         // Liên kết 1-1 với Design
         [ForeignKey("Design")]

@@ -9,13 +9,13 @@ namespace DecalXeAPI.Models
     public class VehicleModelDecalType
     {
         [Key]
-        public string VehicleModelDecalTypeID { get; set; } = Guid.NewGuid().ToString();
+        public string VehicleModelDecalTypeID { get; set; } = string.Empty;
 
 
 
         // Khóa ngoại trỏ đến hòn đảo "VehicleModel"
         [ForeignKey("VehicleModel")]
-        public string ModelID { get; set; } = string.Empty;
+        public string VehicleModelID { get; set; } = string.Empty;
         [JsonIgnore]
         public VehicleModel? VehicleModel { get; set; }
 

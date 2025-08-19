@@ -20,14 +20,16 @@ namespace DecalXeAPI.Services.Implementations
         private readonly ILogger<AccountService> _logger;
         // private readonly IEmailService _emailService; // <-- ĐÃ XÓA DÒNG NÀY VÌ KHÔNG DÙNG EMAIL NỮA
         private readonly ITokenService _tokenService;
+        private readonly IIdGenerationService _idGenerationService;
 
-        public AccountService(ApplicationDbContext context, IMapper mapper, ILogger<AccountService> logger /*, IEmailService emailService */ , ITokenService tokenService) // <-- BỎ TIÊM IEmailService
+        public AccountService(ApplicationDbContext context, IMapper mapper, ILogger<AccountService> logger /*, IEmailService emailService */ , ITokenService tokenService, IIdGenerationService idGenerationService) // <-- BỎ TIÊM IEmailService
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
             // _emailService = emailService;
             _tokenService = tokenService;
+            _idGenerationService = idGenerationService;
         }
 
         public async Task<IEnumerable<AccountDto>> GetAccountsAsync()
@@ -57,6 +59,9 @@ namespace DecalXeAPI.Services.Implementations
         public async Task<AccountDto> CreateAccountAsync(Account account)
         {
             _logger.LogInformation("Yêu cầu tạo tài khoản mới: {Username}", account.Username);
+
+            // Sinh ID tự động cho tài khoản mới
+            account.AccountID = await _idGenerationService.GenerateIdAsync("ACC");
 
             if (await _context.Accounts.AnyAsync(a => a.Username == account.Username))
             {

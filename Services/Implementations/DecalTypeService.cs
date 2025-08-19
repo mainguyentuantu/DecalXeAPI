@@ -17,12 +17,14 @@ namespace DecalXeAPI.Services.Implementations
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<DecalTypeService> _logger;
+        private readonly IIdGenerationService _idGenerationService;
 
-        public DecalTypeService(ApplicationDbContext context, IMapper mapper, ILogger<DecalTypeService> logger)
+        public DecalTypeService(ApplicationDbContext context, IMapper mapper, ILogger<DecalTypeService> logger, IIdGenerationService idGenerationService)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _idGenerationService = idGenerationService;
         }
 
         public async Task<IEnumerable<DecalTypeDto>> GetDecalTypesAsync()
@@ -52,6 +54,10 @@ namespace DecalXeAPI.Services.Implementations
         public async Task<DecalTypeDto> CreateDecalTypeAsync(DecalType decalType)
         {
             _logger.LogInformation("Yêu cầu tạo loại decal mới: {DecalTypeName}", decalType.DecalTypeName);
+            
+            // Sinh ID tự động cho loại decal mới
+            decalType.DecalTypeID = await _idGenerationService.GenerateIdAsync("DCT");
+            
             _context.DecalTypes.Add(decalType);
             await _context.SaveChangesAsync();
 

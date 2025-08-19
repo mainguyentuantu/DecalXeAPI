@@ -13,12 +13,14 @@ namespace DecalXeAPI.Services.Implementations
         private readonly ApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<CustomerVehicleService> _logger;
+        private readonly IIdGenerationService _idGenerationService;
 
-        public CustomerVehicleService(ApplicationDbContext context, IMapper mapper, ILogger<CustomerVehicleService> logger)
+        public CustomerVehicleService(ApplicationDbContext context, IMapper mapper, ILogger<CustomerVehicleService> logger, IIdGenerationService idGenerationService)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _idGenerationService = idGenerationService;
         }
 
         public async Task<IEnumerable<CustomerVehicleDto>> GetAllAsync()
@@ -35,16 +37,16 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<CustomerVehicleDto?> GetByIdAsync(string id)
         {
-            _logger.LogInformation("Lấy xe với ID: {VehicleID}", id);
+            _logger.LogInformation("Lấy xe với ID: {CustomerVehicleID}", id);
             var vehicle = await _context.CustomerVehicles
                 .Include(v => v.Customer)
                 .Include(v => v.VehicleModel)
                 .ThenInclude(vm => vm.VehicleBrand)
-                .FirstOrDefaultAsync(v => v.VehicleID == id);
+                .FirstOrDefaultAsync(v => v.CustomerVehicleID == id);
 
             if (vehicle == null)
             {
-                _logger.LogWarning("Không tìm thấy xe với ID: {VehicleID}", id);
+                _logger.LogWarning("Không tìm thấy xe với ID: {CustomerVehicleID}", id);
                 return null;
             }
 
@@ -99,7 +101,7 @@ namespace DecalXeAPI.Services.Implementations
             }
 
             var vehicle = _mapper.Map<CustomerVehicle>(createDto);
-            vehicle.VehicleID = Guid.NewGuid().ToString();
+            vehicle.CustomerVehicleID = await _idGenerationService.GenerateIdAsync("CVE");
 
             _context.CustomerVehicles.Add(vehicle);
             await _context.SaveChangesAsync();
@@ -109,15 +111,15 @@ namespace DecalXeAPI.Services.Implementations
                 .Include(v => v.Customer)
                 .Include(v => v.VehicleModel)
                 .ThenInclude(vm => vm.VehicleBrand)
-                .FirstOrDefaultAsync(v => v.VehicleID == vehicle.VehicleID);
+                .FirstOrDefaultAsync(v => v.CustomerVehicleID == vehicle.CustomerVehicleID);
 
-            _logger.LogInformation("Đã tạo xe với ID: {VehicleID}", vehicle.VehicleID);
+            _logger.LogInformation("Đã tạo xe với ID: {CustomerVehicleID}", vehicle.CustomerVehicleID);
             return _mapper.Map<CustomerVehicleDto>(createdVehicle!);
         }
 
         public async Task<CustomerVehicleDto?> UpdateAsync(string id, UpdateCustomerVehicleDto updateDto)
         {
-            _logger.LogInformation("Cập nhật xe với ID: {VehicleID}", id);
+            _logger.LogInformation("Cập nhật xe với ID: {CustomerVehicleID}", id);
             var vehicle = await _context.CustomerVehicles.FindAsync(id);
 
             if (vehicle == null)
@@ -150,33 +152,33 @@ namespace DecalXeAPI.Services.Implementations
                 .Include(v => v.Customer)
                 .Include(v => v.VehicleModel)
                 .ThenInclude(vm => vm.VehicleBrand)
-                .FirstOrDefaultAsync(v => v.VehicleID == id);
+                .FirstOrDefaultAsync(v => v.CustomerVehicleID == id);
 
-            _logger.LogInformation("Đã cập nhật xe với ID: {VehicleID}", id);
+            _logger.LogInformation("Đã cập nhật xe với ID: {CustomerVehicleID}", id);
             return _mapper.Map<CustomerVehicleDto>(updatedVehicle!);
         }
 
         public async Task<bool> DeleteAsync(string id)
         {
-            _logger.LogInformation("Xóa xe với ID: {VehicleID}", id);
+            _logger.LogInformation("Xóa xe với ID: {CustomerVehicleID}", id);
             var vehicle = await _context.CustomerVehicles.FindAsync(id);
 
             if (vehicle == null)
             {
-                _logger.LogWarning("Không tìm thấy xe với ID: {VehicleID}", id);
+                _logger.LogWarning("Không tìm thấy xe với ID: {CustomerVehicleID}", id);
                 return false;
             }
 
             _context.CustomerVehicles.Remove(vehicle);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Đã xóa xe với ID: {VehicleID}", id);
+            _logger.LogInformation("Đã xóa xe với ID: {CustomerVehicleID}", id);
             return true;
         }
 
         public async Task<bool> ExistsAsync(string id)
         {
-            return await _context.CustomerVehicles.AnyAsync(v => v.VehicleID == id);
+            return await _context.CustomerVehicles.AnyAsync(v => v.CustomerVehicleID == id);
         }
 
         public async Task<bool> LicensePlateExistsAsync(string licensePlate)

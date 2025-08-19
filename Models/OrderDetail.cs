@@ -7,7 +7,7 @@ namespace DecalXeAPI.Models
     public class OrderDetail
     {
         [Key]
-        public string OrderDetailID { get; set; } = Guid.NewGuid().ToString(); // PK
+        public string OrderDetailID { get; set; } = string.Empty; // PK
 
         // Khóa ngoại (Foreign Key): Chi tiết này thuộc về Order nào
         [ForeignKey("Order")]

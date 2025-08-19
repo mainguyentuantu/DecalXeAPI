@@ -15,7 +15,7 @@ namespace DecalXeAPI.DTOs
         public decimal TotalAmount { get; set; }
         public string? AssignedEmployeeID { get; set; }
         public string? AssignedEmployeeFullName { get; set; }
-        public string? VehicleID { get; set; }
+        public string? CustomerVehicleID { get; set; }
         public string? VehicleModelName { get; set; }
         public string? VehicleBrandName { get; set; }
         public string? ChassisNumber { get; set; }

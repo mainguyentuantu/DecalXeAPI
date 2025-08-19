@@ -41,7 +41,7 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous] 
         public async Task<ActionResult<DecalServiceDto>> GetDecalService(string id) // Kiểu trả về là DecalServiceDto
         {
-            var decalService = await _context.DecalServices.Include(ds => ds.DecalType).FirstOrDefaultAsync(ds => ds.ServiceID == id);
+            var decalService = await _context.DecalServices.Include(ds => ds.DecalType).FirstOrDefaultAsync(ds => ds.DecalServiceID == id);
 
             if (decalService == null)
             {
@@ -71,7 +71,7 @@ namespace DecalXeAPI.Controllers
             await _context.Entry(decalService).Reference(ds => ds.DecalType).LoadAsync();
             
             var decalServiceDto = _mapper.Map<DecalServiceDto>(decalService);
-            return CreatedAtAction(nameof(GetDecalService), new { id = decalServiceDto.ServiceID }, decalServiceDto);
+            return CreatedAtAction(nameof(GetDecalService), new { id = decalServiceDto.DecalServiceID }, decalServiceDto);
         }
 
         // API: PUT api/DecalServices/{id} (ĐÃ NÂNG CẤP)
@@ -152,10 +152,10 @@ namespace DecalXeAPI.Controllers
 
                 // Tìm service phổ biến nhất và ít phổ biến nhất
                 var serviceUsage = orderDetails
-                    .GroupBy(od => od.DecalService.ServiceID)
+                    .GroupBy(od => od.DecalService.DecalServiceID)
                     .Select(g => new ServicePopularityDto
                     {
-                        ServiceID = g.Key,
+                        DecalServiceID = g.Key,
                         ServiceName = g.First().DecalService.ServiceName,
                         UsageCount = g.Sum(od => od.Quantity),
                         Price = g.First().DecalService.Price,
@@ -248,7 +248,7 @@ namespace DecalXeAPI.Controllers
             {
                 var originalService = await _context.DecalServices
                     .Include(ds => ds.DecalType)
-                    .FirstOrDefaultAsync(ds => ds.ServiceID == id);
+                    .FirstOrDefaultAsync(ds => ds.DecalServiceID == id);
 
                 if (originalService == null)
                 {
@@ -258,7 +258,7 @@ namespace DecalXeAPI.Controllers
                 // Tạo service mới từ service gốc
                 var duplicatedService = new DecalService
                 {
-                    ServiceID = Guid.NewGuid().ToString(), // ID mới
+                    DecalServiceID = Guid.NewGuid().ToString(), // ID mới
                     ServiceName = $"{originalService.ServiceName} (Copy)",
                     Description = originalService.Description,
                     Price = originalService.Price,
@@ -272,12 +272,12 @@ namespace DecalXeAPI.Controllers
                 // Load lại với DecalType để trả về DTO đầy đủ
                 var serviceWithType = await _context.DecalServices
                     .Include(ds => ds.DecalType)
-                    .FirstOrDefaultAsync(ds => ds.ServiceID == duplicatedService.ServiceID);
+                    .FirstOrDefaultAsync(ds => ds.DecalServiceID == duplicatedService.DecalServiceID);
 
                 var serviceDto = _mapper.Map<DecalServiceDto>(serviceWithType);
                 
                 return CreatedAtAction(nameof(GetDecalService), 
-                    new { id = duplicatedService.ServiceID }, serviceDto);
+                    new { id = duplicatedService.DecalServiceID }, serviceDto);
             }
             catch (Exception ex)
             {
@@ -320,7 +320,7 @@ namespace DecalXeAPI.Controllers
                 var csvContent = "ID,Tên dịch vụ,Mô tả,Giá,Đơn vị công sức,Loại decal\n";
                 foreach (var service in services)
                 {
-                    csvContent += $"{service.ServiceID}," +
+                    csvContent += $"{service.DecalServiceID}," +
                                 $"\"{service.ServiceName}\"," +
                                 $"\"{service.Description ?? ""}\"," +
                                 $"{service.Price}," +
@@ -361,7 +361,7 @@ namespace DecalXeAPI.Controllers
 
         private bool DecalServiceExists(string id)
         {
-            return _context.DecalServices.Any(e => e.ServiceID == id);
+            return _context.DecalServices.Any(e => e.DecalServiceID == id);
         }
 
         private bool DecalTypeExists(string id)

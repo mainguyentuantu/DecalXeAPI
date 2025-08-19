@@ -53,12 +53,12 @@ namespace DecalXeAPI.Services.Implementations
 
         public async Task<WarrantyDto> CreateWarrantyAsync(Warranty warranty)
         {
-            _logger.LogInformation("Yêu cầu tạo bảo hành mới cho VehicleID: {VehicleID}", warranty.VehicleID);
+            _logger.LogInformation("Yêu cầu tạo bảo hành mới cho CustomerVehicleID: {CustomerVehicleID}", warranty.CustomerVehicleID);
 
-            // Kiểm tra FK mới: VehicleID
-            if (string.IsNullOrEmpty(warranty.VehicleID) || !await CustomerVehicleExistsAsync(warranty.VehicleID))
+            // Kiểm tra FK mới: CustomerVehicleID
+            if (string.IsNullOrEmpty(warranty.CustomerVehicleID) || !await CustomerVehicleExistsAsync(warranty.CustomerVehicleID))
             {
-                throw new ArgumentException("VehicleID không tồn tại hoặc không được cung cấp.");
+                throw new ArgumentException("CustomerVehicleID không tồn tại hoặc không được cung cấp.");
             }
 
             _context.Warranties.Add(warranty);
@@ -79,10 +79,10 @@ namespace DecalXeAPI.Services.Implementations
             if (id != warranty.WarrantyID) return false;
             if (!await WarrantyExistsAsync(id)) return false;
 
-             // Kiểm tra FK mới: VehicleID
-            if (string.IsNullOrEmpty(warranty.VehicleID) || !await CustomerVehicleExistsAsync(warranty.VehicleID))
+             // Kiểm tra FK mới: CustomerVehicleID
+            if (string.IsNullOrEmpty(warranty.CustomerVehicleID) || !await CustomerVehicleExistsAsync(warranty.CustomerVehicleID))
             {
-                throw new ArgumentException("VehicleID không tồn tại hoặc không được cung cấp.");
+                throw new ArgumentException("CustomerVehicleID không tồn tại hoặc không được cung cấp.");
             }
 
             _context.Entry(warranty).State = EntityState.Modified;
@@ -112,6 +112,6 @@ namespace DecalXeAPI.Services.Implementations
         public async Task<bool> WarrantyExistsAsync(string id) => await _context.Warranties.AnyAsync(e => e.WarrantyID == id);
 
         // Hàm hỗ trợ mới
-        public async Task<bool> CustomerVehicleExistsAsync(string vehicleId) => await _context.CustomerVehicles.AnyAsync(e => e.VehicleID == vehicleId);
+        public async Task<bool> CustomerVehicleExistsAsync(string vehicleId) => await _context.CustomerVehicles.AnyAsync(e => e.CustomerVehicleID == vehicleId);
     }
 }
