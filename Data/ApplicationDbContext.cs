@@ -76,6 +76,13 @@ namespace DecalXeAPI.Data
           
             modelBuilder.Entity<TechLaborPrice>()
                 .HasKey(tlp => new { tlp.DecalServiceID, tlp.VehicleModelID });
+
+            // Configure DecalService -> DecalTemplate relationship
+            modelBuilder.Entity<DecalService>()
+                .HasOne(ds => ds.DecalTemplate)
+                .WithMany(dt => dt.DecalServices)
+                .HasForeignKey(ds => ds.DecalTemplateID)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

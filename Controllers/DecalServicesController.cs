@@ -29,7 +29,10 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous] 
         public async Task<ActionResult<IEnumerable<DecalServiceDto>>> GetDecalServices() // Kiểu trả về là DecalServiceDto
         {
-            var decalServices = await _context.DecalServices.Include(ds => ds.DecalType).ToListAsync();
+            var decalServices = await _context.DecalServices
+            .Include(ds => ds.DecalTemplate)
+                .ThenInclude(dt => dt!.DecalType)
+            .ToListAsync();
             // Sử dụng AutoMapper để ánh xạ từ List<DecalService> sang List<DecalServiceDto>
             var decalServiceDtos = _mapper.Map<List<DecalServiceDto>>(decalServices);
             return Ok(decalServiceDtos);
@@ -41,7 +44,10 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous] 
         public async Task<ActionResult<DecalServiceDto>> GetDecalService(string id) // Kiểu trả về là DecalServiceDto
         {
-            var decalService = await _context.DecalServices.Include(ds => ds.DecalType).FirstOrDefaultAsync(ds => ds.DecalServiceID == id);
+            var decalService = await _context.DecalServices
+            .Include(ds => ds.DecalTemplate)
+                .ThenInclude(dt => dt!.DecalType)
+            .FirstOrDefaultAsync(ds => ds.DecalServiceID == id);
 
             if (decalService == null)
             {
@@ -58,9 +64,9 @@ namespace DecalXeAPI.Controllers
         [AllowAnonymous] 
         public async Task<ActionResult<DecalServiceDto>> PostDecalService(CreateDecalServiceDto createDto)
         {
-            if (!DecalTypeExists(createDto.DecalTypeID))
+            if (!DecalTemplateExists(createDto.DecalTemplateID))
             {
-                return BadRequest("DecalTypeID không tồn tại.");
+                return BadRequest("DecalTemplateID không tồn tại.");
             }
 
             var decalService = _mapper.Map<DecalService>(createDto);
@@ -68,7 +74,11 @@ namespace DecalXeAPI.Controllers
             _context.DecalServices.Add(decalService);
             await _context.SaveChangesAsync();
 
-            await _context.Entry(decalService).Reference(ds => ds.DecalType).LoadAsync();
+            await _context.Entry(decalService).Reference(ds => ds.DecalTemplate).LoadAsync();
+            if (decalService.DecalTemplate != null)
+            {
+                await _context.Entry(decalService.DecalTemplate).Reference(dt => dt.DecalType).LoadAsync();
+            }
             
             var decalServiceDto = _mapper.Map<DecalServiceDto>(decalService);
             return CreatedAtAction(nameof(GetDecalService), new { id = decalServiceDto.DecalServiceID }, decalServiceDto);
@@ -85,9 +95,9 @@ namespace DecalXeAPI.Controllers
                 return NotFound();
             }
 
-            if (!DecalTypeExists(updateDto.DecalTypeID))
+            if (!DecalTemplateExists(updateDto.DecalTemplateID))
             {
-                return BadRequest("DecalTypeID không tồn tại.");
+                return BadRequest("DecalTemplateID không tồn tại.");
             }
 
             _mapper.Map(updateDto, decalService);
@@ -120,15 +130,17 @@ namespace DecalXeAPI.Controllers
         {
             try
             {
-                // Lấy tất cả services với decal types
+                // Lấy tất cả services với decal templates và types
                 var services = await _context.DecalServices
-                    .Include(ds => ds.DecalType)
+                    .Include(ds => ds.DecalTemplate)
+                        .ThenInclude(dt => dt!.DecalType)
                     .ToListAsync();
 
                 // Lấy thống kê từ order details để tính usage và revenue
                 var orderDetails = await _context.OrderDetails
                     .Include(od => od.DecalService)
-                        .ThenInclude(ds => ds.DecalType)
+                        .ThenInclude(ds => ds!.DecalTemplate)
+                            .ThenInclude(dt => dt!.DecalType)
                     .Include(od => od.Order)
                     .Where(od => od.DecalService != null)
                     .ToListAsync();
@@ -159,7 +171,7 @@ namespace DecalXeAPI.Controllers
                         ServiceName = g.First().DecalService.ServiceName,
                         UsageCount = g.Sum(od => od.Quantity),
                         Price = g.First().DecalService.Price,
-                        DecalTypeName = g.First().DecalService.DecalType?.DecalTypeName ?? "Unknown",
+                        DecalTypeName = g.First().DecalService.DecalTemplate?.DecalType?.DecalTypeName ?? "Unknown",
                     })
                     .OrderByDescending(s => s.UsageCount)
                     .ToList();
@@ -169,15 +181,18 @@ namespace DecalXeAPI.Controllers
 
                 // Thống kê theo category (DecalType)
                 var categoryStats = services
-                    .GroupBy(s => new { s.DecalTypeID, s.DecalType?.DecalTypeName })
+                    .GroupBy(s => new { 
+                        DecalTypeID = s.DecalTemplate?.DecalTypeID ?? string.Empty, 
+                        DecalTypeName = s.DecalTemplate?.DecalType?.DecalTypeName ?? "Unknown" 
+                    })
                     .Select(g => new ServiceCategoryStatsDto
                     {
                         DecalTypeID = g.Key.DecalTypeID,
-                        DecalTypeName = g.Key.DecalTypeName ?? "Unknown",
+                        DecalTypeName = g.Key.DecalTypeName,
                         ServiceCount = g.Count(),
                         AveragePrice = g.Average(s => s.Price),
                         TotalRevenue = orderDetails
-                            .Where(od => od.DecalService.DecalTypeID == g.Key.DecalTypeID)
+                            .Where(od => od.DecalService.DecalTemplate?.DecalTypeID == g.Key.DecalTypeID)
                             .Sum(od => od.Price * od.Quantity)
                     })
                     .ToList();
@@ -247,7 +262,8 @@ namespace DecalXeAPI.Controllers
             try
             {
                 var originalService = await _context.DecalServices
-                    .Include(ds => ds.DecalType)
+                    .Include(ds => ds.DecalTemplate)
+                        .ThenInclude(dt => dt!.DecalType)
                     .FirstOrDefaultAsync(ds => ds.DecalServiceID == id);
 
                 if (originalService == null)
@@ -263,15 +279,16 @@ namespace DecalXeAPI.Controllers
                     Description = originalService.Description,
                     Price = originalService.Price,
                     StandardWorkUnits = originalService.StandardWorkUnits,
-                    DecalTypeID = originalService.DecalTypeID
+                    DecalTemplateID = originalService.DecalTemplateID
                 };
 
                 _context.DecalServices.Add(duplicatedService);
                 await _context.SaveChangesAsync();
 
-                // Load lại với DecalType để trả về DTO đầy đủ
+                // Load lại với DecalTemplate và DecalType để trả về DTO đầy đủ
                 var serviceWithType = await _context.DecalServices
-                    .Include(ds => ds.DecalType)
+                    .Include(ds => ds.DecalTemplate)
+                        .ThenInclude(dt => dt!.DecalType)
                     .FirstOrDefaultAsync(ds => ds.DecalServiceID == duplicatedService.DecalServiceID);
 
                 var serviceDto = _mapper.Map<DecalServiceDto>(serviceWithType);
@@ -298,7 +315,10 @@ namespace DecalXeAPI.Controllers
         {
             try
             {
-                var query = _context.DecalServices.Include(ds => ds.DecalType).AsQueryable();
+                var query = _context.DecalServices
+                    .Include(ds => ds.DecalTemplate)
+                        .ThenInclude(dt => dt!.DecalType)
+                    .AsQueryable();
 
                 // Áp dụng filters
                 if (!string.IsNullOrEmpty(search))
@@ -306,12 +326,12 @@ namespace DecalXeAPI.Controllers
                     query = query.Where(ds => 
                         ds.ServiceName.Contains(search) || 
                         ds.Description.Contains(search) ||
-                        ds.DecalType.DecalTypeName.Contains(search));
+                        (ds.DecalTemplate != null && ds.DecalTemplate.DecalType != null && ds.DecalTemplate.DecalType.DecalTypeName.Contains(search)));
                 }
 
                 if (!string.IsNullOrEmpty(category))
                 {
-                    query = query.Where(ds => ds.DecalType.DecalTypeName == category);
+                    query = query.Where(ds => ds.DecalTemplate != null && ds.DecalTemplate.DecalType != null && ds.DecalTemplate.DecalType.DecalTypeName == category);
                 }
 
                 var services = await query.ToListAsync();
@@ -325,7 +345,7 @@ namespace DecalXeAPI.Controllers
                                 $"\"{service.Description ?? ""}\"," +
                                 $"{service.Price}," +
                                 $"{service.StandardWorkUnits}," +
-                                $"\"{service.DecalType?.DecalTypeName ?? ""}\"\n";
+                                $"\"{service.DecalTemplate?.DecalType?.DecalTypeName ?? ""}\"\n";
                 }
 
                 var bytes = System.Text.Encoding.UTF8.GetBytes(csvContent);
@@ -364,9 +384,9 @@ namespace DecalXeAPI.Controllers
             return _context.DecalServices.Any(e => e.DecalServiceID == id);
         }
 
-        private bool DecalTypeExists(string id)
+        private bool DecalTemplateExists(string id)
         {
-            return _context.DecalTypes.Any(e => e.DecalTypeID == id);
+            return _context.DecalTemplates.Any(e => e.DecalTemplateID == id);
         }
     }
 }

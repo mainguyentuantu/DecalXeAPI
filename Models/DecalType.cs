@@ -19,9 +19,9 @@ namespace DecalXeAPI.Models
         public decimal? Width { get; set; } // Chiều rộng, dùng decimal để chính xác số thập phân
         public decimal? Height { get; set; } // Chiều cao
 
-        // Navigation Property: Một DecalType có thể được dùng trong nhiều DecalService.
+        // Navigation Property: Một DecalType có thể có nhiều DecalTemplate.
         [JsonIgnore]
-        public ICollection<DecalService>? DecalServices { get; set; }
+        public ICollection<DecalTemplate>? DecalTemplates { get; set; }
 
         [JsonIgnore]
         public ICollection<VehicleModelDecalType>? VehicleModelDecalTypes { get; set; }
