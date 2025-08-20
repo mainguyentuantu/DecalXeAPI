@@ -24,6 +24,9 @@ namespace DecalXeAPI.Models
         [MaxLength(100)]
         public string? Email { get; set; }
 
+        [MaxLength(500)] // Địa chỉ có thể dài
+        public string? Address { get; set; }
+
         // Trạng thái hoạt động của nhân viên
         public bool IsActive { get; set; } = true; // Mặc định là hoạt động
 

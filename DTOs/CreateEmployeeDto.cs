@@ -11,6 +11,7 @@ namespace DecalXeAPI.DTOs
         public string LastName { get; set; } = string.Empty;
         public string? PhoneNumber { get; set; }
         public string? Email { get; set; }
+        public string? Address { get; set; }
         [Required]
         public string StoreID { get; set; } = string.Empty;
         public string? AccountID { get; set; }
