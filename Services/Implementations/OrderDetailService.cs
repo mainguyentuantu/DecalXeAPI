@@ -60,13 +60,13 @@ namespace DecalXeAPI.Services.Implementations
                 var order = await _context.Orders.Include(o => o.CustomerVehicle).FirstOrDefaultAsync(o => o.OrderID == orderDetail.OrderID);
                 if (order == null) return (null, "OrderID không tồn tại.");
 
-                var service = await _context.DecalServices.Include(s => s.DecalType).FirstOrDefaultAsync(s => s.ServiceID == orderDetail.ServiceID);
+                var service = await _context.DecalServices.Include(s => s.DecalTemplate).ThenInclude(dt => dt.DecalType).FirstOrDefaultAsync(s => s.ServiceID == orderDetail.ServiceID);
                 if (service == null) return (null, "ServiceID không tồn tại.");
 
                 // LOGIC TÍNH GIÁ MỚI (TINH GỌN)
                 decimal finalPrice;
                 var priceInfo = await _context.VehicleModelDecalTypes
-                    .FirstOrDefaultAsync(p => p.ModelID == order.CustomerVehicle.ModelID && p.DecalTypeID == service.DecalType.DecalTypeID);
+                    .FirstOrDefaultAsync(p => p.ModelID == order.CustomerVehicle.ModelID && p.DecalTypeID == service.DecalTemplate.DecalType.DecalTypeID);
 
                 finalPrice = priceInfo?.Price ?? service.Price; // Ưu tiên giá tùy chỉnh, nếu không có thì lấy giá mặc định
 

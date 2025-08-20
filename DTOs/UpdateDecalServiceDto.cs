@@ -12,6 +12,6 @@ namespace DecalXeAPI.DTOs
         public decimal Price { get; set; }
         public int StandardWorkUnits { get; set; }
         [Required]
-        public string DecalTypeID { get; set; } = string.Empty;
+        public string DecalTemplateID { get; set; } = string.Empty;
     }
 }
