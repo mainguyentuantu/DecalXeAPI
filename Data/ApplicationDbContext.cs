@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using DecalXeAPI.Models;
 
+// hihi
 namespace DecalXeAPI.Data
 {
     public class ApplicationDbContext : DbContext
@@ -72,7 +73,7 @@ namespace DecalXeAPI.Data
                 .HasForeignKey(dc => dc.ParentCommentID)
                 .OnDelete(DeleteBehavior.Restrict);
 
-          
+
             modelBuilder.Entity<TechLaborPrice>()
                 .HasKey(tlp => new { tlp.ServiceID, tlp.VehicleModelID });
         }
