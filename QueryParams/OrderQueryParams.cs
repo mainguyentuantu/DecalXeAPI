@@ -8,6 +8,9 @@ namespace DecalXeAPI.QueryParams
         // Tham số lọc theo trạng thái đơn hàng
         public string? Status { get; set; } // Ví dụ: "New", "Pending", "Completed"
 
+        // Tham số lọc theo nhân viên được gán
+        public string? EmployeeId { get; set; } // Filter theo nhân viên được gán cho đơn hàng
+
         // Tham số sắp xếp
         public string? SortBy { get; set; } // Ví dụ: "orderDate", "totalAmount", "customerName"
         public string? SortOrder { get; set; } = "asc"; // "asc" (tăng dần) hoặc "desc" (giảm dần)

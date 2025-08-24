@@ -1,5 +1,5 @@
 // Test script để kiểm tra GET /api/Orders endpoint với customer information
-const API_BASE_URL = 'https://decalxeapi-production.up.railway.app/api';
+const API_BASE_URL = 'https://decalxesequences-production.up.railway.app/api';
 
 async function testOrdersAPI() {
   console.log('🔍 Testing GET /api/Orders endpoint with customer information...\n');
@@ -13,15 +13,15 @@ async function testOrdersAPI() {
         'Content-Type': 'application/json',
       },
     });
-    
+
     console.log('Orders Response Status:', ordersResponse.status);
     console.log('Orders Response Headers:', ordersResponse.headers);
-    
+
     if (ordersResponse.ok) {
       const ordersData = await ordersResponse.json();
       console.log('✅ GET /api/Orders successful');
       console.log('Response structure:', JSON.stringify(ordersData, null, 2));
-      
+
       // Check if orders have customer information
       if (ordersData.items && ordersData.items.length > 0) {
         const firstOrder = ordersData.items[0];
@@ -59,22 +59,22 @@ async function testOrdersAPI() {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (ordersResponse.ok) {
       const ordersData = await ordersResponse.json();
       if (ordersData.items && ordersData.items.length > 0) {
         const orderId = ordersData.items[0].orderID;
         console.log(`Testing with order ID: ${orderId}`);
-        
+
         const orderResponse = await fetch(`${API_BASE_URL}/Orders/${orderId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
         });
-        
+
         console.log('Order Response Status:', orderResponse.status);
-        
+
         if (orderResponse.ok) {
           const orderData = await orderResponse.json();
           console.log('✅ GET /api/Orders/{id} successful');
@@ -102,9 +102,9 @@ async function testOrdersAPI() {
         'Content-Type': 'application/json',
       },
     });
-    
+
     console.log('Search Response Status:', searchResponse.status);
-    
+
     if (searchResponse.ok) {
       const searchData = await searchResponse.json();
       console.log('✅ Search orders successful');

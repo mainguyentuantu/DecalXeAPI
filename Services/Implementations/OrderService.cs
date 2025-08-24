@@ -47,6 +47,12 @@ namespace DecalXeAPI.Services.Implementations
                 query = query.Where(o => o.OrderStatus.ToLower() == queryParams.Status.ToLower());
             }
 
+            // Filter theo nhân viên được gán
+            if (!string.IsNullOrEmpty(queryParams.EmployeeId))
+            {
+                query = query.Where(o => o.AssignedEmployeeID == queryParams.EmployeeId);
+            }
+
             if (!string.IsNullOrEmpty(queryParams.SearchTerm))
             {
                 var searchTermLower = queryParams.SearchTerm.ToLower();

@@ -13,9 +13,9 @@ async function testFrontendCustomerInfo() {
         'Content-Type': 'application/json',
       },
     });
-    
+
     console.log('Frontend Response Status:', response.status);
-    
+
     if (response.ok) {
       console.log('✅ Frontend Order List Page loads successfully');
     } else {
@@ -37,9 +37,9 @@ async function testFrontendCustomerInfo() {
         'Content-Type': 'application/json',
       },
     });
-    
+
     console.log('Search Response Status:', searchResponse.status);
-    
+
     if (searchResponse.ok) {
       console.log('✅ Frontend Search functionality works');
     } else {
@@ -61,22 +61,22 @@ async function testFrontendCustomerInfo() {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (apiResponse.ok) {
       const apiData = await apiResponse.json();
       if (apiData.items && apiData.items.length > 0) {
         const orderId = apiData.items[0].orderID;
         console.log(`Testing Order Detail Page with ID: ${orderId}`);
-        
+
         const detailResponse = await fetch(`${FRONTEND_URL}/orders/${orderId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
         });
-        
+
         console.log('Order Detail Response Status:', detailResponse.status);
-        
+
         if (detailResponse.ok) {
           console.log('✅ Frontend Order Detail Page loads successfully');
         } else {
@@ -101,11 +101,11 @@ async function testFrontendCustomerInfo() {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (ordersResponse.ok) {
       const ordersData = await ordersResponse.json();
       console.log('✅ API returns orders with customer information');
-      
+
       if (ordersData.items && ordersData.items.length > 0) {
         const firstOrder = ordersData.items[0];
         console.log('\n📋 Customer Information in API Response:');

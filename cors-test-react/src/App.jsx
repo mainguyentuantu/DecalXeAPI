@@ -50,8 +50,10 @@ import VehicleDetailPage from "./pages/vehicles/VehicleDetailPage";
 // Vehicle Management Pages
 import VehicleListPage from "./pages/vehicles/VehicleListPage";
 import BrandCreatePage from "./pages/vehicles/BrandCreatePage";
+import BrandEditPage from "./pages/vehicles/BrandEditPage";
 import BrandDetailPage from "./pages/vehicles/BrandDetailPage";
 import ModelCreatePage from "./pages/vehicles/ModelCreatePage";
+import ModelEditPage from "./pages/vehicles/ModelEditPage";
 import ModelDetailPage from "./pages/vehicles/ModelDetailPage";
 
 // Design & Template Module Pages
@@ -98,10 +100,10 @@ import SupportTicketPage from "./pages/warranty/SupportTicketPage";
 
 // Analytics & Reporting Module Pages
 import AnalyticsDashboardPage from "./pages/AnalyticsDashboardPage";
-import SalesAnalytics from "./components/analytics/SalesAnalytics";
-import PerformanceMetrics from "./components/analytics/PerformanceMetrics";
-import CustomerInsights from "./components/analytics/CustomerInsights";
-import OperationalReports from "./components/analytics/OperationalReports";
+import SalesAnalyticsPage from "./pages/SalesAnalyticsPage";
+import PerformanceAnalyticsPage from "./pages/PerformanceAnalyticsPage";
+import CustomerAnalyticsPage from "./pages/CustomerAnalyticsPage";
+import OperationalAnalyticsPage from "./pages/OperationalAnalyticsPage";
 
 // Auth hook
 import { useAuth } from "./hooks/useAuth";
@@ -221,11 +223,13 @@ function App() {
                   element={<BrandCreatePage />}
                 />
                 <Route path="vehicles/brands/:id" element={<BrandDetailPage />} />
+                <Route path="vehicles/brands/:id/edit" element={<BrandEditPage />} />
                 <Route
                   path="vehicles/models/create"
                   element={<ModelCreatePage />}
                 />
                 <Route path="vehicles/models/:id" element={<ModelDetailPage />} />
+                <Route path="vehicles/models/:id/edit" element={<ModelEditPage />} />
 
                 {/* Design & Template Module Routes */}
                 <Route path="designs" element={<DesignGalleryPage />} />
@@ -312,29 +316,29 @@ function App() {
                   path="analytics/dashboard"
                   element={<AnalyticsDashboardPage />}
                 />
-                <Route path="analytics/sales" element={<SalesAnalytics />} />
+                <Route path="analytics/sales" element={<SalesAnalyticsPage />} />
                 <Route
                   path="analytics/performance"
-                  element={<PerformanceMetrics />}
+                  element={<PerformanceAnalyticsPage />}
                 />
                 <Route
                   path="analytics/customers"
-                  element={<CustomerInsights />}
+                  element={<CustomerAnalyticsPage />}
                 />
                 <Route
                   path="analytics/operations"
-                  element={<OperationalReports />}
+                  element={<OperationalAnalyticsPage />}
                 />
                 <Route path="reports" element={<AnalyticsDashboardPage />} />
-                <Route path="reports/sales" element={<SalesAnalytics />} />
+                <Route path="reports/sales" element={<SalesAnalyticsPage />} />
                 <Route
                   path="reports/performance"
-                  element={<PerformanceMetrics />}
+                  element={<PerformanceAnalyticsPage />}
                 />
-                <Route path="reports/customers" element={<CustomerInsights />} />
+                <Route path="reports/customers" element={<CustomerAnalyticsPage />} />
                 <Route
                   path="reports/operations"
-                  element={<OperationalReports />}
+                  element={<OperationalAnalyticsPage />}
                 />
 
                 {/* Placeholder routes - will be implemented in next phases */}

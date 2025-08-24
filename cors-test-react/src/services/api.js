@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Cấu hình base URL - thay đổi theo môi trường
-const BASE_URL = "https://decalxeapi-production.up.railway.app/";
+const BASE_URL = "https://decalxesequences-production.up.railway.app/";
 // const BASE_URL = 'http://localhost:5000'; // Uncomment for local development
 
 // Tạo axios instance

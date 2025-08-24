@@ -1,5 +1,5 @@
 // Test script để kiểm tra Customer API endpoints
-const API_BASE_URL = 'https://decalxeapi-production.up.railway.app/api';
+const API_BASE_URL = 'https://decalxesequences-production.up.railway.app/api';
 
 async function testCustomerAPI() {
   console.log('🔍 Testing Customer API endpoints...\n');
@@ -13,10 +13,10 @@ async function testCustomerAPI() {
         'Content-Type': 'application/json',
       },
     });
-    
+
     console.log('Search Response Status:', searchResponse.status);
     console.log('Search Response Headers:', searchResponse.headers);
-    
+
     if (searchResponse.ok) {
       const searchData = await searchResponse.json();
       console.log('✅ Search customers successful:', searchData);
@@ -47,10 +47,10 @@ async function testCustomerAPI() {
         createAccount: false,
       }),
     });
-    
+
     console.log('Create Response Status:', createResponse.status);
     console.log('Create Response Headers:', createResponse.headers);
-    
+
     if (createResponse.ok) {
       const createData = await createResponse.json();
       console.log('✅ Create customer successful:', createData);
@@ -90,10 +90,10 @@ async function testCustomerAPI() {
         description: 'Test order with new customer',
       }),
     });
-    
+
     console.log('Order Response Status:', orderResponse.status);
     console.log('Order Response Headers:', orderResponse.headers);
-    
+
     if (orderResponse.ok) {
       const orderData = await orderResponse.json();
       console.log('✅ Create order with customer successful:', orderData);
