@@ -86,10 +86,24 @@ const AddEmployeePage = () => {
         }
       }));
     } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
+      setFormData(prev => {
+        const newFormData = {
+          ...prev,
+          [name]: type === 'checkbox' ? checked : value
+        };
+
+        // Nếu thay đổi storeID, reset roleIds để tránh conflict
+        if (name === 'storeID') {
+          newFormData.roleIds = [];
+          // Hiển thị thông báo xác nhận
+          const selectedStore = stores.find(store => store.storeID === value);
+          if (selectedStore) {
+            toast.success(`Đã chọn cửa hàng: ${selectedStore.storeName}`);
+          }
+        }
+
+        return newFormData;
+      });
     }
   };
 
@@ -122,13 +136,16 @@ const AddEmployeePage = () => {
       ...prev,
       roleIds: [roleId] // Chỉ cho phép chọn 1 vai trò
     }));
+
+    // Hiển thị thông báo xác nhận
+    toast.success(`Đã chọn vai trò: ${selectedRole?.roleName}`);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Basic validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phoneNumber) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phoneNumber || !formData.address) {
       toast.error('Vui lòng điền đầy đủ thông tin bắt buộc!');
       return;
     }
@@ -362,7 +379,14 @@ const AddEmployeePage = () => {
                   })
                 )}
               </div>
-              <p className="text-sm text-gray-500 mt-1">Chọn một cửa hàng cho nhân viên</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Chọn một cửa hàng cho nhân viên
+                {formData.storeID && checkStoreHasManager(formData.storeID) && (
+                  <span className="text-orange-600 font-medium block mt-1">
+                    ⚠️ Cửa hàng này đã có Manager. Chỉ có thể chọn các vai trò khác.
+                  </span>
+                )}
+              </p>
             </div>
 
             <div>
@@ -385,7 +409,7 @@ const AddEmployeePage = () => {
                             type="radio"
                             name="roleIds"
                             value={role.roleID}
-                            checked={formData.roleIds.includes(role.roleID)}
+                            checked={formData.roleIds[0] === role.roleID}
                             onChange={() => handleRoleChange(role.roleID)}
                             className="text-blue-600 focus:ring-blue-500"
                             required={formData.roleIds.length === 0}
@@ -407,6 +431,11 @@ const AddEmployeePage = () => {
               <p className="text-sm text-gray-500 mt-1">
                 Chọn một vai trò cho nhân viên (Admin không được phép).
                 <span className="text-orange-600 font-medium"> Mỗi cửa hàng chỉ được phép có 1 Manager.</span>
+                {formData.storeID && checkStoreHasManager(formData.storeID) && (
+                  <span className="text-red-600 font-medium block mt-1">
+                    ⚠️ Cửa hàng đã chọn có Manager. Vai trò Manager bị vô hiệu hóa.
+                  </span>
+                )}
               </p>
             </div>
           </div>

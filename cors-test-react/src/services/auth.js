@@ -1,17 +1,18 @@
 import apiClient from './apiClient';
 import { API_ENDPOINTS, STORAGE_KEYS } from '../constants/api';
+import { ROLE_PERMISSIONS, checkPermission, getAvailableModules, getAvailableActions } from '../constants/permissions';
 
 export const authService = {
   // Login
   login: async (credentials) => {
     const response = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials);
     const { accessToken, refreshToken, user } = response.data;
-    
+
     // Store tokens and user data
     localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
     localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
     localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
-    
+
     return response.data;
   },
 
@@ -71,41 +72,65 @@ export const authService = {
     return user?.role || user?.accountRoleName || null;
   },
 
-  // Check if user has permission
+  // Check if user has permission for a specific role
   hasPermission: (requiredRole) => {
     const userRole = authService.getUserRole();
     if (!userRole) return false;
 
-    // Role hierarchy: Admin > Manager > Sales/Technician > Customer
+    // Use ROLE_PERMISSIONS instead of hardcoded hierarchy
+    // Check if user role exists in permissions
+    if (!ROLE_PERMISSIONS[userRole]) return false;
+
+    // For now, use a simple hierarchy based on role names
+    // Admin > Manager > Sales/Designer/Technician > Customer
     const roleHierarchy = {
-      'Admin': 5,
-      'Manager': 4,
-      'Sales': 3,
-      'Technician': 3,
+      'Admin': 6,
+      'Manager': 5,
+      'Sales': 4,
+      'Designer': 4,
+      'Technician': 4,
       'Customer': 1,
     };
 
-    const userRoleLevel = roleHierarchy[userRole] || 0;
-    const requiredRoleLevel = roleHierarchy[requiredRole] || 0;
+    const userLevel = roleHierarchy[userRole];
+    const requiredLevel = roleHierarchy[requiredRole];
 
-    return userRoleLevel >= requiredRoleLevel;
+    return userLevel >= requiredLevel;
   },
 
-  // Helper function to set mock user for testing
-  setMockUser: (role = 'Admin') => {
-    const mockUser = {
-      id: 'mock-user-id',
-      firstName: 'Demo',
-      lastName: 'User',
-      email: 'demo@decalxe.com',
-      role: role,
-      accountRoleName: role,
-    };
-    
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, 'mock-access-token');
-    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, 'mock-refresh-token');
-    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(mockUser));
-    
-    return mockUser;
+  // Check if user has specific permission
+  hasSpecificPermission: (permission) => {
+    const userRole = authService.getUserRole();
+    if (!userRole) return false;
+
+    // Check if user role exists in permissions
+    if (!ROLE_PERMISSIONS[userRole]) return false;
+
+    // Check if user has the specific permission in their permissions array
+    return ROLE_PERMISSIONS[userRole].permissions.includes(permission);
+  },
+
+  // Check module permission
+  hasModulePermission: (module, action) => {
+    const userRole = authService.getUserRole();
+    if (!userRole) return false;
+
+    return checkPermission(userRole, module, action);
+  },
+
+  // Get available modules for current user
+  getAvailableModules: () => {
+    const userRole = authService.getUserRole();
+    if (!userRole) return [];
+
+    return getAvailableModules(userRole);
+  },
+
+  // Get available actions for current user and module
+  getAvailableActions: (module) => {
+    const userRole = authService.getUserRole();
+    if (!userRole) return [];
+
+    return getAvailableActions(userRole, module);
   },
 };

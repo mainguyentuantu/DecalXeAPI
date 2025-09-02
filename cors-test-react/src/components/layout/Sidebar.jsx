@@ -1,10 +1,7 @@
-<<<<<<< HEAD
+
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-=======
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
->>>>>>> 8eb4f5129648372e2bdfcd5f9373b11558e41831
+
 import {
   Home,
   ShoppingCart,
@@ -26,18 +23,13 @@ import {
   TrendingUp,
   PieChart,
   Activity,
-<<<<<<< HEAD
-} from "lucide-react";
-import { cn } from "../../utils/cn";
-import { useAuth } from "../../hooks/useAuth";
-import { USER_ROLES } from "../../constants/ui";
-=======
-  Building
+  Building,
+  Wrench,
+  Bell
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../hooks/useAuth';
 import { USER_ROLES } from '../../constants/ui';
->>>>>>> 8eb4f5129648372e2bdfcd5f9373b11558e41831
 
 const navigation = [
   {
@@ -56,28 +48,38 @@ const navigation = [
     ],
   },
   {
-    name: "Khách hàng",
+    name: 'Lắp đặt',
+    icon: Wrench,
+    roles: ['Admin', 'Technician'],
+    children: [
+      { name: 'Hàng đợi lắp đặt', href: '/installations/queue' },
+      { name: 'Theo dõi lắp đặt', href: '/installations/tracking' },
+      { name: 'Kiểm soát chất lượng', href: '/installations/quality' },
+    ],
+  },
+  {
+    name: 'Khách hàng',
     icon: Users,
     roles: ["Admin", "Manager", "Sales"],
     children: [
-      { name: "Danh sách khách hàng", href: "/customers" },
-      { name: "Thêm khách hàng", href: "/customers/create" },
+      { name: 'Danh sách khách hàng', href: '/customers' },
+      // { name: 'Thêm khách hàng', href: '/customers/create' },
     ],
   },
   {
     name: "Phương tiện",
     icon: Car,
-    roles: ["Admin", "Manager", "Sales", "Technician"],
+    roles: ['Admin'],
     children: [
-      { name: "Danh sách xe", href: "/vehicles" },
-      { name: "Thêm thương hiệu", href: "/vehicles/brands/create" },
-      { name: "Thêm mẫu xe", href: "/vehicles/models/create" },
+      { name: 'Danh sách xe', href: '/vehicles' },
+      // { name: 'Thêm thương hiệu', href: '/vehicles/brands/create' },
+      // { name: 'Thêm mẫu xe', href: '/vehicles/models/create' },
     ],
   },
   {
     name: "Thiết kế",
     icon: Palette,
-    roles: ["Admin", "Manager", "Designer", "Technician"],
+    roles: ['Admin', 'Manager', 'Designer'],
     children: [
       { name: "Thư viện thiết kế", href: "/designs" },
       { name: "Soạn thảo thiết kế", href: "/designs/editor" },
@@ -86,57 +88,77 @@ const navigation = [
     ],
   },
   {
-    name: "Nhân viên",
+    name: 'Dashboard Designer',
+    href: '/designer-dashboard',
+    icon: Palette,
+    roles: ['Designer'],
+  },
+  {
+    name: 'Nhân viên',
     icon: Users,
     roles: ["Admin", "Manager"],
     children: [
-<<<<<<< HEAD
-      { name: "Danh sách nhân viên", href: "/employees" },
-      { name: "Thêm nhân viên", href: "/employees/create" },
-      { name: "Phân quyền", href: "/roles" },
-      { name: "Theo dõi hiệu suất", href: "/performance" },
-    ],
-  },
-  {
-    name: "Dịch vụ & Kho",
-=======
       { name: 'Danh sách nhân viên', href: '/employees' },
       { name: 'Theo dõi hiệu suất', href: '/performance' },
     ],
   },
   {
+    name: 'Dashboard Quản lý',
+    href: '/manager-dashboard',
+    icon: BarChart3,
+    roles: ['Manager'],
+  },
+  {
     name: 'Cửa hàng',
     icon: Building,
-    roles: ['Admin', 'Manager'],
+    roles: ['Admin'],
     children: [
       { name: 'Danh sách cửa hàng', href: '/stores' },
-      { name: 'Thêm cửa hàng', href: '/stores/add' },
+      // { name: 'Thêm cửa hàng', href: '/stores/add' },
     ],
   },
   {
     name: 'Quản lý tài khoản',
     icon: Shield,
-    roles: ['Admin', 'Manager'],
+    roles: ['Admin'],
     children: [
       { name: 'Danh sách tài khoản', href: '/accounts' },
     ],
   },
   {
+    name: 'Hệ thống thông báo',
+    icon: Bell,
+    roles: ['Admin', 'Sales', 'Technician'],
+    children: [
+      { name: 'Danh sách thông báo', href: '/notifications' },
+      { name: 'Tạo thông báo mới', href: '/notifications/create' },
+    ],
+  },
+  {
+    name: 'Hệ thống tin nhắn',
+    icon: MessageSquare,
+    roles: ['Admin', 'Designer'],
+    children: [
+      { name: 'Trung tâm thông báo', href: '/notifications/center' },
+      { name: 'Hệ thống tin nhắn', href: '/notifications/messages' },
+    ],
+  },
+  {
     name: 'Dịch vụ & Kho',
->>>>>>> 8eb4f5129648372e2bdfcd5f9373b11558e41831
     icon: Package,
     roles: ["Admin", "Manager", "Sales"],
     children: [
-      { name: "Danh sách dịch vụ", href: "/services" },
-      { name: "Quản lý loại decal", href: "/decal-types" },
-      { name: "Quản lý giá", href: "/pricing" },
-      { name: "Theo dõi kho", href: "/inventory" },
+      // { name: 'Quản lý dịch vụ', href: '/services' },
+      { name: 'Quản lí dịch vụ', href: '/services/list' },
+      { name: 'Quản lý loại decal', href: '/decal-types' },
+      // { name: 'Quản lý giá', href: '/pricing' },
+      // { name: 'Theo dõi kho', href: '/inventory' },
     ],
   },
   {
     name: "Tài chính",
     icon: DollarSign,
-    roles: ["Admin", "Manager", "Accountant"],
+    roles: ['Admin', 'Manager'],
     children: [
       { name: "Xử lý thanh toán", href: "/payments/processing" },
       { name: "Quản lý hóa đơn", href: "/payments/invoices" },
@@ -202,7 +224,7 @@ const navigation = [
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
-  const { getUserRole, hasPermission } = useAuth();
+  const { getUserRole, hasModulePermission } = useAuth();
   const [expandedItems, setExpandedItems] = useState({});
 
   const userRole = getUserRole();
@@ -224,15 +246,49 @@ const Sidebar = ({ isOpen, onClose }) => {
     return children?.some((child) => isActive(child.href));
   };
 
-<<<<<<< HEAD
-  const filteredNavigation = navigation.filter(
-    (item) => item.roles.includes(userRole) || hasPermission("Admin")
-=======
-  const filteredNavigation = navigation.filter(item =>
-    item.roles.includes(userRole) || hasPermission('Admin')
->>>>>>> 8eb4f5129648372e2bdfcd5f9373b11558e41831
-  );
+  // Check if user has access to a module
+  const hasModuleAccess = (moduleName) => {
+    // Map navigation names to module names
+    const moduleMapping = {
+      'Tổng quan': 'dashboard',
+      'Đơn hàng': 'orders',
+      'Lắp đặt': 'installations',
+      'Khách hàng': 'customers',
+      'Phương tiện': 'vehicles',
+      'Thiết kế': 'designs',
+      'Nhân viên': 'employees',
+      'Cửa hàng': 'stores',
+      'Quản lý tài khoản': 'accounts',
+      'Hệ thống thông báo': 'notifications',
+      'Hệ thống tin nhắn': 'notifications',
+      'Cài đặt hệ thống': 'settings',
+      'Dịch vụ & Kho': 'services',
+      'Tài chính': 'payments',
+      'Bảo hành & Hỗ trợ': 'warranty',
+      'Phân tích & Báo cáo': 'analytics',
+    };
 
+    const moduleKey = moduleMapping[moduleName];
+    if (!moduleKey) {
+      console.log(`🔍 No mapping found for module: ${moduleName}, allowing access`);
+      return true; // Allow access if no mapping found
+    }
+
+    const hasPermission = hasModulePermission(moduleKey, 'view');
+    console.log(`🔍 Module: ${moduleName} -> ${moduleKey}, hasPermission: ${hasPermission}`);
+    return hasPermission;
+  };
+
+  const filteredNavigation = navigation.filter(item => {
+    // First check if user role is in the allowed roles
+    const hasRoleAccess = item.roles.includes(userRole);
+
+    // Then check if user has module permission
+    const hasAccess = hasModuleAccess(item.name);
+
+    return hasRoleAccess && hasAccess;
+  });
+  );
   return (
     <>
       {/* Mobile overlay */}

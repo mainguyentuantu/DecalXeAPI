@@ -45,15 +45,15 @@ const CreateVehicleModal = ({
         initialKM: '',
         customerID: '',
         modelID: '',
-        customerFirstName: '',
-        customerLastName: '',
-        customerPhone: '',
-        customerEmail: '',
-        customerAddress: ''
+        customerFirstName: customerInfo?.firstName || '',
+        customerLastName: customerInfo?.lastName || '',
+        customerPhone: customerInfo?.phoneNumber || '',
+        customerEmail: customerInfo?.email || '',
+        customerAddress: customerInfo?.address || ''
       });
       setErrors({});
     }
-  }, [isOpen, initialSearchTerm]);
+  }, [isOpen, initialSearchTerm, customerInfo]);
 
   // Nếu có customerInfo, luôn set createNewCustomer = false
   useEffect(() => {
@@ -112,7 +112,7 @@ const CreateVehicleModal = ({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -192,7 +192,7 @@ const CreateVehicleModal = ({
               </svg>
               Thông Tin Xe
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Biển số xe"
@@ -257,11 +257,27 @@ const CreateVehicleModal = ({
 
           {/* Customer Information */}
           {customerInfo && (
-            <div className="mb-4 p-3 bg-blue-50 rounded border border-blue-200">
-              <div className="font-medium">{customerInfo.firstName} {customerInfo.lastName}</div>
-              <div className="text-sm text-gray-600">{customerInfo.phoneNumber}</div>
-              {customerInfo.email && <div className="text-sm text-gray-600">{customerInfo.email}</div>}
-              {customerInfo.address && <div className="text-sm text-gray-600">{customerInfo.address}</div>}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Thông Tin Khách Hàng
+              </h3>
+              <div className="mb-4 p-4 bg-green-50 rounded border border-green-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="font-medium text-green-900">{customerInfo.firstName} {customerInfo.lastName}</div>
+                </div>
+                <div className="text-sm text-green-700">{customerInfo.phoneNumber}</div>
+                {customerInfo.email && <div className="text-sm text-green-600">{customerInfo.email}</div>}
+                {customerInfo.address && <div className="text-sm text-green-600">{customerInfo.address}</div>}
+                <div className="text-xs text-green-500 mt-2">
+                  Xe mới sẽ được thêm vào danh sách phương tiện của khách hàng này
+                </div>
+              </div>
             </div>
           )}
 
@@ -274,7 +290,7 @@ const CreateVehicleModal = ({
                   </svg>
                   Thông Tin Khách Hàng
                 </h3>
-                
+
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
@@ -350,7 +366,7 @@ const CreateVehicleModal = ({
             >
               Hủy bỏ
             </Button>
-            
+
             <Button
               type="submit"
               disabled={isLoading}

@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Menu, Bell, User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '../../utils/cn';
 import { Button } from '../common';
+import NotificationBell from '../notifications/NotificationBell';
 
 const Header = ({ onMenuClick }) => {
   const { user, logout, getUserRole } = useAuth();
+  const navigate = useNavigate();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const userRole = getUserRole();
 
@@ -16,9 +18,15 @@ const Header = ({ onMenuClick }) => {
     setIsUserMenuOpen(false);
   };
 
-  // TODO: Fetch real notifications from API when available
-  const notifications = [];
-  const unreadCount = 0;
+  const handleProfileClick = () => {
+    navigate('/settings/profile');
+    setIsUserMenuOpen(false);
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings/system');
+    setIsUserMenuOpen(false);
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
@@ -32,7 +40,7 @@ const Header = ({ onMenuClick }) => {
         >
           <Menu className="h-5 w-5" />
         </Button>
-        
+
         <div>
           <h1 className="text-xl font-semibold text-gray-900">
             Dashboard
@@ -46,57 +54,7 @@ const Header = ({ onMenuClick }) => {
       {/* Right side */}
       <div className="flex items-center space-x-4">
         {/* Notifications */}
-        <div className="relative">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-            className="relative"
-          >
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </Button>
-
-          {/* Notifications dropdown */}
-          {isNotificationOpen && (
-            <>
-              <div 
-                className="fixed inset-0 z-10" 
-                onClick={() => setIsNotificationOpen(false)}
-              />
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20">
-                <div className="py-1">
-                  <div className="px-4 py-2 border-b border-gray-200">
-                    <h3 className="text-sm font-medium text-gray-900">Thông báo</h3>
-                  </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={cn(
-                          'px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100',
-                          notification.unread && 'bg-blue-50'
-                        )}
-                      >
-                        <p className="text-sm text-gray-900">{notification.message}</p>
-                        <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="px-4 py-2 border-t border-gray-200">
-                    <button className="text-sm text-primary-600 hover:text-primary-500">
-                      Xem tất cả thông báo
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+        <NotificationBell />
 
         {/* User menu */}
         <div className="relative">
@@ -123,8 +81,8 @@ const Header = ({ onMenuClick }) => {
           {/* User dropdown */}
           {isUserMenuOpen && (
             <>
-              <div 
-                className="fixed inset-0 z-10" 
+              <div
+                className="fixed inset-0 z-10"
                 onClick={() => setIsUserMenuOpen(false)}
               />
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20">
@@ -135,25 +93,25 @@ const Header = ({ onMenuClick }) => {
                     </p>
                     <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>
-                  
+
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsUserMenuOpen(false)}
+                    onClick={handleProfileClick}
                   >
                     <User className="mr-3 h-4 w-4" />
                     Hồ sơ cá nhân
                   </button>
-                  
+
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setIsUserMenuOpen(false)}
+                    onClick={handleSettingsClick}
                   >
                     <Settings className="mr-3 h-4 w-4" />
                     Cài đặt
                   </button>
-                  
+
                   <hr className="my-1" />
-                  
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50"
