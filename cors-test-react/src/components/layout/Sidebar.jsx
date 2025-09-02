@@ -87,6 +87,12 @@ const navigation = [
     ],
   },
   {
+    name: 'Dashboard Designer',
+    href: '/designer-dashboard',
+    icon: Palette,
+    roles: ['Designer'],
+  },
+  {
     name: 'Nhân viên',
     icon: Users,
     roles: ['Admin', 'Manager'],
@@ -94,6 +100,12 @@ const navigation = [
       { name: 'Danh sách nhân viên', href: '/employees' },
       { name: 'Theo dõi hiệu suất', href: '/performance' },
     ],
+  },
+  {
+    name: 'Dashboard Quản lý',
+    href: '/manager-dashboard',
+    icon: BarChart3,
+    roles: ['Manager'],
   },
   {
     name: 'Cửa hàng',

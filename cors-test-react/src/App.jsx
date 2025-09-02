@@ -61,12 +61,14 @@ import DesignGalleryPage from "./pages/designs/DesignGalleryPage";
 import DesignApprovalPage from "./pages/designs/DesignApprovalPage";
 import DesignEditorPage from "./pages/designs/DesignEditorPage";
 import DesignTestPage from "./pages/designs/DesignTestPage";
+import DesignerDashboardPage from "./pages/designs/DesignerDashboardPage";
 
 // Employee Management Module Pages
 import EmployeeListPage from "./pages/employees/EmployeeListPage";
 import AddEmployeePage from "./pages/employees/AddEmployeePage";
 import EmployeeEditPage from "./pages/employees/EmployeeEditPage";
 import PerformanceTrackingPage from "./pages/employees/PerformanceTrackingPage";
+import ManagerDashboardPage from "./pages/employees/ManagerDashboardPage";
 
 // Store Management Module Pages
 import StoreListPage from "./pages/stores/StoreListPage";
@@ -236,6 +238,7 @@ function App() {
                 <Route path="designs/approval" element={<DesignApprovalPage />} />
                 <Route path="designs/editor" element={<DesignEditorPage />} />
                 <Route path="designs/test" element={<DesignTestPage />} />
+                <Route path="designer-dashboard" element={<DesignerDashboardPage />} />
                 <Route
                   path="templates"
                   element={
@@ -252,6 +255,7 @@ function App() {
                 <Route path="employees/:id/edit" element={<EmployeeEditPage />} />
                 <Route path="employees/add" element={<AddEmployeePage />} />
                 <Route path="performance" element={<PerformanceTrackingPage />} />
+                <Route path="manager-dashboard" element={<ManagerDashboardPage />} />
 
                 {/* Store Management Module Routes */}
                 <Route path="stores" element={<StoreListPage />} />
