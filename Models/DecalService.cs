@@ -23,11 +23,10 @@ namespace DecalXeAPI.Models
 
         public int StandardWorkUnits { get; set; } // Số lượng xuất công tiêu chuẩn cho dịch vụ này
 
-        // Khóa ngoại (Foreign Key): Một DecalService thuộc về một DecalType
-        [ForeignKey("DecalType")]
-        public string DecalTypeID { get; set; } = string.Empty; // FK_DecalTypeID
-        public DecalType? DecalType { get; set; }
-
+        // Khóa ngoại (Foreign Key): Một DecalService thuộc về một DecalTemplate
+        [ForeignKey("DecalTemplate")]
+        public string DecalTemplateID { get; set; } = string.Empty; // FK_DecalTemplateID
+        public DecalTemplate? DecalTemplate { get; set; }
 
         // --- NAVIGATION PROPERTIES HIỆN CÓ (Giữ nguyên) ---
         [JsonIgnore] // Để tránh lỗi vòng lặp JSON

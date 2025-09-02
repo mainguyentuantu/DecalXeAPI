@@ -51,7 +51,7 @@ const DecalTypesPage = () => {
 
   // Calculate statistics for each decal type
   const decalTypesWithStats = filteredDecalTypes.map(type => {
-    const relatedServices = services.filter(service => service.decalTypeID === type.decalTypeID);
+    const relatedServices = services.filter(service => service.decalTemplateID === type.decalTypeID);
     const totalRevenue = relatedServices.reduce((sum, service) => sum + (service.price || 0), 0);
     const averagePrice = relatedServices.length > 0 ? totalRevenue / relatedServices.length : 0;
     

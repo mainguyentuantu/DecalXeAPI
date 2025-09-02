@@ -15,5 +15,7 @@ namespace DecalXeAPI.DTOs
         public decimal? ActualLengthUsed { get; set; }
         public decimal? ActualWidthUsed { get; set; }
         public decimal FinalCalculatedPrice { get; set; } // Giá cuối cùng đã tính toán cho item này
+        public string? StoreID { get; set; }
+        public string? StoreName { get; set; }
     }
 }

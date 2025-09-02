@@ -34,6 +34,7 @@ namespace DecalXeAPI.Services.Implementations
 
             var query = _context.Orders
                                 .Include(o => o.AssignedEmployee)
+                                .Include(o => o.Store) // Include Store information
                                 .Include(o => o.Customer) // NEW: Include Customer information
                                     .ThenInclude(c => c.Account) // NEW: Include Customer's Account
                                 .Include(o => o.CustomerVehicle) // <-- BƯỚC 1: NẠP DỮ LIỆU XE
@@ -108,6 +109,7 @@ namespace DecalXeAPI.Services.Implementations
             _logger.LogInformation("Yêu cầu lấy thông tin đơn hàng với ID: {OrderID}", id);
             var order = await _context.Orders
                 .Include(o => o.AssignedEmployee)
+                .Include(o => o.Store) // Include Store information
                 .Include(o => o.Customer) // NEW: Include Customer information
                     .ThenInclude(c => c.Account) // NEW: Include Customer's Account
                 .Include(o => o.CustomerVehicle)
@@ -135,6 +137,7 @@ namespace DecalXeAPI.Services.Implementations
             _logger.LogInformation("Đã tạo Order mới với ID: {OrderID}", order.OrderID);
 
             // Tải lại toàn bộ thông tin liên quan để AutoMapper có thể ánh xạ đầy đủ
+            await _context.Entry(order).Reference(o => o.Store).LoadAsync(); // Load Store
             await _context.Entry(order).Reference(o => o.AssignedEmployee).LoadAsync();
             await _context.Entry(order).Reference(o => o.Customer).LoadAsync(); // NEW: Load Customer
             await _context.Entry(order).Reference(o => o.CustomerVehicle).LoadAsync();
@@ -157,6 +160,16 @@ namespace DecalXeAPI.Services.Implementations
                     await _context.Entry(order.CustomerVehicle.VehicleModel)
                         .Reference(vm => vm.VehicleBrand)
                         .LoadAsync();
+                }
+            }
+
+            // Load AssignedEmployee's Store if exists
+            if (order.AssignedEmployee != null)
+            {
+                 await _context.Entry(order.AssignedEmployee).Reference(e => e.Store).LoadAsync();
+                 if (order.Store == null && order.AssignedEmployee.StoreID != null)
+                 {
+                    order.StoreID = order.AssignedEmployee.StoreID; // Inherit StoreID if not explicitly set but employee is assigned
                 }
             }
 
@@ -411,6 +424,7 @@ namespace DecalXeAPI.Services.Implementations
 
             try
             {
+                // Include Store when querying for tracking
                 var query = _context.Orders
                     .Include(o => o.AssignedEmployee)
                         .ThenInclude(e => e.Store)
@@ -423,6 +437,7 @@ namespace DecalXeAPI.Services.Implementations
                         .ThenInclude(od => od.DecalService)
                     .Include(o => o.OrderStageHistories.OrderBy(osh => osh.ChangeDate))
                     .Include(o => o.Payments)
+                    .Include(o => o.Store) // Include Store
                     .AsQueryable();
 
                 // Tìm kiếm theo các tiêu chí

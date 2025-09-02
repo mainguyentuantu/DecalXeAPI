@@ -7,7 +7,8 @@ namespace DecalXeAPI.DTOs
         public string? Description { get; set; }
         public decimal Price { get; set; }
         public int StandardWorkUnits { get; set; }
-        public string DecalTypeID { get; set; } = string.Empty;
+        public string DecalTemplateID { get; set; } = string.Empty;
+        public string DecalTemplateName { get; set; } = string.Empty; // Tên mẫu decal để hiển thị
         public string DecalTypeName { get; set; } = string.Empty; // Tên loại decal để hiển thị
     }
 }

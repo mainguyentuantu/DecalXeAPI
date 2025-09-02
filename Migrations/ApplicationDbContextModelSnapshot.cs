@@ -154,7 +154,7 @@ namespace DecalXeAPI.Migrations
                     b.Property<string>("ServiceID")
                         .HasColumnType("text");
 
-                    b.Property<string>("DecalTypeID")
+                    b.Property<string>("DecalTemplateID")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -175,7 +175,7 @@ namespace DecalXeAPI.Migrations
 
                     b.HasKey("ServiceID");
 
-                    b.HasIndex("DecalTypeID");
+                    b.HasIndex("DecalTemplateID");
 
                     b.ToTable("DecalServices");
                 });
@@ -467,6 +467,9 @@ namespace DecalXeAPI.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -548,6 +551,14 @@ namespace DecalXeAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("CustomerID")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
                     b.Property<DateTime?>("ExpectedArrivalTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -566,6 +577,9 @@ namespace DecalXeAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("StoreID")
+                        .HasColumnType("text");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -575,6 +589,10 @@ namespace DecalXeAPI.Migrations
                     b.HasKey("OrderID");
 
                     b.HasIndex("AssignedEmployeeID");
+
+                    b.HasIndex("CustomerID");
+
+                    b.HasIndex("StoreID");
 
                     b.HasIndex("VehicleID");
 
@@ -985,19 +1003,19 @@ namespace DecalXeAPI.Migrations
 
             modelBuilder.Entity("DecalXeAPI.Models.DecalService", b =>
                 {
-                    b.HasOne("DecalXeAPI.Models.DecalType", "DecalType")
+                    b.HasOne("DecalXeAPI.Models.DecalTemplate", "DecalTemplate")
                         .WithMany("DecalServices")
-                        .HasForeignKey("DecalTypeID")
+                        .HasForeignKey("DecalTemplateID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("DecalType");
+                    b.Navigation("DecalTemplate");
                 });
 
             modelBuilder.Entity("DecalXeAPI.Models.DecalTemplate", b =>
                 {
                     b.HasOne("DecalXeAPI.Models.DecalType", "DecalType")
-                        .WithMany()
+                        .WithMany("DecalTemplates")
                         .HasForeignKey("DecalTypeID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1149,13 +1167,27 @@ namespace DecalXeAPI.Migrations
                         .WithMany()
                         .HasForeignKey("AssignedEmployeeID");
 
+                    b.HasOne("DecalXeAPI.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DecalXeAPI.Models.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreID");
+
                     b.HasOne("DecalXeAPI.Models.CustomerVehicle", "CustomerVehicle")
                         .WithMany("Orders")
                         .HasForeignKey("VehicleID");
 
                     b.Navigation("AssignedEmployee");
 
+                    b.Navigation("Customer");
+
                     b.Navigation("CustomerVehicle");
+
+                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("DecalXeAPI.Models.OrderDetail", b =>
@@ -1338,12 +1370,14 @@ namespace DecalXeAPI.Migrations
 
             modelBuilder.Entity("DecalXeAPI.Models.DecalTemplate", b =>
                 {
+                    b.Navigation("DecalServices");
+
                     b.Navigation("VehicleModelDecalTemplates");
                 });
 
             modelBuilder.Entity("DecalXeAPI.Models.DecalType", b =>
                 {
-                    b.Navigation("DecalServices");
+                    b.Navigation("DecalTemplates");
 
                     b.Navigation("VehicleModelDecalTypes");
                 });

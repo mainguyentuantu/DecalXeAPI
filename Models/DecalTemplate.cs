@@ -22,10 +22,13 @@ namespace DecalXeAPI.Models
         public string DecalTypeID { get; set; } = string.Empty; // FK_DecalTypeID
         public DecalType? DecalType { get; set; }
 
-        // --- NAVIGATION PROPERTY MỚI TỪ YÊU CẦU REVIEW ---
+        // --- NAVIGATION PROPERTIES ---
         // Mối quan hệ N-N với VehicleModel thông qua bảng trung gian VehicleModelDecalTemplate
         [JsonIgnore] // Để tránh lỗi vòng lặp JSON
-        // DÒNG CẦN SỬA LÀ DÒNG DƯỚI ĐÂY:
         public ICollection<VehicleModelDecalTemplate>? VehicleModelDecalTemplates { get; set; }
+
+        // Navigation Property: Một DecalTemplate có thể được dùng trong nhiều DecalService
+        [JsonIgnore] // Để tránh lỗi vòng lặp JSON
+        public ICollection<DecalService>? DecalServices { get; set; }
     }
 }
